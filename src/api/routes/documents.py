@@ -576,24 +576,24 @@ async def analyze_document(
             )
         
         # Claude prompt for analysis
-        system_prompt = "Bạn là chuyên gia phân tích văn bản pháp lý Việt Nam."
+        system_prompt = "You are an expert in analyzing Indian legal documents."
         
-        user_message = f"""Phân tích văn bản sau và trả về JSON với các trường:
+        user_message = f"""Analyze the following document and return a JSON with these fields:
 {{
-  "doc_type": "loại văn bản (hợp đồng/quyết định/công văn/biên bản/...)",
-  "summary": "tóm tắt ngắn gọn (2-3 câu)",
-  "parties": ["các bên liên quan"],
-  "key_dates": [{{"label": "mô tả", "date": "ngày"}}],
-  "key_amounts": [{{"label": "mô tả", "amount": "số tiền"}}],
-  "key_terms": ["các điều khoản quan trọng"],
-  "risks": [{{"level": "high/medium/low", "description": "mô tả rủi ro"}}],
+  "doc_type": "document type (contract/decision/official letter/minutes/...)",
+  "summary": "brief summary (2-3 sentences)",
+  "parties": ["involved parties"],
+  "key_dates": [{{"label": "description", "date": "date"}}],
+  "key_amounts": [{{"label": "description", "amount": "amount"}}],
+  "key_terms": ["important clauses"],
+  "risks": [{{"level": "high/medium/low", "description": "risk description"}}],
   "risk_score": 0-100,
-  "recommendations": ["khuyến nghị"]
+  "recommendations": ["recommendations"]
 }}
 
-CHỈ trả về JSON, không giải thích thêm.
+Return ONLY JSON, no explanations.
 
-VĂN BẢN:
+DOCUMENT:
 {document['extracted_text'][:30000]}"""
         
         # Call Claude for analysis

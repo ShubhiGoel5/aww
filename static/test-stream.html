@@ -20,7 +20,7 @@ async function testStream() {
         var response = await fetch('/v1/legal/ask-stream', {
             method: 'POST',
             headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ question: 'Xin chào' })
+            body: JSON.stringify({ question: 'Hello' })
         });
         
         debug.textContent += 'Response status: ' + response.status + '\n';

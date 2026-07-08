@@ -1,7 +1,7 @@
 {
     "name": "AI Legal Agent",
     "short_name": "Legal AI",
-    "description": "Trợ lý pháp lý AI cho doanh nghiệp Việt Nam",
+    "description": "AI legal assistant for India businesses",
     "start_url": "/static/app.html",
     "display": "standalone",
     "background_color": "#0f0f17",

@@ -47,35 +47,35 @@ def init_agent(get_db_fn, multi_query_search_fn, search_laws_fn, detect_domain_f
 TOOLS = [
     {
         "name": "search_law",
-        "description": "Tìm kiếm văn bản pháp luật Việt Nam theo từ khóa. Dùng khi cần tra cứu luật, nghị định, thông tư, quyết định. LUÔN dùng tool này trước khi trả lời câu hỏi pháp lý.",
+        "description": "Search Indian Law documents by keyword. Use when needing to look up acts, codes, rules, or judgments. ALWAYS use this tool before answering legal questions.",
         "input_schema": {
             "type": "object",
             "properties": {
-                "query": {"type": "string", "description": "Từ khóa tìm kiếm pháp luật"},
+                "query": {"type": "string", "description": "Legal search keyword"},
                 "domains": {
                     "type": "array",
                     "items": {"type": "string"},
-                    "description": "Lĩnh vực: lao_dong, thue, doanh_nghiep, dan_su, dat_dai, hinh_su, hanh_chinh"
+                    "description": "Domain: labour, corporate, civil, criminal, tax, property, consumer, it_cyber, constitutional"
                 },
-                "limit": {"type": "integer", "default": 10, "description": "Số kết quả tối đa"}
+                "limit": {"type": "integer", "default": 10, "description": "Max results"}
             },
             "required": ["query"]
         }
     },
     {
         "name": "read_contract",
-        "description": "Đọc nội dung hợp đồng đã upload. Dùng khi người dùng hỏi về hợp đồng cụ thể hoặc cần rà soát.",
+        "description": "Read uploaded contract content. Use when user asks about a specific contract or needs it reviewed.",
         "input_schema": {
             "type": "object",
             "properties": {
-                "contract_id": {"type": "string", "description": "ID hợp đồng (UUID)"}
+                "contract_id": {"type": "string", "description": "Contract ID (UUID)"}
             },
             "required": ["contract_id"]
         }
     },
     {
         "name": "list_contracts",
-        "description": "Liệt kê tất cả hợp đồng của công ty. Dùng khi cần tổng quan về hợp đồng hoặc khi người dùng hỏi 'hợp đồng nào', 'danh sách hợp đồng'.",
+        "description": "List all company contracts. Use for an overview or when user asks 'which contracts' or 'contract list'.",
         "input_schema": {
             "type": "object",
             "properties": {}
@@ -83,54 +83,54 @@ TOOLS = [
     },
     {
         "name": "search_company_docs",
-        "description": "Tìm kiếm trong tài liệu nội bộ của công ty (documents đã upload). Dùng khi cần tìm nội quy, quy chế, tài liệu nội bộ.",
+        "description": "Search internal company documents. Use to find rules, policies, internal documents.",
         "input_schema": {
             "type": "object",
             "properties": {
-                "query": {"type": "string", "description": "Từ khóa tìm kiếm trong tài liệu công ty"}
+                "query": {"type": "string", "description": "Search keyword in company documents"}
             },
             "required": ["query"]
         }
     },
     {
         "name": "analyze_contract_risk",
-        "description": "Phân tích rủi ro pháp lý chi tiết cho hợp đồng. Dùng khi được yêu cầu rà soát, đánh giá rủi ro, hoặc kiểm tra tính hợp pháp của hợp đồng.",
+        "description": "Detailed legal risk analysis for a contract. Use when asked to review, assess risks, or check legal compliance.",
         "input_schema": {
             "type": "object",
             "properties": {
-                "contract_id": {"type": "string", "description": "ID hợp đồng cần phân tích"}
+                "contract_id": {"type": "string", "description": "Contract ID to analyze"}
             },
             "required": ["contract_id"]
         }
     },
     {
         "name": "review_contract_ai",
-        "description": "Rà soát hợp đồng với AI Contract Review Service — Phân tích 10 danh mục rủi ro, kiểm tra tuân thủ pháp luật Việt Nam (BLDS 2015, Luật TM 2005, BLLĐ 2019), đánh giá điểm rủi ro 0-100, đề xuất sửa đổi cụ thể. Dùng khi cần rà soát toàn diện hợp đồng.",
+        "description": "Review contract with AI Contract Review Service — Analyzes 10 risk categories, checks compliance with Indian Law (Indian Contract Act 1872, Companies Act 2013, IR Code 2020), scores risk 0-100, suggests specific revisions. Use for comprehensive review.",
         "input_schema": {
             "type": "object",
             "properties": {
-                "contract_id": {"type": "string", "description": "ID hợp đồng cần rà soát"}
+                "contract_id": {"type": "string", "description": "Contract ID to review"}
             },
             "required": ["contract_id"]
         }
     },
     {
         "name": "draft_document",
-        "description": "Soạn thảo văn bản pháp lý mới (hợp đồng, đơn từ, quyết định, biên bản, công văn, nội quy). Dùng khi người dùng yêu cầu soạn/tạo văn bản.",
+        "description": "Draft new legal document (contract, petition, decision, minutes, official letter, rules). Use when user asks to draft/create a document.",
         "input_schema": {
             "type": "object",
             "properties": {
                 "doc_type": {
                     "type": "string",
-                    "description": "Loại văn bản: hop_dong, don_tu, quyet_dinh, bien_ban, cong_van, noi_quy, hop_dong_lao_dong, hop_dong_dich_vu"
+                    "description": "Document type: contract, petition, decision, minutes, official_letter, internal_rules, employment_contract, service_contract"
                 },
                 "requirements": {
                     "type": "string",
-                    "description": "Yêu cầu chi tiết cho văn bản cần soạn"
+                    "description": "Detailed requirements for the document"
                 },
                 "template_id": {
                     "type": "string",
-                    "description": "ID template mẫu (optional)"
+                    "description": "Template ID (optional)"
                 }
             },
             "required": ["doc_type", "requirements"]
@@ -138,7 +138,7 @@ TOOLS = [
     },
     {
         "name": "get_company_profile",
-        "description": "Lấy thông tin công ty: tên, loại hình, ngành nghề, số nhân sự, hợp đồng đang có, tài liệu. Dùng khi cần context về công ty.",
+        "description": "Get company profile: name, type, industry, headcount, current contracts, documents. Use when company context is needed.",
         "input_schema": {
             "type": "object",
             "properties": {}
@@ -146,14 +146,14 @@ TOOLS = [
     },
     {
         "name": "compare_contracts",
-        "description": "So sánh 2 hoặc nhiều hợp đồng. Tìm điểm khác biệt, không nhất quán, và đánh giá hợp đồng nào có lợi hơn.",
+        "description": "Compare 2 or more contracts. Find differences, inconsistencies, and evaluate which contract is more favorable.",
         "input_schema": {
             "type": "object",
             "properties": {
                 "contract_ids": {
                     "type": "array",
                     "items": {"type": "string"},
-                    "description": "Danh sách ID hợp đồng cần so sánh (tối thiểu 2)"
+                    "description": "List of Contract IDs to compare (min 2)"
                 }
             },
             "required": ["contract_ids"]
@@ -161,48 +161,48 @@ TOOLS = [
     },
     {
         "name": "summarize_contract",
-        "description": "Tạo tóm tắt ngắn gọn hợp đồng: các bên, giá trị, thời hạn, điều khoản chính. Dùng khi người dùng muốn tóm tắt nhanh.",
+        "description": "Create a brief summary of a contract: parties, value, duration, main clauses. Use for a quick summary.",
         "input_schema": {
             "type": "object",
             "properties": {
-                "contract_id": {"type": "string", "description": "ID hợp đồng"}
+                "contract_id": {"type": "string", "description": "Contract ID"}
             },
             "required": ["contract_id"]
         }
     },
     {
         "name": "check_legal_compliance",
-        "description": "Kiểm tra hợp đồng có tuân thủ các yêu cầu pháp lý cơ bản không (điều khoản bắt buộc, thời hạn, chế tài...). Dùng khi cần kiểm tra compliance.",
+        "description": "Check if contract complies with basic legal requirements (mandatory clauses, duration, penalties...). Use for compliance checks.",
         "input_schema": {
             "type": "object",
             "properties": {
                 "contract_id": {"type": "string"},
-                "check_type": {"type": "string", "enum": ["labor", "commercial", "service", "all"], "description": "Loại kiểm tra: labor=lao động, commercial=thương mại, service=dịch vụ, all=tất cả"}
+                "check_type": {"type": "string", "enum": ["labor", "commercial", "service", "all"], "description": "Check type: labor, commercial, service, all"}
             },
             "required": ["contract_id"]
         }
     },
     {
         "name": "generate_clause",
-        "description": "Tạo/soạn một điều khoản pháp lý cụ thể. Dùng khi người dùng yêu cầu soạn điều khoản bảo mật, phạt vi phạm, chấm dứt HĐ, v.v.",
+        "description": "Draft a specific legal clause. Use when user asks to draft a confidentiality, penalty, termination, etc., clause.",
         "input_schema": {
             "type": "object",
             "properties": {
-                "clause_type": {"type": "string", "description": "Loại điều khoản: bao_mat, phat_vi_pham, cham_dut, boi_thuong, bao_hanh, thanh_toan, tranh_chap, bat_kha_khang"},
-                "context": {"type": "string", "description": "Bối cảnh/yêu cầu cụ thể"}
+                "clause_type": {"type": "string", "description": "Clause type: confidentiality, penalty, termination, compensation, warranty, payment, dispute, force_majeure"},
+                "context": {"type": "string", "description": "Specific context/requirements"}
             },
             "required": ["clause_type"]
         }
     },
     {
         "name": "crawl_legal_document",
-        "description": "Crawl và trích xuất nội dung từ một URL văn bản pháp luật (thuvienphapluat.vn, vbpl.vn, congbao.chinhphu.vn). Dùng khi người dùng cung cấp link văn bản pháp luật và muốn phân tích hoặc thêm vào cơ sở tri thức. CrawlKit API key bắt buộc.",
+        "description": "Crawl and extract content from a legal document URL. Use when user provides a legal document link and wants to analyze it or add it to the knowledge base. CrawlKit API key required.",
         "input_schema": {
             "type": "object",
             "properties": {
                 "url": {
                     "type": "string",
-                    "description": "URL của văn bản pháp luật cần crawl"
+                    "description": "URL of the legal document to crawl"
                 }
             },
             "required": ["url"]
@@ -210,154 +210,154 @@ TOOLS = [
     },
     {
         "name": "list_documents",
-        "description": "Liệt kê tất cả tài liệu và hợp đồng trong hệ thống của công ty. Dùng để tìm kiếm file, xem danh sách tài liệu, hoặc kiểm tra file nào đã có.",
+        "description": "List all documents and contracts in the company's system. Use to find files, view document lists, or check which files exist.",
         "input_schema": {
             "type": "object",
             "properties": {
-                "folder": {"type": "string", "description": "Thư mục cần liệt kê (mặc định: tất cả)"},
-                "search": {"type": "string", "description": "Từ khóa tìm kiếm trong tên file"},
-                "type": {"type": "string", "enum": ["all", "contract", "document", "template"], "description": "Loại file cần lọc"}
+                "folder": {"type": "string", "description": "Folder to list (default: all)"},
+                "search": {"type": "string", "description": "Search keyword in file name"},
+                "type": {"type": "string", "enum": ["all", "contract", "document", "template"], "description": "File type to filter by"}
             }
         }
     },
     {
         "name": "read_document",
-        "description": "Đọc nội dung đầy đủ của một tài liệu hoặc hợp đồng. Dùng khi cần xem chi tiết nội dung, phân tích, hoặc trích xuất thông tin từ file.",
+        "description": "Read the full content of a document or contract. Use to see detailed content, analyze, or extract information from a file.",
         "input_schema": {
             "type": "object",
             "properties": {
-                "document_id": {"type": "string", "description": "ID của tài liệu cần đọc"},
-                "section": {"type": "string", "description": "Phần cụ thể cần đọc (ví dụ: 'Điều 5', 'Phụ lục')"}
+                "document_id": {"type": "string", "description": "ID of the document to read"},
+                "section": {"type": "string", "description": "Specific section to read (e.g., 'Section 5', 'Appendix')"}
             },
             "required": ["document_id"]
         }
     },
     {
         "name": "write_document",
-        "description": "Tạo tài liệu mới hoặc ghi đè nội dung. Dùng để soạn hợp đồng, tạo văn bản pháp lý, tạo báo cáo, hoặc lưu kết quả phân tích.",
+        "description": "Create a new document or overwrite content. Use to draft contracts, legal documents, reports, or save analysis results.",
         "input_schema": {
             "type": "object",
             "properties": {
-                "title": {"type": "string", "description": "Tên tài liệu"},
-                "content": {"type": "string", "description": "Nội dung ĐẦY ĐỦ của tài liệu. QUAN TRỌNG: Phải ghi TOÀN BỘ nội dung, KHÔNG được tóm tắt hoặc rút gọn. Nếu đang xử lý file upload, phải copy nguyên văn toàn bộ nội dung gốc."},
-                "type": {"type": "string", "enum": ["contract", "document", "template", "report", "memo"], "description": "Loại tài liệu"},
-                "folder": {"type": "string", "description": "Thư mục lưu (tùy chọn)"},
-                "tags": {"type": "array", "items": {"type": "string"}, "description": "Tags phân loại"}
+                "title": {"type": "string", "description": "Document title"},
+                "content": {"type": "string", "description": "FULL content of the document. IMPORTANT: Must write the ENTIRE content, DO NOT summarize or shorten. If processing an uploaded file, copy the original text exactly."},
+                "type": {"type": "string", "enum": ["contract", "document", "template", "report", "memo"], "description": "Document type"},
+                "folder": {"type": "string", "description": "Save folder (optional)"},
+                "tags": {"type": "array", "items": {"type": "string"}, "description": "Classification tags"}
             },
             "required": ["title", "content"]
         }
     },
     {
         "name": "edit_document",
-        "description": "Chỉnh sửa một phần cụ thể của tài liệu hiện có. Dùng để sửa điều khoản, cập nhật nội dung, hoặc thay thế phần bị lỗi. Giống chức năng Find & Replace nhưng thông minh hơn.",
+        "description": "Edit a specific part of an existing document. Use to modify clauses, update content, or replace errors. Smarter than Find & Replace.",
         "input_schema": {
             "type": "object",
             "properties": {
-                "document_id": {"type": "string", "description": "ID tài liệu cần sửa"},
-                "old_text": {"type": "string", "description": "Đoạn text cần thay thế (tìm chính xác)"},
-                "new_text": {"type": "string", "description": "Nội dung mới thay thế"},
-                "description": {"type": "string", "description": "Mô tả ngắn về thay đổi (để ghi log)"}
+                "document_id": {"type": "string", "description": "ID of document to edit"},
+                "old_text": {"type": "string", "description": "Text to replace (exact match)"},
+                "new_text": {"type": "string", "description": "New replacement content"},
+                "description": {"type": "string", "description": "Short description of the change (for logging)"}
             },
             "required": ["document_id", "old_text", "new_text"]
         }
     },
     {
         "name": "compare_documents",
-        "description": "So sánh hai tài liệu và hiển thị khác biệt. Dùng để xem thay đổi giữa bản cũ-mới, so sánh hai hợp đồng, hoặc kiểm tra chỉnh sửa.",
+        "description": "Compare two documents and show differences. Use to see changes between versions, compare two contracts, or check edits.",
         "input_schema": {
             "type": "object",
             "properties": {
-                "document_id_1": {"type": "string", "description": "ID tài liệu thứ nhất"},
-                "document_id_2": {"type": "string", "description": "ID tài liệu thứ hai"},
-                "mode": {"type": "string", "enum": ["summary", "detailed", "clause_by_clause"], "description": "Mức độ chi tiết so sánh"}
+                "document_id_1": {"type": "string", "description": "ID of first document"},
+                "document_id_2": {"type": "string", "description": "ID of second document"},
+                "mode": {"type": "string", "enum": ["summary", "detailed", "clause_by_clause"], "description": "Level of detail for comparison"}
             },
             "required": ["document_id_1", "document_id_2"]
         }
     },
     {
         "name": "create_folder",
-        "description": "Tạo thư mục/vụ việc mới để tổ chức tài liệu. Dùng để phân loại theo dự án, khách hàng, hoặc vụ việc pháp lý.",
+        "description": "Create a new folder/case to organize documents. Use to classify by project, client, or legal case.",
         "input_schema": {
             "type": "object",
             "properties": {
-                "name": {"type": "string", "description": "Tên thư mục/vụ việc"},
-                "description": {"type": "string", "description": "Mô tả"},
-                "parent_folder": {"type": "string", "description": "Thư mục cha (nếu có)"}
+                "name": {"type": "string", "description": "Name of the folder/case"},
+                "description": {"type": "string", "description": "Description"},
+                "parent_folder": {"type": "string", "description": "Parent folder (if any)"}
             },
             "required": ["name"]
         }
     },
     {
         "name": "move_document",
-        "description": "Di chuyển tài liệu vào thư mục khác.",
+        "description": "Move a document to another folder.",
         "input_schema": {
             "type": "object",
             "properties": {
-                "document_id": {"type": "string", "description": "ID tài liệu"},
-                "target_folder": {"type": "string", "description": "Thư mục đích"}
+                "document_id": {"type": "string", "description": "Document ID"},
+                "target_folder": {"type": "string", "description": "Target folder"}
             },
             "required": ["document_id", "target_folder"]
         }
     },
     {
         "name": "delete_document",
-        "description": "Xóa tài liệu (chuyển vào thùng rác, có thể khôi phục trong 30 ngày). Chỉ dùng khi người dùng yêu cầu rõ ràng.",
+        "description": "Delete a document (moves to trash, recoverable for 30 days). Only use when user explicitly requests it.",
         "input_schema": {
             "type": "object",
             "properties": {
-                "document_id": {"type": "string", "description": "ID tài liệu cần xóa"},
-                "reason": {"type": "string", "description": "Lý do xóa"}
+                "document_id": {"type": "string", "description": "ID of document to delete"},
+                "reason": {"type": "string", "description": "Reason for deletion"}
             },
             "required": ["document_id"]
         }
     },
     {
         "name": "generate_document",
-        "description": "Tạo văn bản pháp lý mới từ yêu cầu. AI sẽ soạn hợp đồng, đơn từ, công văn, biên bản, hoặc bất kỳ văn bản pháp lý nào dựa trên mô tả và thông tin được cung cấp.",
+        "description": "Draft a new legal document from requirements. AI will draft contracts, petitions, letters, minutes, etc., based on description and information provided.",
         "input_schema": {
             "type": "object",
             "properties": {
-                "type": {"type": "string", "description": "Loại văn bản (hop_dong_lao_dong, hop_dong_thue, don_khieu_nai, cong_van, bien_ban, nda, ...)"},
-                "requirements": {"type": "string", "description": "Yêu cầu chi tiết về nội dung"},
-                "parties": {"type": "array", "items": {"type": "string"}, "description": "Các bên liên quan"},
-                "key_terms": {"type": "object", "description": "Các điều khoản chính (giá trị HĐ, thời hạn, ...)"},
-                "save": {"type": "boolean", "description": "Tự động lưu vào hệ thống", "default": True}
+                "type": {"type": "string", "description": "Document type (employment_contract, lease_agreement, complaint, official_letter, minutes, nda, ...)"},
+                "requirements": {"type": "string", "description": "Detailed requirements for content"},
+                "parties": {"type": "array", "items": {"type": "string"}, "description": "Involved parties"},
+                "key_terms": {"type": "object", "description": "Key terms (contract value, duration, ...)"},
+                "save": {"type": "boolean", "description": "Auto-save to system", "default": True}
             },
             "required": ["type", "requirements"]
         }
     },
     {
         "name": "batch_review",
-        "description": "Review nhiều hợp đồng/tài liệu cùng lúc. Trả về tóm tắt rủi ro cho từng file và tổng quan.",
+        "description": "Review multiple contracts/documents at once. Returns a risk summary for each file and an overview.",
         "input_schema": {
             "type": "object",
             "properties": {
-                "document_ids": {"type": "array", "items": {"type": "string"}, "description": "Danh sách ID tài liệu cần review"},
-                "focus": {"type": "string", "description": "Tập trung vào khía cạnh nào (penalty, compliance, risk, all)"}
+                "document_ids": {"type": "array", "items": {"type": "string"}, "description": "List of document IDs to review"},
+                "focus": {"type": "string", "description": "What aspect to focus on (penalty, compliance, risk, all)"}
             },
             "required": ["document_ids"]
         }
     },
     {
         "name": "document_history",
-        "description": "Xem lịch sử chỉnh sửa của tài liệu. Ai sửa gì, khi nào.",
+        "description": "View document edit history. Who edited what, and when.",
         "input_schema": {
             "type": "object",
             "properties": {
-                "document_id": {"type": "string", "description": "ID tài liệu"}
+                "document_id": {"type": "string", "description": "Document ID"}
             },
             "required": ["document_id"]
         }
     },
     {
         "name": "edit_and_diff_document",
-        "description": "Chỉnh sửa hợp đồng/tài liệu và hiển thị diff view (so sánh bản gốc vs bản đã sửa, giống VSCode). Dùng khi người dùng yêu cầu 'rà soát và sửa', 'chỉnh sửa hợp đồng', 'fix hợp đồng'. AI sẽ tự động: (1) Phân tích tài liệu, (2) Tìm các vấn đề/lỗi pháp lý, (3) Tạo bản chỉnh sửa, (4) Hiển thị diff view inline trong chat, (5) Cho phép tải xuống bản đã sửa.",
+        "description": "Edit contract/document and show diff view (comparing original vs edited version). Use when user asks to 'review and edit', 'modify contract', 'fix contract'. AI will automatically: (1) Analyze document, (2) Find legal issues, (3) Create edited version, (4) Display inline diff view, (5) Allow downloading the revised version.",
         "input_schema": {
             "type": "object",
             "properties": {
-                "document_id": {"type": "string", "description": "ID tài liệu hoặc hợp đồng cần chỉnh sửa"},
-                "edit_instructions": {"type": "string", "description": "Hướng dẫn chỉnh sửa cụ thể (ví dụ: 'Bổ sung điều khoản bảo mật theo BLLĐ 2019', 'Sửa lỗi chính tả', 'Cập nhật mức phạt')"},
-                "auto_fix": {"type": "boolean", "description": "Tự động sửa các lỗi pháp lý phổ biến (default: True)", "default": True}
+                "document_id": {"type": "string", "description": "ID of document or contract to edit"},
+                "edit_instructions": {"type": "string", "description": "Specific edit instructions (e.g., 'Add confidentiality clause per IR Code 2020', 'Fix typos', 'Update penalty')"},
+                "auto_fix": {"type": "boolean", "description": "Automatically fix common legal errors (default: True)", "default": True}
             },
             "required": ["document_id"]
         }
@@ -368,110 +368,92 @@ TOOLS = [
 # System Prompt
 # ============================================
 
-AGENT_SYSTEM_PROMPT = """Bạn là trợ lý pháp lý AI thông minh với quyền truy cập đầy đủ vào hệ thống quản lý tài liệu. 
-Bạn có thể đọc, tạo, chỉnh sửa, xóa, so sánh tài liệu và hợp đồng.
-Khi người dùng yêu cầu, hãy TỰ ĐỘNG thực hiện các bước cần thiết.
-Ví dụ: "Sửa điều khoản phạt trong HĐ" → bạn sẽ tự đọc HĐ → tìm điều khoản → sửa → lưu.
-Luôn báo cáo những gì bạn đã làm sau khi hoàn thành.
+AGENT_SYSTEM_PROMPT = """You are an intelligent AI Legal Assistant specializing in Indian Law.
+You have full access to the document management system. You can read, create, edit, delete, and compare documents and contracts.
+When the user requests an action, AUTOMATICALLY perform the necessary steps.
+Example: "Fix the penalty clause in the contract" -> you automatically read -> find -> edit -> save.
+Always report what you have done after completing a task.
 
-## Cách chat:
-- **Chat bình thường** — Nếu người dùng chào, hỏi thăm, nói chuyện phiếm → trả lời tự nhiên, thân thiện. KHÔNG dùng tool, KHÔNG format báo cáo.
-- **Chat pháp lý** — Khi người dùng hỏi về luật, hợp đồng, văn bản → lúc đó mới dùng tools và trả lời chuyên sâu.
-- **Thao tác tài liệu** — Khi được yêu cầu sửa/tạo/xóa tài liệu → TỰ ĐỘNG thực hiện chuỗi hành động (đọc → sửa → lưu)
-- **Đọc không khí** — Câu ngắn, casual → trả lời ngắn. Câu nghiêm túc, chi tiết → trả lời đầy đủ.
-- **Giọng điệu** — Thân thiện, dễ hiểu, như đang nói chuyện. Tránh quá formal hay dùng quá nhiều emoji/header.
+## Chat Modes:
+- **Casual Chat** — If the user says hi, asks how you are, etc., respond naturally and friendly. DO NOT use tools, DO NOT format as a report.
+- **Legal Chat** — When the user asks about laws, contracts, or documents, THEN use tools and answer deeply.
+- **Document Operations** — When asked to edit/create/delete, AUTOMATICALLY perform the action chain (read -> edit -> save).
+- **Tone** — Professional yet friendly and easy to understand. Avoid being overly formal or using too many emojis.
 
-## QUAN TRỌNG — Soạn thảo văn bản:
-- Khi user yêu cầu soạn/sửa văn bản → OUTPUT NỘI DUNG VĂN BẢN ĐẦY ĐỦ
-- KHÔNG liệt kê "tôi đã thay đổi ABC" — output bản hoàn chỉnh luôn
-- Nếu cần giải thích thay đổi → đặt ở CUỐI, sau văn bản hoàn chỉnh
-- Format: heading rõ ràng, đánh số điều khoản, chuyên nghiệp
-- Khi dùng tool write_document/edit_document → sau đó chỉ nói "Đã soạn xong, anh/chị xem trong tab Tài liệu", KHÔNG lặp lại toàn bộ nội dung
+## IMPORTANT — Drafting Documents:
+- When the user asks to draft/edit a document, OUTPUT THE FULL DOCUMENT CONTENT.
+- DO NOT just list "I changed X and Y" — output the complete revised version.
+- If you need to explain changes, do it at the END, after the full document.
+- Format: clear headings, numbered clauses, professional look.
+- When using write_document/edit_document tools, just say "The document has been drafted, please check the Documents tab", do not repeat the whole text.
 
-## NGHIÊM CẤM — Trích dẫn pháp lý (Anti-Hallucination):
-- CHỈ trích dẫn số hiệu luật/nghị định khi search_law trả về kết quả thực tế
-- TUYỆT ĐỐI KHÔNG bịa số hiệu — nếu không tìm thấy, nói "theo quy định pháp luật hiện hành"
-- Ưu tiên dùng search_law TRƯỚC khi trích dẫn bất kỳ điều luật nào
-- KHÔNG được tự suy luận hoặc nhớ số hiệu luật — phải từ tool search_law
-- VÍ DỤ SAI: "Theo Nghị định 293/2025/NĐ-CP..." (nếu search_law không trả về)
-- VÍ DỤ ĐÚNG: "Theo quy định pháp luật hiện hành về lao động..." (rồi gọi search_law để tìm)
+## STRICT PROHIBITION — Legal Citations (Anti-Hallucination):
+- ONLY cite act/section numbers when search_law returns actual results.
+- ABSOLUTELY DO NOT invent section numbers. If not found, say "according to current legal provisions".
+- Prioritize using search_law BEFORE citing any specific law.
+- DO NOT guess or rely on memory for section numbers — they must come from search_law.
+- WRONG: "According to Section 293 of the Indian Contract Act..." (if search_law didn't return it)
+- CORRECT: "According to current Indian contract law..." (then call search_law to find it)
 
-## Giọng điệu chuyên nghiệp:
-- Không tự khen "chuyên nghiệp", "an toàn pháp lý", "thuyết phục" — để user đánh giá
-- Không claim "100% hợp pháp/chính xác" — luôn thêm disclaimer: "Đây là bản dự thảo, nên tham khảo luật sư trước khi áp dụng"
-- Khiêm tốn, thực tế: "Đây là bản dự thảo, anh/chị xem và điều chỉnh thêm"
-- Tránh emoji trong nội dung văn bản chính thức (chỉ dùng trong chat bình thường)
+## Professional Tone:
+- Do not praise yourself as "professional" or "legally safe" — let the user judge.
+- Do not claim "100% legal/accurate" — always add a disclaimer: "This is a draft, please consult an advocate before use."
+- Humble, practical: "Here is the draft, please review and adjust as needed."
+- Avoid emojis in official document content (only use in casual chat).
 
-## Khi nào dùng tools:
-- Hỏi về luật cụ thể → search_law
-- Hỏi về hợp đồng → list_contracts / read_contract  
-- Cần soạn văn bản → draft_document hoặc generate_document
-- Cần tìm tài liệu → search_company_docs hoặc list_documents
-- Cần rà soát → analyze_contract_risk hoặc review_contract_ai
-- Cần info công ty → get_company_profile
-- So sánh hợp đồng → compare_contracts hoặc compare_documents
-- Tóm tắt hợp đồng → summarize_contract
-- Kiểm tra tuân thủ pháp lý → check_legal_compliance
-- Soạn điều khoản cụ thể → generate_clause
-- Crawl URL văn bản pháp luật → crawl_legal_document (cần CrawlKit API key)
-- **Quản lý tài liệu:**
-  - Xem danh sách → list_documents
-  - Đọc tài liệu → read_document
-  - Tạo tài liệu mới → write_document
-  - Sửa tài liệu → edit_document
-  - **Rà soát và sửa hợp đồng → edit_and_diff_document** (hiển thị diff view như VSCode)
-  - So sánh 2 tài liệu → compare_documents
-  - Tạo thư mục → create_folder
-  - Di chuyển file → move_document
-  - Xóa file → delete_document (cẩn thận!)
-  - Soạn văn bản → generate_document
-  - Review nhiều file → batch_review
-  - Xem lịch sử sửa → document_history
-- **KHÔNG dùng tool** cho chào hỏi, nói chuyện, câu hỏi đơn giản
+## When to use tools:
+- Ask about specific laws -> search_law
+- Ask about contracts -> list_contracts / read_contract
+- Need to draft a document -> draft_document or generate_document
+- Need to find a document -> search_company_docs or list_documents
+- Need to review -> analyze_contract_risk or review_contract_ai
+- Need company info -> get_company_profile
+- Compare contracts -> compare_contracts or compare_documents
+- Summarize contract -> summarize_contract
+- Check legal compliance -> check_legal_compliance
+- Draft specific clause -> generate_clause
+- Crawl legal URL -> crawl_legal_document
+- **Document Management:**
+  - View list -> list_documents
+  - Read document -> read_document
+  - Create new document -> write_document
+  - Edit document -> edit_document
+  - **Review and fix contract -> edit_and_diff_document** (shows diff view like VSCode)
+  - Compare 2 documents -> compare_documents
+  - Create folder -> create_folder
+  - Move file -> move_document
+  - Delete file -> delete_document (be careful!)
+  - Batch review -> batch_review
+  - View edit history -> document_history
+- **DO NOT use tools** for greetings, casual chat, simple questions.
 
 ## Multi-step workflows:
-Khi người dùng yêu cầu task phức tạp, bạn có thể gọi nhiều tools liên tiếp:
-- "Sửa điều khoản phạt trong HĐ ABC" → read_document → edit_document → document_history
-- "Soạn NDA giữa A và B" → generate_document → write_document
-- "So sánh 3 hợp đồng và chọn cái tốt nhất" → read_contract (x3) → compare_documents → khuyến nghị
+When the user asks for a complex task, you can call multiple tools sequentially:
+- "Fix penalty clause in Contract ABC" -> read_document -> edit_document -> document_history
+- "Draft NDA between A and B" -> generate_document -> write_document
+- "Compare 3 contracts and pick the best" -> read_contract (x3) -> compare_documents -> recommendation
 
-## Khi edit/revise documents:
-- Dùng tool edit_and_diff_document để hiện diff view (so sánh bản gốc vs bản đã sửa)
-- HOẶC output toàn bộ văn bản đã sửa (không chỉ mô tả thay đổi)
-- Nếu muốn highlight thay đổi: đánh dấu [MỚI] hoặc [SỬA] inline
-- User muốn thấy KẾT QUẢ, không phải QUÁ TRÌNH
+## When editing/revising documents:
+- Use edit_and_diff_document to show a diff view (original vs edited)
+- OR output the entire edited text (not just the changes).
+- If highlighting changes: mark as [NEW] or [EDITED] inline.
+- User wants to see the RESULT, not the PROCESS.
 
-## Khi trả lời pháp lý:
-- Trích dẫn cụ thể: "Theo Điều X, Khoản Y của Luật Z" — CHỈ khi có từ search_law
-- KHÔNG bịa số hiệu — nếu không có kết quả search_law, dùng cụm chung "theo quy định pháp luật hiện hành"
-- Đưa lời khuyên thực tế, không chỉ lý thuyết
-- Chỉ dùng format có cấu trúc (headers, bullets) khi câu hỏi phức tạp
-- Câu hỏi đơn giản → trả lời 2-3 câu là đủ
-- LUÔN thêm disclaimer: "Nên tham khảo luật sư trước khi áp dụng" khi tư vấn vụ việc nghiêm trọng
+## When giving legal answers:
+- Cite specifically: "Under Section X of Act Y" — ONLY if found via search_law.
+- DO NOT invent numbers.
+- Give practical advice, not just theory.
+- Always add disclaimer: "Please consult an advocate before applying this" for serious matters.
 
-## Upload file:
-Khi người dùng upload file trong chat (format [Người dùng đã upload file: ...]):
-1. **PHÂN TÍCH TRƯỚC** — đọc nội dung file ngay trong message, KHÔNG cần tìm trong database
-2. **TRẢ LỜI BẰNG TEXT** — giải thích phân tích, chỉ ra vấn đề, đề xuất sửa
-3. **DÙNG TOOL SAU** — chỉ gọi write_document/edit_document nếu user YÊU CẦU tạo bản mới
-4. **KHÔNG gọi write_document ngay** — user muốn PHÂN TÍCH, không phải lưu file
-5. File đã được tự động lưu vào hệ thống, KHÔNG cần gọi write_document để lưu lại
+## ACTION, DO NOT ASK BACK:
+- When user says "help me fix", "edit", "fix" -> **DO IT IMMEDIATELY**, do not ask "what part do you want to fix?"
+- Use edit_and_diff_document or edit_document immediately.
+- If user uploaded a file -> edit that file.
+- If user was just talking about a document -> edit that document.
+- Only ask back if you REALLY don't know what to edit.
+- **Prioritize action > asking** — like a good developer: receive task -> do it -> report result.
 
-## HÀNH ĐỘNG, KHÔNG HỎI LẠI:
-- Khi user nói "sửa giúp tôi", "chỉnh sửa", "fix" → **LÀM LUÔN**, không hỏi "bạn muốn sửa phần nào?"
-- Dùng tool edit_and_diff_document hoặc edit_document ngay
-- Nếu user đã upload file → sửa file đó
-- Nếu user đang nói về tài liệu gần đây → sửa tài liệu đó
-- Chỉ hỏi lại khi THỰC SỰ không biết sửa cái gì (ví dụ: user chỉ nói "sửa" mà không có context gì)
-- **Ưu tiên hành động > hỏi lại** — giống dev giỏi: nhận task → làm → báo kết quả
-
-## Quy tắc quan trọng:
-- **LUÔN trả lời bằng text** — mỗi response PHẢI có text giải thích cho user
-- **KHÔNG chỉ gọi tool rồi im lặng** — sau khi gọi tool, PHẢI có text tóm tắt kết quả
-- Khi phân tích hợp đồng: tìm điều khoản bất lợi, thiếu sót, rủi ro pháp lý
-- Trích dẫn cụ thể điều luật liên quan (dùng search_law nếu cần)
-
-## Nhớ: Bạn là trợ lý THÔNG MINH, không phải máy tìm kiếm. Chat tự nhiên trước, dùng tool khi cần. LUÔN TRẢ LỜI BẰNG TEXT. HÀNH ĐỘNG, KHÔNG HỎI LẠI.
+## Remember: You are a SMART assistant, not a search engine. Chat naturally first, use tools when needed. ALWAYS ANSWER WITH TEXT. ACT, DO NOT ASK BACK.
 """
 
 # ============================================
@@ -499,33 +481,13 @@ def _get_claude_headers():
     return headers
 
 
-async def _call_claude_with_tools(messages: list, tools: list, system: str = AGENT_SYSTEM_PROMPT, max_tokens: int = 8192, model: str = "claude-sonnet-4-20250514", company_id: str = None) -> dict:
-    """Call LLM API (Claude or other provider) with tool definitions, return raw response dict"""
-    # If provider manager is available and company_id is set, use it
-    if _llm_provider_manager and company_id:
-        try:
-            provider = _llm_provider_manager.get_company_provider(company_id)
-            result = await provider.chat(messages=messages, system=system, max_tokens=max_tokens, tools=tools)
-            return result
-        except Exception as e:
-            # Fallback to default Anthropic if provider fails
-            print(f"Provider error, falling back to default: {e}")
+async def _call_claude_with_tools(messages: list, tools: list, system: str = AGENT_SYSTEM_PROMPT, max_tokens: int = 8192, model: str = "gemma3:4b", company_id: str = None) -> dict:
+    """Call LLM API (Ollama Provider) with tool definitions, return raw response dict"""
+    from src.services.llm_provider import OllamaProvider
     
-    # Fallback: Use default Anthropic with headers
-    headers = _get_claude_headers()
-
-    payload = {
-        "model": model,
-        "max_tokens": max_tokens,
-        "system": system,
-        "messages": messages,
-        "tools": tools
-    }
-
-    async with httpx.AsyncClient(timeout=120) as client:
-        response = await client.post(CLAUDE_API_URL, headers=headers, json=payload)
-        response.raise_for_status()
-        return response.json()
+    provider = OllamaProvider(model=model)
+    result = await provider.chat(messages=messages, system=system, max_tokens=max_tokens, tools=tools)
+    return result
 
 
 # Fast path detection — skip agent loop for simple questions
@@ -869,31 +831,27 @@ async def execute_tool(tool_name: str, tool_input: dict, company_id: str) -> dic
         clause_type = tool_input.get("clause_type", "")
         context = tool_input.get("context", "")
         clause_templates = {
-            "bao_mat": "ĐIỀU KHOẢN BẢO MẬT THÔNG TIN\n1. Các bên cam kết bảo mật mọi thông tin liên quan đến Hợp đồng này.\n2. Thông tin bảo mật bao gồm nhưng không giới hạn: thông tin kỹ thuật, tài chính, kinh doanh, dữ liệu khách hàng.\n3. Nghĩa vụ bảo mật có hiệu lực trong suốt thời hạn Hợp đồng và [X] năm sau khi chấm dứt.\n4. Bên vi phạm phải bồi thường toàn bộ thiệt hại trực tiếp và gián tiếp.",
-            "phat_vi_pham": "ĐIỀU KHOẢN PHẠT VI PHẠM\n1. Bên vi phạm nghĩa vụ hợp đồng phải chịu phạt vi phạm bằng [X]% giá trị hợp đồng.\n2. Mức phạt tối đa không vượt quá 8% giá trị phần nghĩa vụ bị vi phạm (theo Luật Thương mại 2005).\n3. Ngoài tiền phạt, bên vi phạm còn phải bồi thường thiệt hại thực tế phát sinh.\n4. Bên bị vi phạm có quyền yêu cầu phạt vi phạm mà không cần chứng minh thiệt hại.",
-            "cham_dut": "ĐIỀU KHOẢN CHẤM DỨT HỢP ĐỒNG\n1. Hợp đồng chấm dứt khi: (a) hết thời hạn, (b) hoàn thành nghĩa vụ, (c) các bên thỏa thuận.\n2. Đơn phương chấm dứt: bên muốn chấm dứt phải thông báo bằng văn bản trước [X] ngày.\n3. Bên đơn phương chấm dứt trái pháp luật phải bồi thường thiệt hại.\n4. Các điều khoản về bảo mật, phạt vi phạm vẫn có hiệu lực sau khi chấm dứt.",
-            "boi_thuong": "ĐIỀU KHOẢN BỒI THƯỜNG THIỆT HẠI\n1. Bên gây thiệt hại phải bồi thường đầy đủ, kịp thời.\n2. Thiệt hại được bồi thường bao gồm: thiệt hại trực tiếp, lợi ích bị mất, chi phí hợp lý.\n3. Mức bồi thường tối đa không vượt quá [X]% giá trị hợp đồng.\n4. Bên yêu cầu bồi thường phải chứng minh thiệt hại bằng chứng từ hợp lệ.",
-            "thanh_toan": "ĐIỀU KHOẢN THANH TOÁN\n1. Giá trị hợp đồng: [số tiền] VNĐ (bằng chữ: ...).\n2. Phương thức: chuyển khoản ngân hàng.\n3. Tiến độ: (a) Tạm ứng [X]% khi ký, (b) [X]% khi nghiệm thu, (c) [X]% khi hoàn thành.\n4. Thời hạn thanh toán: trong vòng [X] ngày làm việc kể từ ngày nhận hóa đơn hợp lệ.\n5. Chậm thanh toán chịu lãi suất [X]%/tháng trên số tiền chậm.",
-            "tranh_chap": "ĐIỀU KHOẢN GIẢI QUYẾT TRANH CHẤP\n1. Mọi tranh chấp phát sinh được giải quyết trước hết bằng thương lượng, hòa giải.\n2. Nếu không thương lượng được trong [X] ngày, tranh chấp sẽ được giải quyết tại [Tòa án/Trọng tài].\n3. Luật áp dụng: pháp luật Việt Nam.\n4. Phán quyết của [Tòa án/Trọng tài] là quyết định cuối cùng, ràng buộc các bên.",
-            "bat_kha_khang": "ĐIỀU KHOẢN BẤT KHẢ KHÁNG\n1. Bất khả kháng là sự kiện xảy ra khách quan, không thể lường trước và không thể khắc phục (thiên tai, dịch bệnh, chiến tranh, thay đổi pháp luật...).\n2. Bên gặp bất khả kháng phải thông báo bằng văn bản trong vòng [X] ngày.\n3. Thời hạn thực hiện hợp đồng được gia hạn tương ứng thời gian bất khả kháng.\n4. Nếu bất khả kháng kéo dài quá [X] ngày, các bên có quyền chấm dứt hợp đồng."
+            "bao_mat": "CONFIDENTIALITY CLAUSE\n1. The parties commit to keeping all information related to this Contract confidential.\n2. Confidential information includes but is not limited to: technical, financial, business information, customer data.\n3. Confidentiality obligations are valid during the contract term and [X] years after termination.\n4. The breaching party must compensate for all direct and indirect damages.",
+            "phat_vi_pham": "PENALTY CLAUSE\n1. The party breaching contract obligations must pay a penalty equal to [X]% of the contract value.\n2. The penalty must be reasonable and proportionate to the loss (as per Indian Contract Act 1872).\n3. Besides the penalty, the breaching party must compensate for actual damages incurred.\n4. The aggrieved party has the right to claim the penalty.",
+            "cham_dut": "TERMINATION CLAUSE\n1. The contract terminates when: (a) term expires, (b) obligations are fulfilled, (c) parties agree.\n2. Unilateral termination: the terminating party must give [X] days prior written notice.\n3. Unlawful unilateral termination requires compensation for damages.\n4. Confidentiality and penalty clauses remain valid after termination.",
+            "boi_thuong": "COMPENSATION CLAUSE\n1. The party causing damage must fully and timely compensate.\n2. Compensated damages include: direct damages, lost benefits, reasonable expenses.\n3. The maximum compensation shall not exceed [X]% of the contract value.\n4. The claiming party must prove damages with valid documents.",
+            "thanh_toan": "PAYMENT CLAUSE\n1. Contract value: [amount] INR (in words: ...).\n2. Method: bank transfer.\n3. Schedule: (a) [X]% advance upon signing, (b) [X]% upon acceptance, (c) [X]% upon completion.\n4. Payment term: within [X] working days from receipt of valid invoice.\n5. Late payment incurs interest of [X]%/month on the delayed amount.",
+            "tranh_chap": "DISPUTE RESOLUTION CLAUSE\n1. Any arising disputes shall first be resolved through negotiation and mediation.\n2. If unresolved within [X] days, the dispute shall be submitted to [Court/Arbitration].\n3. Governing law: Indian Law.\n4. The decision of the [Court/Arbitration] is final and binding on the parties.",
+            "bat_kha_khang": "FORCE MAJEURE CLAUSE\n1. Force majeure is an objective, unforeseeable, and insurmountable event (natural disaster, epidemic, war, change in law...).\n2. The affected party must notify in writing within [X] days.\n3. The contract performance period is extended by the duration of the force majeure.\n4. If force majeure lasts over [X] days, parties have the right to terminate the contract."
         }
-        template = clause_templates.get(clause_type, f"Không tìm thấy mẫu cho loại '{clause_type}'. Các loại có sẵn: {', '.join(clause_templates.keys())}")
+        template = clause_templates.get(clause_type, f"Template not found for type '{clause_type}'. Available types: {', '.join(clause_templates.keys())}")
         return {
             "clause_type": clause_type,
             "template": template,
             "context": context,
-            "note": "Đây là mẫu tham khảo. AI sẽ tùy chỉnh theo bối cảnh cụ thể."
+            "note": "This is a reference template. AI will customize it according to the specific context."
         }
     elif tool_name == "crawl_legal_document":
         url = tool_input.get("url", "")
-        crawlkit_key = os.getenv("CRAWLKIT_API_KEY")
-        if not crawlkit_key:
-            return {
-                "error": "⚠️ CrawlKit chưa được cấu hình. Để crawl văn bản pháp luật, vui lòng:\n\n1. Đăng ký miễn phí tại https://crawlkit.org\n2. Lấy API key\n3. Thêm CRAWLKIT_API_KEY vào file .env\n\n🆓 Free: 100 requests/ngày"
-            }
+        
         try:
             from ..services.crawler import LegalCrawler
-            crawler = LegalCrawler(crawlkit_api_key=crawlkit_key)
+            crawler = LegalCrawler()
             crawl_result = crawler.crawl_and_index(url, company_id)
             if crawl_result["success"]:
                 doc = crawl_result["document"]
@@ -1826,7 +1784,7 @@ async def _tool_draft_document(tool_input: dict, company_id: str) -> dict:
         "requirements": requirements,
         "relevant_laws": law_context,
         "template": template_data,
-        "instruction": f"Soạn thảo văn bản loại '{doc_type}' theo yêu cầu: {requirements}. Tuân thủ Nghị định 30/2020/NĐ-CP về công tác văn thư. Dùng [THÔNG TIN CẦN ĐIỀN] cho phần thiếu."
+        "instruction": f"Draft a '{doc_type}' document as requested: {requirements}. Comply with Indian document drafting regulations. Use [NEEDS INFO] for missing information."
     }
 
 
@@ -1910,16 +1868,10 @@ async def _tool_compare_contracts(tool_input: dict, company_id: str) -> dict:
 async def _tool_crawl_legal_document(tool_input: dict, company_id: str) -> dict:
     """Crawl legal document from URL using CrawlKit"""
     url = tool_input.get("url", "")
-    crawlkit_key = os.getenv("CRAWLKIT_API_KEY")
-    
-    if not crawlkit_key:
-        return {
-            "error": "⚠️ CrawlKit chưa được cấu hình. Để crawl văn bản pháp luật, vui lòng:\n\n1. Đăng ký miễn phí tại https://crawlkit.org\n2. Lấy API key\n3. Thêm CRAWLKIT_API_KEY vào file .env\n\n🆓 Free: 100 requests/ngày"
-        }
     
     try:
         from ..services.crawler import LegalCrawler
-        crawler = LegalCrawler(crawlkit_api_key=crawlkit_key)
+        crawler = LegalCrawler()
         crawl_result = crawler.crawl_and_index(url, company_id)
         
         if crawl_result["success"]:
@@ -2001,7 +1953,7 @@ VĂN BẢN GỐC:
 {original_text[:10000]}
 
 YÊU CẦU CHỈNH SỬA:
-{edit_instructions if edit_instructions else "Tự động phát hiện và sửa các lỗi pháp lý, bổ sung điều khoản thiếu theo luật Việt Nam"}
+{edit_instructions if edit_instructions else "Tự động phát hiện và sửa các lỗi pháp lý, bổ sung điều khoản thiếu theo Indian Law"}
 
 {"CHỈNH SỬA TỰ ĐỘNG: Bổ sung điều khoản bảo mật, phạt vi phạm, chấm dứt hợp đồng nếu thiếu." if auto_fix else ""}
 

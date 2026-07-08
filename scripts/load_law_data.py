@@ -22,28 +22,25 @@ DB_CONFIG = {
 
 # Map dataset types to our enum
 TYPE_MAP = {
-    "code": "bo_luat",
-    "law": "luat",
-    "decree": "nghi_dinh",
-    "circular": "thong_tu",
-    "decision": "quyet_dinh",
-    "resolution": "nghi_quyet",
-    "constitution": "hien_phap",
+    "constitution": "constitution",
+    "act": "act", 
+    "rules": "rules",
+    "regulation": "regulation",
+    "notification": "notification",
+    "order": "order",
+    "ordinance": "ordinance",
 }
 
 # Detect legal domain from title/content
 DOMAIN_KEYWORDS = {
-    "lao_dong": ["lao động", "người lao động", "người sử dụng lao động", "tiền lương", "hợp đồng lao động"],
-    "doanh_nghiep": ["doanh nghiệp", "công ty", "thành lập doanh nghiệp", "cổ phần", "trách nhiệm hữu hạn"],
-    "dan_su": ["dân sự", "quyền sở hữu", "thừa kế", "hợp đồng dân sự"],
-    "thuong_mai": ["thương mại", "mua bán hàng hóa", "xuất nhập khẩu"],
-    "thue": ["thuế", "thu nhập", "giá trị gia tăng", "thuế suất"],
-    "dat_dai": ["đất đai", "quyền sử dụng đất", "thu hồi đất", "bất động sản"],
-    "dau_tu": ["đầu tư", "vốn đầu tư", "nhà đầu tư", "dự án đầu tư"],
-    "bhxh": ["bảo hiểm xã hội", "bảo hiểm y tế", "bảo hiểm thất nghiệp", "hưu trí"],
-    "atvs_ld": ["an toàn", "vệ sinh lao động", "tai nạn lao động", "bệnh nghề nghiệp"],
-    "so_huu_tri_tue": ["sở hữu trí tuệ", "bản quyền", "sáng chế", "nhãn hiệu"],
-    "hinh_su": ["hình sự", "tội phạm", "hình phạt", "truy cứu"],
+    "labour": ["labour", "employee", "wages", "industrial dispute", "factory"],
+    "corporate": ["company", "director", "shareholder", "incorporation"],
+    "civil": ["contract", "property", "tort", "succession"],
+    "criminal": ["offence", "punishment", "bail", "FIR"],
+    "tax": ["income tax", "GST", "customs", "excise"],
+    "property": ["land", "registration", "transfer", "real estate"],
+    "consumer": ["consumer", "product liability", "unfair trade"],
+    "it_cyber": ["information technology", "cyber", "data protection", "electronic"],
 }
 
 def detect_domains(title: str, content: str) -> List[str]:
@@ -96,8 +93,8 @@ def chunk_document(content: str, chunk_size: int = 1500, overlap: int = 200) -> 
     """Split document into chunks, respecting article boundaries"""
     chunks = []
     
-    # Try to split by articles (Điều)
-    article_pattern = re.compile(r'(?:^|\n)((?:Điều|ĐIỀU)\s+\d+[a-z]?\.?\s*[^\n]*)', re.MULTILINE)
+    # Try to split by articles (Article/Section)
+    article_pattern = re.compile(r'(?:^|\n)((?:Article|Section)\s+\d+[A-Z]?\.?\s*[^\n]*)', re.MULTILINE)
     articles = list(article_pattern.finditer(content))
     
     if len(articles) > 3:

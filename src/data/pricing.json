@@ -271,8 +271,8 @@
     {
       "question": "Dữ liệu của tôi có được bảo mật không?",
       "question_en": "Is my data secure?",
-      "answer": "Tất cả dữ liệu được mã hóa AES-256, lưu trữ trên server tại Việt Nam. Tuân thủ Nghị định 13/2023/NĐ-CP về bảo vệ dữ liệu cá nhân.",
-      "answer_en": "All data is encrypted with AES-256, stored on servers in Vietnam. Compliant with Decree 13/2023/ND-CP on personal data protection."
+      "answer": "Tất cả dữ liệu được mã hóa AES-256, lưu trữ trên server tại Ấn Độ. Tuân thủ Đạo luật Bảo vệ Dữ liệu Cá nhân Kỹ thuật số 2023 (DPDP).",
+      "answer_en": "All data is encrypted with AES-256, stored on servers in India. Compliant with Digital Personal Data Protection Act, 2023 (DPDP)."
     },
     {
       "question": "Legal AI Agent có thay thế luật sư không?",

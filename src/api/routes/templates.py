@@ -31,7 +31,7 @@ DEFAULT_TEMPLATES = [
         "template_id": "hop_dong_lao_dong",
         "name": "Hợp đồng lao động",
         "category": "hop_dong",
-        "description": "Mẫu hợp đồng lao động chuẩn theo BLLĐ 2019",
+        "description": "Standard employment contract per IR Code 2020",
         "variables": {
             "company_name": {"label": "Tên công ty", "type": "text", "required": True},
             "employee_name": {"label": "Tên nhân viên", "type": "text", "required": True},
@@ -83,7 +83,7 @@ DEFAULT_TEMPLATES = [
         "template_id": "noi_quy",
         "name": "Nội quy lao động",
         "category": "noi_bo",
-        "description": "Nội quy lao động công ty theo BLLĐ 2019",
+        "description": "Internal labor regulations per IR Code 2020",
         "variables": {
             "company_name": {"label": "Tên công ty", "type": "text", "required": True},
             "working_hours": {"label": "Giờ làm việc", "type": "text", "required": True},
@@ -144,7 +144,7 @@ def seed_default_templates():
             result = cur.fetchone()
             
             if result["count"] > 0:
-                print(f"✓ Templates already seeded ({result['count']} templates)")
+                print(f"[OK] Templates already seeded ({result['count']} templates)")
                 return
             
             # Insert default templates
@@ -164,10 +164,10 @@ def seed_default_templates():
                 ))
             
             conn.commit()
-            print(f"✓ Seeded {len(DEFAULT_TEMPLATES)} default templates")
+            print(f"[OK] Seeded {len(DEFAULT_TEMPLATES)} default templates")
     
     except Exception as e:
-        print(f"✗ Error seeding templates: {e}")
+        print(f"[ERROR] Error seeding templates: {e}")
 
 # ============================================
 # Endpoints
@@ -284,21 +284,21 @@ async def generate_document(
     variables_str = "\n".join(variables_list)
     
     # Build Claude prompt
-    system_prompt = """Bạn là chuyên gia soạn thảo văn bản pháp lý Việt Nam.
+    system_prompt = """You are an expert in drafting Indian legal documents.
 
-YÊU CẦU:
-1. Tuân thủ đúng quy định pháp luật Việt Nam hiện hành
-2. Sử dụng ngôn ngữ pháp lý chuẩn mực
-3. Đầy đủ các điều khoản bắt buộc
-4. Format: văn bản hoàn chỉnh, sẵn sàng in
-5. Đánh số điều khoản rõ ràng
-6. Trả về định dạng markdown với cấu trúc rõ ràng"""
+REQUIREMENTS:
+1. Strictly comply with current Indian laws and regulations
+2. Use standard legal language
+3. Include all mandatory clauses
+4. Format: complete document, ready to print
+5. Clear clause numbering (e.g. Section 1, Sub-section (2))
+6. Return in markdown format with clear structure"""
 
-    user_message = f"""Soạn thảo {template["name"]} với các thông tin:
+    user_message = f"""Draft {template["name"]} with the following information:
 
 {variables_str}
 
-Hãy tạo văn bản hoàn chỉnh, đúng format pháp lý Việt Nam."""
+Please create a complete document, following standard Indian legal formatting."""
 
     # Call Claude
     from ..main import call_claude

@@ -1,9 +1,7 @@
-"""Legal Q&A Agent — answers legal questions using RAG over Vietnamese law."""
+"""Legal Q&A Agent — answers legal questions using RAG over Indian law."""
 
 import os
 from typing import Optional
-
-import anthropic
 
 from src.rag.search import hybrid_search, SearchResult
 from src.rag.embedder import get_embedder
@@ -13,45 +11,45 @@ from src.models.schemas import (
     Citation,
     LegalDomain,
 )
+from src.services.llm_provider import OllamaProvider
 
-SYSTEM_PROMPT = """Bạn là Trợ lý Pháp lý AI chuyên nghiệp về luật Việt Nam.
+SYSTEM_PROMPT = """You are a professional AI Legal Assistant specializing in Indian Law.
 
-NĂNG LỰC:
-1. TRẢ LỜI câu hỏi pháp lý — giải thích luật, tra cứu điều khoản
-2. SOẠN THẢO văn bản — hợp đồng, đơn từ, biên bản, quyết định, nội quy
-3. TƯ VẤN — phân tích rủi ro pháp lý, đề xuất giải pháp
-4. RÀ SOÁT — kiểm tra tính hợp pháp của văn bản
+CAPABILITIES:
+1. ANSWER legal questions — explain laws, lookup sections
+2. DRAFT documents — contracts, applications, minutes, decisions, rules
+3. ADVISE — analyze legal risks, propose solutions
+4. REVIEW — check the legality of documents
 
-Khi trả lời câu hỏi:
-- Trích dẫn điều luật cụ thể (số hiệu, điều, khoản, điểm)
-- Ngôn ngữ rõ ràng, dễ hiểu cho người không chuyên
-- Ưu tiên văn bản pháp luật còn hiệu lực
+When answering questions:
+- Cite specific legal provisions (act name, section, subsection, clause)
+- Use clear, easy-to-understand language for non-experts
+- Prioritize currently valid legal texts
 
-Khi soạn thảo văn bản:
-- Soạn HOÀN CHỈNH, chuyên nghiệp, đúng chuẩn pháp lý VN
-- Đánh dấu chỗ cần điền: [THÔNG TIN CẦN ĐIỀN]
-- Bao gồm đầy đủ điều khoản bắt buộc theo luật
-- Format rõ ràng: tiêu đề, điều khoản đánh số, phần chữ ký
+When drafting documents:
+- Draft COMPLETELY, professionally, following Indian legal standards
+- Mark places to fill: [INFORMATION TO FILL]
+- Include all mandatory clauses according to law
+- Clear formatting: clear headings, numbered clauses, signature section
 
-Quy tắc:
-- Sử dụng nguồn luật được cung cấp làm tham chiếu chính
-- Kết hợp kiến thức pháp luật VN để trả lời toàn diện
-- KHÔNG bịa số hiệu văn bản hoặc điều luật cụ thể
-- Nếu nguồn không đủ, vẫn hỗ trợ nhưng ghi chú rõ
-- Luôn kèm disclaimer: tư vấn tham khảo, cần luật sư cho trường hợp cụ thể
+Rules:
+- Use the provided legal sources as the main reference
+- Combine with general knowledge of Indian law to answer comprehensively
+- DO NOT invent document numbers or specific sections
+- If the source is insufficient, still support but note it clearly
+- Always include a disclaimer: reference advice only, need an advocate for specific cases
 
-Trả lời bằng tiếng Việt."""
+Answer in English."""
 
-DISCLAIMER = "Nội dung tư vấn mang tính tham khảo. Vui lòng tham khảo ý kiến luật sư cho trường hợp cụ thể."
+DISCLAIMER = "This advice is for reference purposes only. Please consult an advocate for specific legal issues."
 
 
 class LegalQAAgent:
     """Agent that answers legal questions using RAG."""
     
     def __init__(self):
-        self.client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
+        self.provider = OllamaProvider()
         self.embedder = get_embedder()
-        self.model = "claude-sonnet-4-20250514"
     
     async def answer(self, request: LegalQuestionRequest) -> LegalAnswerResponse:
         """Process a legal question and return an answer with citations."""
@@ -71,7 +69,7 @@ class LegalQAAgent:
         # Step 3: Build context from search results
         context = self._build_context(search_results)
         
-        # Step 4: Generate answer with Claude
+        # Step 4: Generate answer with Ollama
         answer_text, citations = await self._generate_answer(
             question=request.question,
             context=context,
@@ -114,32 +112,32 @@ class LegalQAAgent:
         context: str,
         search_results: list[SearchResult],
     ) -> tuple[str, list[Citation]]:
-        """Generate answer using Claude with retrieved context."""
+        """Generate answer using Ollama with retrieved context."""
         
-        user_prompt = f"""Dựa trên các nguồn luật sau đây, hãy trả lời câu hỏi.
+        user_prompt = f"""Based on the following legal sources, answer the question.
 
-## Nguồn luật:
+## Legal Sources:
 
 {context}
 
-## Câu hỏi:
+## Question:
 
 {question}
 
-## Yêu cầu:
-- Trả lời rõ ràng, có cấu trúc
-- Trích dẫn cụ thể điều, khoản từ nguồn
-- Ghi chú nếu luật đã hết hiệu lực hoặc sửa đổi
-- Đề xuất các vấn đề liên quan nếu cần thiết"""
+## Requirements:
+- Answer clearly and structurally
+- Cite specific sections/clauses from the source
+- Note if the law is expired or amended
+- Suggest related issues if necessary"""
 
-        response = self.client.messages.create(
-            model=self.model,
-            max_tokens=2000,
-            system=SYSTEM_PROMPT,
+        # Call Ollama Provider
+        response = await self.provider.chat(
             messages=[{"role": "user", "content": user_prompt}],
+            system=SYSTEM_PROMPT,
+            max_tokens=2000
         )
         
-        answer_text = response.content[0].text
+        answer_text = response["content"][0]["text"]
         
         # Extract citations from search results used
         citations = []
@@ -157,7 +155,6 @@ class LegalQAAgent:
     
     def _extract_related_topics(self, results: list[SearchResult]) -> list[str]:
         """Extract related topic suggestions from search results."""
-        # TODO: Use LLM to suggest related topics
         topics = set()
         for r in results:
             if r.article:

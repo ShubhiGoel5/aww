@@ -1,6 +1,6 @@
 """
-Legal Document Crawler — Powered by CrawlKit
-Crawl Vietnamese legal websites and index documents automatically.
+Legal Document Crawler — Powered by BeautifulSoup and requests
+Crawl Indian legal websites and index documents automatically.
 """
 import os
 import re
@@ -8,88 +8,110 @@ import hashlib
 import logging
 from datetime import datetime
 from typing import Optional, List, Dict
+from urllib.parse import urlparse, urljoin
+import ipaddress
+import requests
+from bs4 import BeautifulSoup
+import concurrent.futures
 
 logger = logging.getLogger(__name__)
 
 # Supported legal sources
 LEGAL_SOURCES = {
-    "thuvienphapluat": {
-        "name": "Thư Viện Pháp Luật",
-        "base_url": "https://thuvienphapluat.vn",
+    "indiankanoon": {
+        "name": "Indian Kanoon",
+        "base_url": "https://indiankanoon.org",
         "discover_urls": [
-            "https://thuvienphapluat.vn/page/tim-van-ban.aspx",
+            "https://indiankanoon.org/browse/",
         ],
-        "description": "Largest Vietnamese legal document database"
+        "description": "Largest Indian legal document database"
     },
-    "vbpl": {
-        "name": "Văn Bản Pháp Luật (Chính Phủ)",
-        "base_url": "https://vbpl.vn",
+    "indiacode": {
+        "name": "India Code",
+        "base_url": "https://www.indiacode.nic.in",
         "discover_urls": [
-            "https://vbpl.vn/pages/portal.aspx",
+            "https://www.indiacode.nic.in/handle/123456789/1362/browse?type=actno",
         ],
         "description": "Official government legal portal"
     },
-    "congbao": {
-        "name": "Công Báo",
-        "base_url": "https://congbao.chinhphu.vn",
+    "legislative": {
+        "name": "Legislative Department",
+        "base_url": "https://legislative.gov.in",
         "discover_urls": [
-            "https://congbao.chinhphu.vn",
+            "https://legislative.gov.in/laws/acts-of-parliament",
         ],
-        "description": "Official Gazette of Vietnam"
+        "description": "Legislative Department of India"
     }
 }
 
 class LegalCrawler:
-    def __init__(self, crawlkit_api_key: str, db_connection=None):
-        """Initialize crawler with CrawlKit API key."""
-        try:
-            from crawlkit import CrawlKit
-            self.ck = CrawlKit(api_key=crawlkit_api_key, base_url="https://api.crawlkit.org")
-            self.enabled = True
-        except ImportError:
-            logger.warning("CrawlKit not installed. Run: pip install crawlkit")
-            self.enabled = False
-            self.ck = None
-        except Exception as e:
-            logger.error(f"CrawlKit init failed: {e}")
-            self.enabled = False
-            self.ck = None
-        
+    def __init__(self, db_connection=None):
+        """Initialize crawler using requests and BeautifulSoup."""
+        self.session = requests.Session()
+        self.session.headers.update({
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 LegalAI/1.0"
+        })
+        self.enabled = True
         self.db = db_connection
     
     def crawl_url(self, url: str) -> Dict:
         """Crawl a single legal document URL."""
         if not self.enabled:
-            return {"success": False, "error": "CrawlKit not configured. Get your API key at https://crawlkit.org"}
-        
+            return {"success": False, "error": "Crawler is disabled"}
+            
+        if not self._is_legal_url(url):
+            return {"success": False, "error": "Invalid or unsafe URL"}
+            
         try:
-            result = self.ck.scrape(url, format="text", auto_extract=True)
+            response = self.session.get(url, timeout=15)
+            response.raise_for_status()
+            
+            soup = BeautifulSoup(response.text, 'html.parser')
+            
+            title = soup.title.string.strip() if soup.title else ""
+            
+            # Remove scripts, styles, and head
+            for element in soup(["script", "style", "nav", "footer", "header", "head"]):
+                element.decompose()
+                
+            text = soup.get_text(separator='\n')
+            
+            # Clean up extra whitespace
+            lines = (line.strip() for line in text.splitlines())
+            chunks = (phrase.strip() for line in lines for phrase in line.split("  "))
+            content = '\n'.join(chunk for chunk in chunks if chunk)
+            
             return {
                 "success": True,
-                "content": result.get("content", ""),
-                "title": result.get("metadata", {}).get("title", ""),
+                "content": content,
+                "title": title,
                 "url": url,
-                "content_type": result.get("content_type", ""),
-                "chars": len(result.get("content", "")),
+                "content_type": "text/plain",
+                "chars": len(content),
             }
+        except requests.exceptions.RequestException as e:
+            return {"success": False, "error": f"HTTP error occurred: {e}"}
         except Exception as e:
-            error_msg = str(e)
-            if "401" in error_msg or "403" in error_msg:
-                return {"success": False, "error": "Invalid CrawlKit API key. Get a free key at https://crawlkit.org"}
-            if "429" in error_msg:
-                return {"success": False, "error": "CrawlKit rate limit reached. Upgrade your plan at https://crawlkit.org/pricing"}
-            return {"success": False, "error": f"Crawl failed: {error_msg}"}
+            return {"success": False, "error": f"Crawl failed: {e}"}
     
     def discover_links(self, url: str, max_links: int = 50) -> List[str]:
         """Discover legal document links from a page."""
         if not self.enabled:
             return []
-        
+            
         try:
-            result = self.ck.discover(url)
-            links = result.get("links", [])
-            # Filter for legal document URLs
-            legal_links = [l for l in links if self._is_legal_url(l)]
+            response = self.session.get(url, timeout=15)
+            response.raise_for_status()
+            soup = BeautifulSoup(response.text, 'html.parser')
+            
+            links = []
+            for a_tag in soup.find_all('a', href=True):
+                href = a_tag['href']
+                absolute_url = urljoin(url, href)
+                links.append(absolute_url)
+                
+            # Filter for legal document URLs and remove duplicates
+            legal_links = list(dict.fromkeys([l for l in links if self._is_legal_url(l)]))
             return legal_links[:max_links]
         except Exception as e:
             logger.error(f"Discover failed: {e}")
@@ -131,26 +153,42 @@ class LegalCrawler:
         }
     
     def batch_crawl(self, urls: List[str], company_id: str = None) -> Dict:
-        """Crawl multiple URLs."""
+        """Crawl multiple URLs concurrently."""
         if not self.enabled:
-            return {"success": False, "error": "CrawlKit not configured"}
+            return {"success": False, "error": "Crawler is disabled"}
+            
+        indexed = 0
+        errors = 0
+        formatted_results = []
         
+        def crawl_worker(url):
+            return self.crawl_url(url)
+            
         try:
-            results = self.ck.batch(urls)
-            indexed = 0
-            errors = 0
-            for item in results.get("data", []):
-                if item.get("success"):
-                    indexed += 1
-                else:
-                    errors += 1
+            with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+                future_to_url = {executor.submit(crawl_worker, url): url for url in urls}
+                for future in concurrent.futures.as_completed(future_to_url):
+                    url = future_to_url[future]
+                    try:
+                        result = future.result()
+                        if result["success"] and len(result.get("content", "")) > 0:
+                            indexed += 1
+                            formatted_results.append({
+                                "url": url,
+                                "title": result.get("title", ""),
+                                "content_length": len(result["content"])
+                            })
+                        else:
+                            errors += 1
+                    except Exception:
+                        errors += 1
             
             return {
                 "success": True,
                 "total": len(urls),
                 "indexed": indexed,
                 "errors": errors,
-                "results": results.get("data", [])
+                "results": formatted_results
             }
         except Exception as e:
             return {"success": False, "error": str(e)}
@@ -162,11 +200,31 @@ class LegalCrawler:
         ]
     
     def _is_legal_url(self, url: str) -> bool:
-        """Check if URL is likely a legal document."""
+        """Check if URL is likely a legal document and safe."""
+        try:
+            parsed = urlparse(url)
+            if parsed.scheme not in ('http', 'https'):
+                return False
+            
+            # Basic SSRF prevention
+            hostname = parsed.hostname or ""
+            if hostname in ('localhost', '127.0.0.1', '::1') or hostname.endswith('.local'):
+                return False
+                
+            try:
+                ip = ipaddress.ip_address(hostname)
+                if ip.is_private or ip.is_loopback:
+                    return False
+            except ValueError:
+                pass # not an IP
+        except Exception:
+            return False
+
         legal_patterns = [
-            r'van-ban', r'phap-luat', r'nghi-dinh', r'thong-tu',
-            r'luat', r'quyet-dinh', r'cong-van', r'nghi-quyet',
-            r'bo-luat', r'decree', r'circular', r'law'
+            r'act', r'ordinance', r'bill', r'rule',
+            r'gazette', r'notification', r'code', r'law',
+            r'statute', r'amendment', r'section', r'article',
+            r'doc', r'judgment', r'order'
         ]
         url_lower = url.lower()
         return any(p in url_lower for p in legal_patterns)

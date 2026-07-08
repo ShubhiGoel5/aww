@@ -1,20 +1,52 @@
-fastapi>=0.100.0
-uvicorn[standard]>=0.22.0
-psycopg2-binary>=2.9.6
-httpx>=0.24.0
-pydantic[email]>=2.0.0
-bcrypt>=4.0.0
+# =====================================================================
+# Legal AI Agent — Python Dependencies
+# =====================================================================
+# Install: pip install -r requirements.txt
+# Python version: 3.11+ recommended (3.10 minimum)
+
+# --- Web Framework ---
+fastapi>=0.110.0
+uvicorn[standard]>=0.29.0
+
+# --- Database (PostgreSQL / Supabase) ---
+psycopg2-binary>=2.9.9
+supabase>=2.4.0
+
+# --- HTTP Clients ---
+httpx>=0.27.0
+requests>=2.31.0
+
+# --- Data Validation ---
+pydantic[email]>=2.7.0
+
+# --- Authentication & Security ---
+bcrypt>=4.1.0
 PyJWT>=2.8.0
-python-multipart>=0.0.6
-aiofiles>=23.0.0
-python-dotenv>=1.0.0
-unidecode>=1.3.0
-# FIX 15: Updated PyPDF2 to pypdf (more secure and maintained)
-pypdf>=4.0.0
-python-docx>=0.8.11
-# CrawlKit for web crawling
-crawlkit>=0.1.0
-# Multi-LLM Provider support
-anthropic>=0.25.0
-openai>=1.0.0
 cryptography>=42.0.0
+
+# --- File Handling ---
+python-multipart>=0.0.9
+aiofiles>=23.2.1
+
+# --- Environment ---
+python-dotenv>=1.0.0
+
+# --- Text Processing ---
+unidecode>=1.3.8
+beautifulsoup4>=4.12.3
+
+# --- Document Parsing & Generation ---
+# PDF parsing (python-docx covers DOCX read/write; pypdf handles PDF extraction)
+pypdf>=4.2.0
+python-docx>=1.1.0
+
+# --- LLM SDKs ---
+# openai is used by llm_provider.py for the Ollama OpenAI-compatible endpoint.
+# The anthropic SDK is listed for potential future use / optional multi-LLM support.
+openai>=1.30.0
+anthropic>=0.28.0
+
+# =====================================================================
+# Dev / Test dependencies (not needed for production runtime)
+# Install with: pip install -r requirements-dev.txt
+# =====================================================================

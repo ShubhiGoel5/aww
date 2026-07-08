@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -619,6 +619,7 @@
                     <div class="logo-icon">⚡</div>
                     <span>Platform Admin</span>
                 </div>
+                <div style="margin-top: 10px; z-index:1000;"></div>
             </div>
 
             <nav class="sidebar-nav">
@@ -628,15 +629,15 @@
                 </div>
                 <div class="sidebar-nav-item" onclick="showSection('companies')">
                     <span class="icon">🏢</span>
-                    <span>Công ty</span>
+                    <span>Companies</span>
                 </div>
                 <div class="sidebar-nav-item" onclick="showSection('users')">
                     <span class="icon">👥</span>
-                    <span>Người dùng</span>
+                    <span>Users</span>
                 </div>
                 <div class="sidebar-nav-item" onclick="showSection('settings')">
                     <span class="icon">⚙️</span>
-                    <span>Cài đặt</span>
+                    <span>Settings</span>
                 </div>
                 <div class="sidebar-nav-item" onclick="showSection('llm-usage')">
                     <span class="icon">💰</span>
@@ -648,7 +649,7 @@
                 </div>
                 <div class="sidebar-nav-item" onclick="showSection('maintenance')">
                     <span class="icon">🔧</span>
-                    <span>Bảo trì</span>
+                    <span>Maintenance</span>
                 </div>
             </nav>
 
@@ -673,7 +674,7 @@
                 </div>
                 <div class="header-actions">
                     <button class="btn btn-secondary btn-small" onclick="refreshData()">
-                        🔄 Làm mới
+                        🔄 Refresh
                     </button>
                 </div>
             </header>
@@ -684,55 +685,55 @@
                     <div class="stats-grid">
                         <div class="stat-card">
                             <div class="stat-card-header">
-                                <span class="stat-card-title">Tổng công ty</span>
+                                <span class="stat-card-title">Total Companies</span>
                                 <span class="stat-card-icon">🏢</span>
                             </div>
                             <div class="stat-card-value" id="stat-companies">0</div>
                             <div class="stat-card-change positive">
                                 <span>↗</span>
-                                <span>Đang hoạt động</span>
+                                <span>Active</span>
                             </div>
                         </div>
 
                         <div class="stat-card">
                             <div class="stat-card-header">
-                                <span class="stat-card-title">Người dùng</span>
+                                <span class="stat-card-title">Users</span>
                                 <span class="stat-card-icon">👥</span>
                             </div>
                             <div class="stat-card-value" id="stat-users">0</div>
                             <div class="stat-card-change positive">
                                 <span id="stat-active-users">0</span>
-                                <span>đang hoạt động</span>
+                                <span>active</span>
                             </div>
                         </div>
 
                         <div class="stat-card">
                             <div class="stat-card-header">
-                                <span class="stat-card-title">Tài liệu</span>
+                                <span class="stat-card-title">Documents</span>
                                 <span class="stat-card-icon">📄</span>
                             </div>
                             <div class="stat-card-value" id="stat-documents">0</div>
                             <div class="stat-card-change">
                                 <span id="stat-contracts">0</span>
-                                <span>hợp đồng</span>
+                                <span>contracts</span>
                             </div>
                         </div>
 
                         <div class="stat-card">
                             <div class="stat-card-header">
-                                <span class="stat-card-title">Queries hôm nay</span>
+                                <span class="stat-card-title">Queries Today</span>
                                 <span class="stat-card-icon">💬</span>
                             </div>
                             <div class="stat-card-value" id="stat-queries-today">0</div>
                             <div class="stat-card-change">
                                 <span id="stat-queries-month">0</span>
-                                <span>trong tháng</span>
+                                <span>this month</span>
                             </div>
                         </div>
 
                         <div class="stat-card">
                             <div class="stat-card-header">
-                                <span class="stat-card-title">Luật VN</span>
+                                <span class="stat-card-title">Indian Laws</span>
                                 <span class="stat-card-icon">⚖️</span>
                             </div>
                             <div class="stat-card-value" id="stat-law-docs">0</div>
@@ -756,7 +757,7 @@
 
                     <div class="card">
                         <div class="card-header">
-                            <h2 class="card-title">Usage Trend (30 ngày)</h2>
+                            <h2 class="card-title">Usage Trend (30 days)</h2>
                         </div>
                         <div class="chart-container">
                             <canvas id="usageChart"></canvas>
@@ -765,20 +766,20 @@
 
                     <div class="card">
                         <div class="card-header">
-                            <h2 class="card-title">Top Công ty</h2>
+                            <h2 class="card-title">Top Companies</h2>
                         </div>
                         <div class="table-wrapper">
                             <table class="table">
                                 <thead>
                                     <tr>
-                                        <th>Công ty</th>
+                                        <th>Companies</th>
                                         <th>Queries</th>
                                         <th>Plan</th>
                                     </tr>
                                 </thead>
                                 <tbody id="top-companies-list">
                                     <tr>
-                                        <td colspan="3" class="text-muted">Đang tải...</td>
+                                        <td colspan="3" class="text-muted">Loading...</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -790,9 +791,9 @@
                 <div id="section-companies" class="section hidden">
                     <div class="flex-between mb-2">
                         <div class="flex gap-1">
-                            <input type="text" id="company-search" class="input" placeholder="Tìm kiếm công ty..." style="width: 300px;">
+                            <input type="text" id="company-search" class="input" placeholder="Search companies..." style="width: 300px;">
                             <select id="company-filter-plan" class="input" style="width: 150px;">
-                                <option value="">Tất cả plans</option>
+                                <option value="">All plans</option>
                                 <option value="trial">Trial</option>
                                 <option value="starter">Starter</option>
                                 <option value="professional">Professional</option>
@@ -800,30 +801,30 @@
                             </select>
                         </div>
                         <button class="btn btn-primary" onclick="loadCompanies()">
-                            🔍 Tìm kiếm
+                            🔍 Search
                         </button>
                     </div>
 
                     <div class="card">
                         <div class="card-header">
-                            <h2 class="card-title">Danh sách công ty</h2>
+                            <h2 class="card-title">Company List</h2>
                         </div>
                         <div class="table-wrapper">
                             <table class="table">
                                 <thead>
                                     <tr>
-                                        <th>Tên công ty</th>
+                                        <th>Company Name</th>
                                         <th>Plan</th>
                                         <th>Quota</th>
                                         <th>Users</th>
-                                        <th>Tạo ngày</th>
-                                        <th>Trạng thái</th>
-                                        <th>Hành động</th>
+                                        <th>Created</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody id="companies-list">
                                     <tr>
-                                        <td colspan="7" class="text-muted">Đang tải...</td>
+                                        <td colspan="7" class="text-muted">Loading...</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -834,32 +835,32 @@
                 <!-- USERS SECTION -->
                 <div id="section-users" class="section hidden">
                     <div class="flex-between mb-2">
-                        <input type="text" id="user-search" class="input" placeholder="Tìm người dùng..." style="width: 300px;">
+                        <input type="text" id="user-search" class="input" placeholder="Search users..." style="width: 300px;">
                         <button class="btn btn-primary" onclick="loadUsers()">
-                            🔍 Tìm kiếm
+                            🔍 Search
                         </button>
                     </div>
 
                     <div class="card">
                         <div class="card-header">
-                            <h2 class="card-title">Danh sách người dùng</h2>
+                            <h2 class="card-title">User List</h2>
                         </div>
                         <div class="table-wrapper">
                             <table class="table">
                                 <thead>
                                     <tr>
                                         <th>Email</th>
-                                        <th>Tên</th>
-                                        <th>Công ty</th>
+                                        <th>Name</th>
+                                        <th>Companies</th>
                                         <th>Role</th>
-                                        <th>Đăng nhập cuối</th>
-                                        <th>Trạng thái</th>
-                                        <th>Hành động</th>
+                                        <th>Last Login</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody id="users-list">
                                     <tr>
-                                        <td colspan="7" class="text-muted">Đang tải...</td>
+                                        <td colspan="7" class="text-muted">Loading...</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -871,7 +872,7 @@
                 <div id="section-settings" class="section hidden">
                     <div class="card">
                         <div class="card-header">
-                            <h2 class="card-title">Cài đặt hệ thống</h2>
+                            <h2 class="card-title">System Settings</h2>
                         </div>
                         <div class="modal-body">
                             <div class="input-group">
@@ -899,23 +900,23 @@
 
                             <div class="input-group">
                                 <label class="input-label">
-                                    <input type="checkbox" id="setting-registration-enabled"> Cho phép đăng ký
+                                    <input type="checkbox" id="setting-registration-enabled"> Allow registration
                                 </label>
                             </div>
 
                             <div class="input-group">
                                 <label class="input-label">
-                                    <input type="checkbox" id="setting-maintenance-mode"> Chế độ bảo trì
+                                    <input type="checkbox" id="setting-maintenance-mode"> Maintenance mode
                                 </label>
                             </div>
 
                             <div class="input-group">
-                                <label class="input-label">Thông báo bảo trì</label>
-                                <textarea id="setting-maintenance-message" class="input" rows="3" placeholder="Hệ thống đang bảo trì..."></textarea>
+                                <label class="input-label">Maintenance message</label>
+                                <textarea id="setting-maintenance-message" class="input" rows="3" placeholder="System is under maintenance..."></textarea>
                             </div>
 
                             <button class="btn btn-primary" onclick="saveSettings()">
-                                💾 Lưu cài đặt
+                                💾 Save Settings
                             </button>
                         </div>
                     </div>
@@ -996,7 +997,7 @@
                                 </thead>
                                 <tbody id="logs-list">
                                     <tr>
-                                        <td colspan="5" class="text-muted">Đang tải...</td>
+                                        <td colspan="5" class="text-muted">Loading...</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -1011,7 +1012,7 @@
                             <h2 class="card-title">Database Statistics</h2>
                         </div>
                         <div class="modal-body" id="db-stats-content">
-                            <p class="text-muted">Đang tải...</p>
+                            <p class="text-muted">Loading...</p>
                         </div>
                     </div>
 
@@ -1021,7 +1022,7 @@
                         </div>
                         <div class="modal-body flex gap-2">
                             <button class="btn btn-secondary" onclick="runCleanup()">
-                                🧹 Xóa dữ liệu cũ (>30 ngày)
+                                🧹 Delete old data (>30 days)
                             </button>
                         </div>
                     </div>
@@ -1034,7 +1035,7 @@
     <div class="modal" id="company-modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3 class="modal-title">Chỉnh sửa công ty</h3>
+                <h3 class="modal-title">Edit Company</h3>
                 <button class="modal-close" onclick="closeCompanyModal()">×</button>
             </div>
             <div class="modal-body">
@@ -1055,13 +1056,13 @@
 
                 <div class="input-group">
                     <label class="input-label">
-                        <input type="checkbox" id="edit-company-active"> Kích hoạt
+                        <input type="checkbox" id="edit-company-active"> Activate
                     </label>
                 </div>
             </div>
             <div class="modal-footer">
-                <button class="btn btn-secondary" onclick="closeCompanyModal()">Hủy</button>
-                <button class="btn btn-primary" onclick="saveCompanyEdit()">Lưu</button>
+                <button class="btn btn-secondary" onclick="closeCompanyModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="saveCompanyEdit()">Save</button>
             </div>
         </div>
     </div>
@@ -1092,7 +1093,7 @@
 
                 const user = await res.json();
                 if (user.role !== 'superadmin') {
-                    alert('Bạn không có quyền truy cập Platform Admin');
+                    alert('You do not have access to Platform Admin');
                     window.location.href = '/';
                     return;
                 }
@@ -1168,7 +1169,7 @@
                         </tr>
                     `).join('');
                 } else {
-                    topList.innerHTML = '<tr><td colspan="3" class="text-muted">Chưa có dữ liệu</td></tr>';
+                    topList.innerHTML = '<tr><td colspan="3" class="text-muted">No data yet</td></tr>';
                 }
 
                 // Usage chart
@@ -1210,7 +1211,7 @@
                 }
             } catch (err) {
                 console.error('Load dashboard error:', err);
-                alert('Lỗi tải dashboard: ' + err.message);
+                alert('Error loading dashboard: ' + err.message);
             }
         }
 
@@ -1227,7 +1228,7 @@
                 const list = document.getElementById('companies-list');
 
                 if (data.companies.length === 0) {
-                    list.innerHTML = '<tr><td colspan="7" class="text-muted">Không tìm thấy công ty</td></tr>';
+                    list.innerHTML = '<tr><td colspan="7" class="text-muted">No companies found</td></tr>';
                     return;
                 }
 
@@ -1237,20 +1238,20 @@
                         <td><span class="badge badge-primary">${c.plan}</span></td>
                         <td>${c.used_quota} / ${c.monthly_quota}</td>
                         <td>${c.user_count}</td>
-                        <td>${new Date(c.created_at).toLocaleDateString('vi-VN')}</td>
+                        <td>${new Date(c.created_at).toLocaleDateString('en-US')}</td>
                         <td>
                             ${c.is_active ? '<span class="badge badge-success">Active</span>' : '<span class="badge badge-danger">Inactive</span>'}
                         </td>
                         <td>
                             <button class="btn btn-secondary btn-small" onclick='editCompany(${JSON.stringify(c)})'>
-                                ✏️ Sửa
+                                ✏️ Edit
                             </button>
                         </td>
                     </tr>
                 `).join('');
             } catch (err) {
                 console.error('Load companies error:', err);
-                alert('Lỗi tải danh sách công ty: ' + err.message);
+                alert('Error loading company list: ' + err.message);
             }
         }
 
@@ -1279,11 +1280,11 @@
                     })
                 });
 
-                alert('Đã cập nhật công ty');
+                alert('Company updated');
                 closeCompanyModal();
                 loadCompanies();
             } catch (err) {
-                alert('Lỗi cập nhật: ' + err.message);
+                alert('Update error: ' + err.message);
             }
         }
 
@@ -1296,7 +1297,7 @@
                 const list = document.getElementById('users-list');
 
                 if (data.users.length === 0) {
-                    list.innerHTML = '<tr><td colspan="7" class="text-muted">Không tìm thấy người dùng</td></tr>';
+                    list.innerHTML = '<tr><td colspan="7" class="text-muted">No users found</td></tr>';
                     return;
                 }
 
@@ -1306,20 +1307,20 @@
                         <td>${u.full_name || 'N/A'}</td>
                         <td>${u.company_name || 'N/A'}</td>
                         <td><span class="badge badge-info">${u.role}</span></td>
-                        <td>${u.last_login_at ? new Date(u.last_login_at).toLocaleDateString('vi-VN') : 'Chưa đăng nhập'}</td>
+                        <td>${u.last_login_at ? new Date(u.last_login_at).toLocaleDateString('en-US') : 'Never logged in'}</td>
                         <td>
                             ${u.is_active ? '<span class="badge badge-success">Active</span>' : '<span class="badge badge-danger">Inactive</span>'}
                         </td>
                         <td>
                             <button class="btn btn-secondary btn-small" onclick="toggleUserStatus('${u.id}', ${u.is_active})">
-                                ${u.is_active ? '⛔ Vô hiệu' : '✅ Kích hoạt'}
+                                ${u.is_active ? '⛔ Deactivate' : '✅ Activate'}
                             </button>
                         </td>
                     </tr>
                 `).join('');
             } catch (err) {
                 console.error('Load users error:', err);
-                alert('Lỗi tải danh sách người dùng: ' + err.message);
+                alert('Error loading user list: ' + err.message);
             }
         }
 
@@ -1329,10 +1330,10 @@
                     method: 'PUT',
                     body: JSON.stringify({ is_active: !currentStatus })
                 });
-                alert('Đã cập nhật trạng thái');
+                alert('Status updated');
                 loadUsers();
             } catch (err) {
-                alert('Lỗi: ' + err.message);
+                alert('Error: ' + err.message);
             }
         }
 
@@ -1349,7 +1350,7 @@
                 document.getElementById('setting-maintenance-message').value = settings.maintenance_message || '';
             } catch (err) {
                 console.error('Load settings error:', err);
-                alert('Lỗi tải cài đặt: ' + err.message);
+                alert('Error loading settings: ' + err.message);
             }
         }
 
@@ -1367,9 +1368,9 @@
                         maintenance_message: document.getElementById('setting-maintenance-message').value
                     })
                 });
-                alert('Đã lưu cài đặt');
+                alert('Settings saved');
             } catch (err) {
-                alert('Lỗi lưu cài đặt: ' + err.message);
+                alert('Error saving settings: ' + err.message);
             }
         }
 
@@ -1400,7 +1401,7 @@
                 `).join('');
             } catch (err) {
                 console.error('Load LLM usage error:', err);
-                alert('Lỗi tải LLM usage: ' + err.message);
+                alert('Error loading LLM usage: ' + err.message);
             }
         }
 
@@ -1411,13 +1412,13 @@
                 const list = document.getElementById('logs-list');
 
                 if (data.logs.length === 0) {
-                    list.innerHTML = '<tr><td colspan="5" class="text-muted">Chưa có logs</td></tr>';
+                    list.innerHTML = '<tr><td colspan="5" class="text-muted">No logs yet</td></tr>';
                     return;
                 }
 
                 list.innerHTML = data.logs.map(log => `
                     <tr>
-                        <td>${new Date(log.created_at).toLocaleString('vi-VN')}</td>
+                        <td>${new Date(log.created_at).toLocaleString('en-US')}</td>
                         <td>${log.user_email || log.user_name || 'System'}</td>
                         <td><span class="badge badge-primary">${log.action}</span></td>
                         <td>${log.target_type || '-'}: ${log.target_id || '-'}</td>
@@ -1426,7 +1427,7 @@
                 `).join('');
             } catch (err) {
                 console.error('Load logs error:', err);
-                alert('Lỗi tải logs: ' + err.message);
+                alert('Error loading logs: ' + err.message);
             }
         }
 
@@ -1443,18 +1444,18 @@
                 `).join('');
             } catch (err) {
                 console.error('Load maintenance error:', err);
-                alert('Lỗi tải DB stats: ' + err.message);
+                alert('Error loading DB stats: ' + err.message);
             }
         }
 
         async function runCleanup() {
-            if (!confirm('Xóa tất cả hợp đồng đã xóa >30 ngày?')) return;
+            if (!confirm('Delete all soft-deleted contracts older than 30 days?')) return;
             try {
                 const result = await apiCall('/v1/platform/maintenance/cleanup', { method: 'POST' });
                 alert(result.message);
                 loadMaintenance();
             } catch (err) {
-                alert('Lỗi cleanup: ' + err.message);
+                alert('Cleanup error: ' + err.message);
             }
         }
 
@@ -1462,17 +1463,18 @@
         function refreshData() {
             const section = document.querySelector('.sidebar-nav-item.active').textContent.trim().toLowerCase();
             if (section.includes('dashboard')) loadDashboard();
-            if (section.includes('công ty')) loadCompanies();
-            if (section.includes('người dùng')) loadUsers();
-            if (section.includes('cài đặt')) loadSettings();
+            if (section.includes('companies')) loadCompanies();
+            if (section.includes('users')) loadUsers();
+            if (section.includes('settings')) loadSettings();
             if (section.includes('llm')) loadLLMUsage();
             if (section.includes('logs')) loadLogs();
-            if (section.includes('bảo trì')) loadMaintenance();
+            if (section.includes('maintenance')) loadMaintenance();
         }
 
         // INIT
         checkAuth();
         loadDashboard();
     </script>
+
 </body>
 </html>

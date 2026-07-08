@@ -353,132 +353,40 @@ class LegalResponse(BaseModel):
     session_id: Optional[str] = None
 
 # ============================================
-# Claude OAuth Integration
+# Ollama LLM Integration
 # ============================================
 
-CLAUDE_OAUTH_TOKEN = os.getenv("CLAUDE_OAUTH_TOKEN", "")
-ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
-CLAUDE_API_URL = "https://api.anthropic.com/v1/messages"
-
-async def call_claude(system_prompt: str, user_message: str, max_tokens: int = 4096, history: list = None) -> dict:
-    """Call Claude via OAuth token or API key, with optional conversation history"""
-    api_key = ANTHROPIC_API_KEY
-    oauth_token = CLAUDE_OAUTH_TOKEN
+async def call_llm(system_prompt: str, user_message: str, max_tokens: int = 4096, history: list = None) -> dict:
+    """Call local Ollama LLM with optional conversation history"""
+    from ..services.llm_provider import OllamaProvider
+    provider = OllamaProvider()
     
-    headers = {
-        "anthropic-version": "2023-06-01",
-        "content-type": "application/json"
-    }
-    
-    if oauth_token:
-        headers["Authorization"] = f"Bearer {oauth_token}"
-        headers["anthropic-beta"] = "oauth-2025-04-20"
-    elif api_key:
-        headers["x-api-key"] = api_key
-    else:
-        raise ValueError("No Claude API key or OAuth token configured")
-    
-    # Build messages with history for multi-turn conversations
     messages = []
     if history:
         for msg in history:
             messages.append({"role": msg["role"], "content": msg["content"]})
     messages.append({"role": "user", "content": user_message})
     
-    payload = {
-        "model": "claude-sonnet-4-20250514",
-        "max_tokens": max_tokens,
-        "system": system_prompt,
-        "messages": messages
-    }
-    
-    async with httpx.AsyncClient(timeout=120) as client:
-        try:
-            response = await client.post(CLAUDE_API_URL, headers=headers, json=payload)
-            response.raise_for_status()
-            data = response.json()
-            
-            return {
-                "content": data["content"][0]["text"],
-                "input_tokens": data["usage"]["input_tokens"],
-                "output_tokens": data["usage"]["output_tokens"],
-                "model": data["model"]
-            }
-        except httpx.TimeoutException:
-            print(f"Claude API timeout")
-            raise HTTPException(status_code=504, detail="Hệ thống đang bận, vui lòng thử lại")
-        except httpx.HTTPStatusError as e:
-            print(f"Claude API error: {e.response.status_code} - {e.response.text[:200]}")
-            if e.response.status_code == 429:
-                raise HTTPException(status_code=429, detail="Đã vượt giới hạn API, vui lòng chờ")
-            elif e.response.status_code == 529:
-                raise HTTPException(status_code=503, detail="Hệ thống đang bận, vui lòng thử lại")
-            raise HTTPException(status_code=502, detail=f"Lỗi AI engine: {e.response.status_code}")
-        except psycopg2.Error as e:
-            print(f"Database error in Claude call: {e}")
-            raise HTTPException(status_code=500, detail="Lỗi kết nối database")
-        except ValueError as e:
-            print(f"Claude config error: {e}")
-            raise HTTPException(status_code=500, detail=str(e))
-        except Exception as e:
-            print(f"Claude call error: {e}")
-            raise HTTPException(status_code=500, detail="Hệ thống đang bận, vui lòng thử lại")
+    try:
+        result = await provider.chat(
+            system=system_prompt,
+            messages=messages,
+            max_tokens=max_tokens
+        )
+        text = result["content"][0]["text"] if result.get("content") else ""
+        usage = result.get("usage", {})
+        return {
+            "content": text,
+            "input_tokens": usage.get("input", 0),
+            "output_tokens": usage.get("output", 0),
+            "model": result.get("model", provider.model)
+        }
+    except Exception as e:
+        print(f"Ollama LLM error: {e}")
+        raise HTTPException(status_code=500, detail=f"AI engine error: {str(e)}")
 
 
-async def call_claude_stream(system_prompt: str, user_message: str, max_tokens: int = 8192, history: list = None) -> AsyncGenerator[str, None]:
-    """Call Claude with streaming via SSE, yielding text deltas"""
-    api_key = ANTHROPIC_API_KEY
-    oauth_token = CLAUDE_OAUTH_TOKEN
 
-    headers = {
-        "anthropic-version": "2023-06-01",
-        "content-type": "application/json"
-    }
-
-    if oauth_token:
-        headers["Authorization"] = f"Bearer {oauth_token}"
-        headers["anthropic-beta"] = "oauth-2025-04-20"
-    elif api_key:
-        headers["x-api-key"] = api_key
-    else:
-        raise ValueError("No Claude API key or OAuth token configured")
-
-    messages = []
-    if history:
-        for msg in history:
-            messages.append({"role": msg["role"], "content": msg["content"]})
-    messages.append({"role": "user", "content": user_message})
-
-    payload = {
-        "model": "claude-sonnet-4-20250514",
-        "max_tokens": max_tokens,
-        "system": system_prompt,
-        "messages": messages,
-        "stream": True
-    }
-
-    async with httpx.AsyncClient(timeout=180) as client:
-        async with client.stream("POST", CLAUDE_API_URL, headers=headers, json=payload) as response:
-            response.raise_for_status()
-            async for line in response.aiter_lines():
-                if line.startswith("data: "):
-                    data_str = line[6:]
-                    if data_str.strip() == "[DONE]":
-                        break
-                    try:
-                        event = json.loads(data_str)
-                        event_type = event.get("type", "")
-                        if event_type == "content_block_delta":
-                            delta = event.get("delta", {})
-                            if delta.get("type") == "text_delta":
-                                yield delta.get("text", "")
-                        elif event_type == "message_stop":
-                            break
-                        elif event_type == "message_delta":
-                            # Contains usage info at the end
-                            pass
-                    except json.JSONDecodeError:
-                        continue
 
 
 # ============================================
@@ -540,161 +448,71 @@ def fetch_company_context(company_id: str, question: str, limit: int = 5) -> str
                         pass
                 context_parts.append(
                     f"📋 HỢP ĐỒNG: {contract['name']} (Loại: {contract.get('contract_type', 'N/A')}{parties_str})\n{excerpt}"
+                    f"📋 CONTRACT: {contract['name']} (Type: {contract.get('contract_type', 'N/A')}{parties_str})\n{excerpt}"
                 )
 
     return "\n\n".join(context_parts[:5]) if context_parts else ""
 
 
 # ============================================
-# Law Search
+# Law Search (English/Indian Law)
 # ============================================
-
-# ============================================
-# Vietnamese Diacritics Restoration
-# ============================================
-
-NO_ACCENT_MAP = {
-    # Common legal phrases
-    "thu viec": "thử việc",
-    "nghi phep": "nghỉ phép",
-    "hop dong lao dong": "hợp đồng lao động",
-    "thue tndn": "thuế TNDN",
-    "thue thu nhap": "thuế thu nhập",
-    "sa thai": "sa thải",
-    "luong": "lương",
-    "bao hiem": "bảo hiểm",
-    "nghi viec": "nghỉ việc",
-    "ky luat": "kỷ luật",
-    "thai san": "thai sản",
-    "tang ca": "tăng ca",
-    "lam them gio": "làm thêm giờ",
-    "nghi le": "nghỉ lễ",
-    "cham dut hop dong": "chấm dứt hợp đồng",
-    "boi thuong": "bồi thường",
-    "tranh chap": "tranh chấp",
-    "thanh lap cong ty": "thành lập công ty",
-    "doanh nghiep": "doanh nghiệp",
-    "co phan": "cổ phần",
-    "thue gia tri gia tang": "thuế giá trị gia tăng",
-    "dat dai": "đất đai",
-    "quyen su dung dat": "quyền sử dụng đất",
-    # Common single words
-    "thoi gian": "thời gian",
-    "toi da": "tối đa",
-    "toi thieu": "tối thiểu",
-    "quy dinh": "quy định",
-    "noi dung": "nội dung",
-    "hinh thuc": "hình thức",
-    "hop dong": "hợp đồng",
-    "cong ty": "công ty",
-    "dieu": "điều",
-    "khoan": "khoản",
-    "luat": "luật",
-    "bo luat": "bộ luật",
-    "nghi dinh": "nghị định",
-    "thong tu": "thông tư",
-    "quyet dinh": "quyết định",
-    "muc": "mức",
-    "so": "số",
-    "nam": "năm",
-    "thang": "tháng",
-    "ngay": "ngày",
-    "gio": "giờ",
-    "viec": "việc",
-    "nguoi": "người",
-    "phep": "phép",
-    "thue": "thuế",
-    "suat": "suất",
-    "tien": "tiền",
-}
-
-def has_vietnamese_diacritics(text: str) -> bool:
-    """Check if text contains Vietnamese diacritics"""
-    import re
-    # Vietnamese diacritics pattern
-    vietnamese_chars = r'[àáảãạăằắẳẵặâầấẩẫậèéẻẽẹêềếểễệìíỉĩịòóỏõọôồốổỗộơờớởỡợùúủũụưừứửữựỳýỷỹỵđ]'
-    return bool(re.search(vietnamese_chars, text.lower()))
-
-def restore_diacritics(query: str) -> str:
-    """Restore Vietnamese diacritics from common non-diacritics legal terms"""
-    import re
-    
-    # If query already has diacritics, return as-is
-    if has_vietnamese_diacritics(query):
-        return query
-    
-    # Try to match and replace phrases from NO_ACCENT_MAP
-    restored = query.lower()
-    
-    # Sort by length (longest first) to match longer phrases first
-    sorted_mappings = sorted(NO_ACCENT_MAP.items(), key=lambda x: len(x[0]), reverse=True)
-    
-    for no_accent, with_accent in sorted_mappings:
-        # Use word boundaries to avoid partial matches
-        pattern = r'\b' + re.escape(no_accent) + r'\b'
-        restored = re.sub(pattern, with_accent, restored, flags=re.IGNORECASE)
-    
-    return restored
 
 def extract_search_query(question: str) -> str:
-    """Extract key legal terms from Vietnamese question"""
+    """Extract key legal terms from English question"""
+    if not isinstance(question, str):
+        return ""
+        
     import re
     
-    # Remove Vietnamese question words
     question_words = [
-        r'\bbao lâu\b', r'\bbao nhiêu\b', r'\bthế nào\b', r'\bnhư thế nào\b',
-        r'\blà gì\b', r'\bcó phải\b', r'\bcó được\b', r'\blà\b', r'\bcó\b',
-        r'\bkhông\b', r'\bhay không\b', r'\?', r'\.'
+        r'\bhow long\b', r'\bhow much\b', r'\bwhat is\b', r'\bhow to\b',
+        r'\bcan i\b', r'\bcan you\b', r'\bwhat are\b', r'\bis there\b',
+        r'\bunder which\b', r'\?', r'\.'
     ]
     
     cleaned = question.lower()
     for pattern in question_words:
         cleaned = re.sub(pattern, ' ', cleaned)
     
-    # Remove extra spaces
     cleaned = ' '.join(cleaned.split())
-    
     return cleaned.strip()
 
 def expand_synonyms(query: str) -> List[str]:
-    """Expand Vietnamese legal term synonyms — returns the EXPANDED TERMS to search for"""
+    """Expand English legal term synonyms"""
+    if not isinstance(query, str):
+        return []
+        
     expansions = []
     query_lower = query.lower()
     
     synonym_map = {
-        "tndn": "thu nhập doanh nghiệp",
-        "tncn": "thu nhập cá nhân",
-        "gtgt": "giá trị gia tăng",
-        "vat": "giá trị gia tăng",
-        "bhxh": "bảo hiểm xã hội",
-        "bhyt": "bảo hiểm y tế",
-        "hđlđ": "hợp đồng lao động",
-        "nsdlđ": "người sử dụng lao động",
-        "nlđ": "người lao động",
-        "nghỉ phép": "nghỉ hằng năm",
-        "phép năm": "nghỉ hằng năm",
-        "sa thải": "kỷ luật sa thải",
-        "đuổi việc": "kỷ luật sa thải",
+        "ipc": "indian penal code",
+        "crpc": "criminal procedure code",
+        "cpc": "civil procedure code",
+        "pmla": "prevention of money laundering act",
+        "fir": "first information report"
     }
     
     for abbr, full in synonym_map.items():
         if abbr in query_lower:
-            expansions.append(full)  # Return just the expanded term
+            expansions.append(full)
     
     return expansions
 
 def detect_domain(question: str) -> Optional[List[str]]:
     """Auto-detect legal domain from question keywords"""
+    if not isinstance(question, str):
+        return None
+        
     question_lower = question.lower()
     
     domain_keywords = {
-        "lao_dong": ["lao động", "hợp đồng lao động", "thử việc", "nghỉ phép", "tăng ca", "lương", "sa thải", "bảo hiểm xã hội", "bhxh", "thôi việc", "chấm dứt hợp đồng"],
-        "thue": ["thuế", "tndn", "vat", "tncn", "kê khai thuế", "hoàn thuế", "miễn thuế", "giảm thuế", "thuế suất"],
-        "doanh_nghiep": ["thành lập công ty", "cổ phần", "doanh nghiệp", "giải thể", "phá sản", "điều lệ", "đại hội cổ đông", "hội đồng quản trị"],
-        "dan_su": ["di sản", "thừa kế", "hôn nhân", "ly hôn", "nuôi con", "nhà ở", "quyền sở hữu", "tài sản chung"],
-        "dat_dai": ["đất đai", "quyền sử dụng đất", "sổ đỏ", "chuyển nhượng đất", "thuê đất"],
-        "hinh_su": ["hình sự", "án tù", "tội phạm", "vi phạm hình sự", "truy tố"],
-        "hanh_chinh": ["vi phạm hành chính", "phạt hành chính", "khiếu nại", "tố cáo"]
+        "criminal": ["murder", "theft", "assault", "rape", "homicide", "robbery", "jail", "imprisonment"],
+        "civil": ["property", "contract", "damages", "tort", "marriage", "divorce", "succession"],
+        "constitutional": ["fundamental rights", "writ", "supreme court", "high court", "article", "directive principles"],
+        "corporate": ["company", "shareholders", "directors", "incorporation", "bankruptcy"],
+        "tax": ["income tax", "gst", "assessment", "deduction", "taxpayer"]
     }
     
     detected = []
@@ -732,21 +550,12 @@ def multi_query_search(question: str, domains: Optional[List[str]] = None, limit
     if not domains:
         domains = detect_domain(question)
     
-    # Check if query needs diacritics restoration
-    original_query = question
-    restored_query = restore_diacritics(question)
-    queries_to_search = [original_query]
-    
-    # If restoration produced a different query, search with both
-    if restored_query.lower() != original_query.lower():
-        queries_to_search.append(restored_query)
-    
-    # Extract clean keywords from the best available query
-    keywords = extract_search_query(restored_query if restored_query != original_query else question)
+    # Extract clean keywords
+    keywords = extract_search_query(question)
     words = [w for w in keywords.split() if len(w) > 1]
     
-    # Build meaningful phrases (skip common words like thời gian, quy định)
-    common_prefixes = {"thời", "gian", "quy", "định", "mức", "tối", "đa", "số", "ngày"}
+    # Build meaningful phrases (skip common words)
+    common_prefixes = {"what", "how", "why", "when", "the", "a", "an", "of", "and"}
     key_words = [w for w in words if w not in common_prefixes]
     if not key_words:
         key_words = words
@@ -784,9 +593,9 @@ def multi_query_search(question: str, domains: Optional[List[str]] = None, limit
                 JOIN law_documents ld ON ld.id = lc.law_id
                 WHERE lc.content ILIKE %s {domain_filter}
                 ORDER BY 
-                    CASE WHEN ld.title LIKE 'Bo Luat%%' OR ld.title LIKE 'Bộ luật%%' THEN 0
-                         WHEN ld.title LIKE 'Luat %%' OR ld.title LIKE 'Luật %%' THEN 1
-                         WHEN ld.title LIKE 'Nghi dinh%%' OR ld.title LIKE 'Nghị định%%' THEN 2
+                    CASE WHEN ld.title LIKE 'Constitution%%' OR ld.title LIKE 'Code%%' THEN 0
+                         WHEN ld.title LIKE 'Act %%' THEN 1
+                         WHEN ld.title LIKE 'Rules %%' OR ld.title LIKE 'Regulations %%' THEN 2
                          ELSE 3 END,
                     length(lc.content) DESC
                 LIMIT {limit}
@@ -824,9 +633,9 @@ def multi_query_search(question: str, domains: Optional[List[str]] = None, limit
                     JOIN law_documents ld ON ld.id = lc.law_id
                     WHERE lc.content ILIKE %s {domain_filter}
                     ORDER BY 
-                        CASE WHEN ld.title LIKE 'Bo Luat%%' OR ld.title LIKE 'Bộ luật%%' THEN 0
-                             WHEN ld.title LIKE 'Luat %%' OR ld.title LIKE 'Luật %%' THEN 1
-                             WHEN ld.title LIKE 'Nghi dinh%%' OR ld.title LIKE 'Nghị định%%' THEN 2
+                        CASE WHEN ld.title LIKE 'Constitution%%' OR ld.title LIKE 'Code%%' THEN 0
+                             WHEN ld.title LIKE 'Act %%' THEN 1
+                             WHEN ld.title LIKE 'Rules %%' OR ld.title LIKE 'Regulations %%' THEN 2
                              ELSE 3 END,
                         length(lc.content) DESC
                     LIMIT {limit}
@@ -852,7 +661,7 @@ def multi_query_search(question: str, domains: Optional[List[str]] = None, limit
                     FROM law_chunks lc
                     JOIN law_documents ld ON ld.id = lc.law_id
                     WHERE lc.content ILIKE %s {domain_filter}
-                    ORDER BY CASE WHEN ld.title LIKE 'Bo Luat%%' THEN 0 WHEN ld.title LIKE 'Luat%%' THEN 1 ELSE 2 END
+                    ORDER BY CASE WHEN ld.title LIKE 'Code%%' THEN 0 WHEN ld.title LIKE 'Act%%' THEN 1 ELSE 2 END
                     LIMIT {limit}
                 """, params)
                 phrase_results.extend([dict(r) for r in cur.fetchall()])
@@ -876,11 +685,11 @@ def multi_query_search(question: str, domains: Optional[List[str]] = None, limit
             seen_ids.add(chunk_id)
             title = result.get("law_title", "").lower()
             base_rank = 15.0
-            if any(x in result.get("law_title", "") for x in ["Bo Luat", "Bộ luật"]):
+            if any(x in result.get("law_title", "") for x in ["Constitution", "Code"]):
                 base_rank = 30.0
-            elif any(x in result.get("law_title", "") for x in ["Luat ", "Luật "]):
+            elif "Act " in result.get("law_title", ""):
                 base_rank = 25.0
-            elif any(x in result.get("law_title", "") for x in ["Nghi dinh", "Nghị định"]):
+            elif any(x in result.get("law_title", "") for x in ["Rules", "Regulations"]):
                 base_rank = 20.0
             elif result.get("law_title", "").startswith("Legal Document"):
                 base_rank = 8.0
@@ -900,9 +709,9 @@ def multi_query_search(question: str, domains: Optional[List[str]] = None, limit
             seen_ids.add(chunk_id)
             title = result.get("law_title", "")
             base = result.get("rank", 1.0)
-            if any(x in title for x in ["Bo Luat", "Bộ luật"]):
+            if any(x in title for x in ["Constitution", "Code"]):
                 result["rank"] = base + 10.0
-            elif any(x in title for x in ["Luat ", "Luật "]):
+            elif "Act " in title:
                 result["rank"] = base + 5.0
             elif title.startswith("Legal Document"):
                 result["rank"] = max(base - 5.0, 0.1)
@@ -1608,18 +1417,21 @@ async def search_detailed(
         content = r.get("content", "")
 
         # Determine category
-        if any(x in law_title for x in ["Bộ luật", "Bo Luat"]):
-            cat = "Bộ luật"
-        elif any(x in law_title for x in ["Luật ", "Luat "]):
-            cat = "Luật"
-        elif any(x in law_title for x in ["Nghị định", "Nghi dinh"]):
-            cat = "Nghị định"
-        elif any(x in law_title for x in ["Thông tư", "Thong tu"]):
-            cat = "Thông tư"
-        elif any(x in law_title for x in ["Quyết định", "Quyet dinh"]):
-            cat = "Quyết định"
+        law_title_lower = law_title.lower()
+        if "constitution" in law_title_lower:
+            cat = "Constitution"
+        elif "code" in law_title_lower:
+            cat = "Code"
+        elif "act" in law_title_lower:
+            cat = "Act"
+        elif "rule" in law_title_lower:
+            cat = "Rules"
+        elif "ordinance" in law_title_lower:
+            cat = "Ordinance"
+        elif "bill" in law_title_lower:
+            cat = "Bill"
         else:
-            cat = "Khác"
+            cat = "Other"
 
         if cat not in categories:
             categories[cat] = []
@@ -1717,33 +1529,33 @@ async def contract_review(review: ContractReview, company: dict = Depends(verify
         for src in sources
     ])
     
-    system_prompt = """Bạn là luật sư chuyên rà soát hợp đồng theo pháp luật Việt Nam.
+    system_prompt = """You are a lawyer specializing in reviewing contracts under Indian Law.
 
-Nhiệm vụ: Rà soát hợp đồng và đánh giá theo các tiêu chí:
-1. **Tính hợp pháp**: Có điều khoản nào vi phạm pháp luật không?
-2. **Tính đầy đủ**: Có thiếu điều khoản bắt buộc nào không?
-3. **Rủi ro**: Những điều khoản nào có rủi ro cao cho bên nào?
-4. **Đề xuất**: Các sửa đổi cần thiết
+Task: Review the contract and evaluate based on these criteria:
+1. **Legality**: Are there any clauses violating the law?
+2. **Completeness**: Are there any mandatory clauses missing?
+3. **Risk**: Which clauses pose a high risk and for which party?
+4. **Recommendation**: Necessary revisions
 
-Trả về JSON format:
+Return in JSON format:
 {
-    "risk_score": 1-100 (100 = rủi ro cao nhất),
-    "issues": [{"type": "violation|missing|risk|suggestion", "severity": "critical|high|medium|low", "clause": "điều khoản liên quan", "description": "mô tả", "legal_basis": "căn cứ pháp lý", "recommendation": "đề xuất sửa"}],
-    "summary": "Tóm tắt đánh giá",
-    "overall_assessment": "Đánh giá tổng thể"
+    "risk_score": 1-100 (100 = highest risk),
+    "issues": [{"type": "violation|missing|risk|suggestion", "severity": "critical|high|medium|low", "clause": "related clause", "description": "description", "legal_basis": "legal basis", "recommendation": "suggested revision"}],
+    "summary": "Evaluation summary",
+    "overall_assessment": "Overall assessment"
 }"""
 
-    user_message = f"""HỢP ĐỒNG CẦN RÀ SOÁT:
+    user_message = f"""CONTRACT TO REVIEW:
 {review.contract_text[:50000]}
 
-PHÁP LUẬT LIÊN QUAN:
+RELEVANT LAWS:
 {context}
 
-{f"YÊU CẦU ĐẶC BIỆT: {', '.join(review.focus_areas)}" if review.focus_areas else ""}
+{f"SPECIAL REQUIREMENTS: {', '.join(review.focus_areas)}" if review.focus_areas else ""}
 
-Hãy rà soát hợp đồng trên và trả về kết quả theo format JSON."""
+Please review the contract above and return the result in JSON format."""
 
-    result = await call_claude(system_prompt, user_message, max_tokens=8192)
+    result = await call_llm(system_prompt, user_message, max_tokens=8192)
     
     # Update usage
     with get_db() as conn:
@@ -1783,32 +1595,32 @@ async def document_draft(draft: DocumentDraft, company: dict = Depends(verify_ap
         for src in sources
     ])
     
-    system_prompt = """Bạn là chuyên gia soạn thảo văn bản pháp lý Việt Nam.
+    system_prompt = """You are an expert in drafting Indian legal documents.
 
-Nhiệm vụ: Soạn thảo văn bản hoàn chỉnh, đúng format, đúng pháp luật.
+Task: Draft a complete document, correctly formatted and legally sound.
 
-Quy tắc:
-1. Sử dụng đúng format văn bản hành chính Việt Nam
-2. Tuân thủ quy định tại Nghị định 30/2020/NĐ-CP về công tác văn thư
-3. Điền đầy đủ thông tin từ biến số được cung cấp
-4. Các điều khoản phải tuân thủ pháp luật hiện hành
-5. Ghi rõ căn cứ pháp lý"""
+Rules:
+1. Use the correct administrative document format
+2. Comply with Indian regulations on document drafting
+3. Fill in all information from the provided variables
+4. Clauses must comply with current laws
+5. Clearly state the legal basis"""
 
     variables_str = json.dumps(draft.variables, ensure_ascii=False, indent=2)
     
-    user_message = f"""LOẠI VĂN BẢN: {draft.doc_type}
+    user_message = f"""DOCUMENT TYPE: {draft.doc_type}
 
-THÔNG TIN:
+INFORMATION:
 {variables_str}
 
-{f"YÊU CẦU BỔ SUNG: {draft.instructions}" if draft.instructions else ""}
+{f"ADDITIONAL REQUIREMENTS: {draft.instructions}" if draft.instructions else ""}
 
-PHÁP LUẬT LIÊN QUAN:
+RELEVANT LAWS:
 {context}
 
-Hãy soạn thảo văn bản hoàn chỉnh."""
+Please draft a complete document."""
 
-    result = await call_claude(system_prompt, user_message, max_tokens=8192)
+    result = await call_llm(system_prompt, user_message, max_tokens=8192)
     
     # Update usage
     with get_db() as conn:
@@ -2071,23 +1883,23 @@ async def compare_contracts(req: ContractCompareRequest, company: dict = Depends
     contracts_text = ""
     for i, c in enumerate(contracts_data, 1):
         text = (c.get("extracted_text") or "")[:8000]
-        contracts_text += f"\n\n--- HỢP ĐỒNG {i}: {c['name']} (Loại: {c.get('contract_type', 'N/A')}) ---\n{text}"
+        contracts_text += f"\n\n--- CONTRACT {i}: {c['name']} (Type: {c.get('contract_type', 'N/A')}) ---\n{text}"
 
-    system_prompt = """Bạn là luật sư chuyên so sánh hợp đồng. Phân tích và so sánh các hợp đồng được cung cấp.
+    system_prompt = """You are a lawyer specializing in contract comparison. Analyze and compare the provided contracts.
 
-Trả về JSON format:
+Return in JSON format:
 {
-    "summary": "Tóm tắt so sánh tổng quan",
+    "summary": "Overall comparison summary",
     "contracts": [{"id": "...", "name": "...", "strengths": ["..."], "weaknesses": ["..."]}],
-    "differences": [{"aspect": "Khía cạnh", "details": [{"contract": "Tên HĐ", "content": "Nội dung"}], "recommendation": "Đề xuất"}],
-    "inconsistencies": ["Điểm không nhất quán giữa các hợp đồng"],
-    "best_for_company": {"contract_name": "...", "reason": "Lý do"},
-    "recommendations": ["Đề xuất chung"]
+    "differences": [{"aspect": "Aspect", "details": [{"contract": "Contract Name", "content": "Content"}], "recommendation": "Recommendation"}],
+    "inconsistencies": ["Inconsistencies between contracts"],
+    "best_for_company": {"contract_name": "...", "reason": "Reason"},
+    "recommendations": ["General recommendations"]
 }"""
 
-    user_message = f"So sánh {len(contracts_data)} hợp đồng sau:{contracts_text}\n\nHãy phân tích chi tiết sự khác biệt, điểm mạnh/yếu của từng hợp đồng, và đề xuất hợp đồng nào có lợi hơn cho công ty."
+    user_message = f"Compare the following {len(contracts_data)} contracts:{contracts_text}\n\nPlease analyze in detail the differences, strengths/weaknesses of each contract, and suggest which contract is more favorable for the company."
 
-    result = await call_claude(system_prompt, user_message, max_tokens=8192)
+    result = await call_llm(system_prompt, user_message, max_tokens=8192)
 
     # Update usage
     with get_db() as conn:
@@ -2720,51 +2532,51 @@ async def compare_contracts_detailed(req: ContractCompareRequest, company: dict 
                 parties_raw = json.loads(parties_raw)
             except Exception:
                 parties_raw = [parties_raw]
-        contracts_text += f"\n\n--- HỢP ĐỒNG {i}: {c['name']} ---\n"
-        contracts_text += f"Loại: {c.get('contract_type', 'N/A')}\n"
-        contracts_text += f"Các bên: {', '.join(str(p) for p in (parties_raw or []))}\n"
-        contracts_text += f"Thời hạn: {c.get('start_date', 'N/A')} → {c.get('end_date', 'N/A')}\n"
-        contracts_text += f"Giá trị: {c.get('value', 'N/A')}\n"
-        contracts_text += f"NỘI DUNG:\n{text}"
+        contracts_text += f"\n\n--- CONTRACT {i}: {c['name']} ---\n"
+        contracts_text += f"Type: {c.get('contract_type', 'N/A')}\n"
+        contracts_text += f"Parties: {', '.join(str(p) for p in (parties_raw or []))}\n"
+        contracts_text += f"Term: {c.get('start_date', 'N/A')} → {c.get('end_date', 'N/A')}\n"
+        contracts_text += f"Value: {c.get('value', 'N/A')}\n"
+        contracts_text += f"CONTENT:\n{text}"
 
-    system_prompt = """Bạn là luật sư chuyên so sánh hợp đồng chi tiết. Phân tích từng khía cạnh.
+    system_prompt = """You are a lawyer specializing in detailed contract comparison. Analyze each aspect.
 
-Trả về JSON format:
+Return in JSON format:
 {
-    "summary": "Tóm tắt so sánh tổng quan",
+    "summary": "Overall comparison summary",
     "side_by_side": [
         {
-            "aspect": "Tên khía cạnh (VD: Điều khoản thanh toán, Phạt vi phạm, Bảo mật...)",
+            "aspect": "Aspect Name (e.g. Payment terms, Penalty, Confidentiality...)",
             "contracts": [
-                {"name": "Tên HĐ 1", "content": "Nội dung điều khoản", "rating": "good|neutral|risk"},
-                {"name": "Tên HĐ 2", "content": "Nội dung điều khoản", "rating": "good|neutral|risk"}
+                {"name": "Contract 1 Name", "content": "Clause content", "rating": "good|neutral|risk"},
+                {"name": "Contract 2 Name", "content": "Clause content", "rating": "good|neutral|risk"}
             ],
-            "analysis": "Phân tích so sánh",
-            "recommendation": "Đề xuất"
+            "analysis": "Comparative analysis",
+            "recommendation": "Recommendation"
         }
     ],
     "risk_matrix": [
         {"contract_name": "...", "overall_risk": "low|medium|high", "risk_score": 1-100, "key_risks": ["..."]}
     ],
     "missing_clauses": [
-        {"clause": "Tên điều khoản thiếu", "affected_contracts": ["..."], "importance": "critical|important|optional"}
+        {"clause": "Missing clause name", "affected_contracts": ["..."], "importance": "critical|important|optional"}
     ],
-    "inconsistencies": ["Điểm không nhất quán"],
-    "best_contract": {"name": "...", "reason": "Lý do"},
-    "action_items": ["Việc cần làm cụ thể"]
+    "inconsistencies": ["Inconsistencies"],
+    "best_contract": {"name": "...", "reason": "Reason"},
+    "action_items": ["Specific action items"]
 }"""
 
-    user_message = f"""So sánh CHI TIẾT {len(contracts_data)} hợp đồng sau. Phân tích từng điều khoản quan trọng side-by-side:
+    user_message = f"""COMPARE IN DETAIL the following {len(contracts_data)} contracts. Analyze each important clause side-by-side:
 {contracts_text}
 
-Hãy phân tích:
-1. So sánh từng điều khoản quan trọng (thanh toán, phạt vi phạm, bảo mật, chấm dứt HĐ, giải quyết tranh chấp...)
-2. Ma trận rủi ro cho từng hợp đồng
-3. Điều khoản nào bị thiếu ở hợp đồng nào
-4. Điểm không nhất quán giữa các hợp đồng
-5. Đề xuất cụ thể"""
+Please analyze:
+1. Compare each important clause (payment, penalty, confidentiality, termination, dispute resolution...)
+2. Risk matrix for each contract
+3. Which clauses are missing in which contract
+4. Inconsistencies between contracts
+5. Specific recommendations"""
 
-    result = await call_claude(system_prompt, user_message, max_tokens=8192)
+    result = await call_llm(system_prompt, user_message, max_tokens=8192)
 
     # Update usage
     with get_db() as conn:
@@ -2837,28 +2649,28 @@ async def ai_fill_template(
     # Use AI to fill template
     try:
         result = await legal_agent.run_agent(
-            question=f"""Điền vào template sau dựa trên thông tin được cung cấp.
+            question=f"""Fill out the following template based on the provided information.
 
 TEMPLATE:
 {template_content[:10000]}
 
-THÔNG TIN:
+INFORMATION:
 {context}
 
-Hãy điền đầy đủ các trường trong template. Giữ nguyên format. Thay [placeholder] bằng nội dung phù hợp.
-Nếu thiếu thông tin, đánh dấu [CẦN BỔ SUNG: mô tả].
-Trả về toàn bộ nội dung template đã điền.""",
+Please fill in all fields in the template. Keep the original format. Replace [placeholder] with appropriate content.
+If information is missing, mark it as [NEEDS INFO: description].
+Return the entire filled template content.""",
             company_id=company_id
         )
     except Exception as e:
         print(f"AI fill error: {e}")
-        raise HTTPException(502, "Lỗi AI khi điền template")
+        raise HTTPException(502, "AI error while filling template")
 
-    # Parse [CẦN BỔ SUNG] markers
+    # Parse [NEEDS INFO] markers
     filled_content = result.get("answer", "")
     missing_fields = []
     import re as _re
-    for match in _re.finditer(r'\[CẦN BỔ SUNG:\s*([^\]]+)\]', filled_content):
+    for match in _re.finditer(r'\[NEEDS INFO:\s*([^\]]+)\]', filled_content):
         missing_fields.append(match.group(1).strip())
 
     return {
@@ -3866,16 +3678,16 @@ async def get_contract_suggestions(contract_id: str, company: dict = Depends(ver
     
     # Check for common missing clauses
     clause_checks = [
-        {"name": "Bảo mật thông tin", "keywords": ["bảo mật", "confidential", "bí mật"], "importance": "high",
-         "suggestion": "Nên thêm điều khoản bảo mật thông tin để bảo vệ dữ liệu kinh doanh."},
-        {"name": "Phạt vi phạm", "keywords": ["phạt", "vi phạm", "chế tài"], "importance": "high",
-         "suggestion": "Cần quy định mức phạt cụ thể khi vi phạm hợp đồng (tối đa 8% theo Luật TM 2005)."},
-        {"name": "Bất khả kháng", "keywords": ["bất khả kháng", "force majeure"], "importance": "medium",
-         "suggestion": "Nên có điều khoản bất khả kháng để xử lý các tình huống ngoài kiểm soát."},
-        {"name": "Giải quyết tranh chấp", "keywords": ["tranh chấp", "trọng tài", "tòa án"], "importance": "high",
-         "suggestion": "Cần quy định cơ quan giải quyết tranh chấp (tòa án hoặc trọng tài)."},
-        {"name": "Bồi thường thiệt hại", "keywords": ["bồi thường", "thiệt hại"], "importance": "medium",
-         "suggestion": "Nên quy định rõ phạm vi và giới hạn bồi thường thiệt hại."},
+        {"name": "Confidentiality", "keywords": ["bảo mật", "confidential", "bí mật", "non-disclosure"], "importance": "high",
+         "suggestion": "Should add a confidentiality clause to protect business data."},
+        {"name": "Penalty", "keywords": ["phạt", "vi phạm", "chế tài", "penalty"], "importance": "high",
+         "suggestion": "Need to specify exact penalties for breach of contract (subject to the Indian Contract Act, 1872)."},
+        {"name": "Force Majeure", "keywords": ["bất khả kháng", "force majeure"], "importance": "medium",
+         "suggestion": "Should have a force majeure clause to handle events beyond control."},
+        {"name": "Dispute Resolution", "keywords": ["tranh chấp", "trọng tài", "tòa án", "dispute", "arbitration", "court"], "importance": "high",
+         "suggestion": "Need to specify the dispute resolution body (court or arbitration)."},
+        {"name": "Damages", "keywords": ["bồi thường", "thiệt hại", "damages", "compensation"], "importance": "medium",
+         "suggestion": "Should clearly specify the scope and limits of damages."},
         {"name": "Điều khoản chấm dứt", "keywords": ["chấm dứt", "hủy bỏ", "kết thúc hợp đồng"], "importance": "high",
          "suggestion": "Cần quy định điều kiện và thủ tục chấm dứt hợp đồng trước hạn."},
         {"name": "Bảo hành", "keywords": ["bảo hành", "warranty"], "importance": "low",

@@ -1,93 +1,90 @@
 """
 Contract Review AI Service (LLM-based)
-Uses Claude to analyze contracts instead of regex pattern matching
+Uses Ollama to analyze contracts
 """
 
 import os
 import json
 import logging
+import asyncio
 from typing import Dict, Optional
 from datetime import datetime
-from anthropic import Anthropic
+from src.services.llm_provider import OllamaProvider
 
 logger = logging.getLogger(__name__)
 
 
-# System prompt for Claude contract review
-REVIEW_SYSTEM_PROMPT = """Bạn là chuyên gia pháp lý Việt Nam với 20 năm kinh nghiệm rà soát hợp đồng.
+# System prompt for contract review
+REVIEW_SYSTEM_PROMPT = """You are an Indian legal expert with 20 years of experience reviewing contracts.
 
-Phân tích hợp đồng sau và trả về JSON với cấu trúc:
+Analyze the following contract and return a JSON with this structure:
 
 {
-  "contract_title": "tên hợp đồng",
-  "contract_type": "loại HĐ (lao_dong/thue/mua_ban/dich_vu/...)",
-  "parties": ["Bên A", "Bên B"],
-  "risk_score": 0-100 (0=an toàn, 100=rất rủi ro),
+  "contract_title": "name of the contract",
+  "contract_type": "type of contract (employment/lease/sale/service/...)",
+  "parties": ["Party A", "Party B"],
+  "risk_score": 0-100 (0=safe, 100=very risky),
   "risk_level": "LOW/MEDIUM/HIGH/CRITICAL",
-  "summary": "tóm tắt 2-3 câu về hợp đồng và rủi ro chính",
+  "summary": "2-3 sentences summary of the contract and main risks",
   "clauses": [
     {
-      "clause_number": "Điều X",
-      "title": "tên điều khoản",
-      "content": "trích dẫn nguyên văn phần rủi ro",
+      "clause_number": "Clause X",
+      "title": "clause title",
+      "content": "verbatim text of the risky part",
       "risk_level": "LOW/MEDIUM/HIGH/CRITICAL",
       "risk_score": 0-100,
-      "issue": "vấn đề gì",
-      "law_reference": "Điều X Luật Y năm Z quy định...",
-      "suggestion": "đề xuất sửa đổi cụ thể",
+      "issue": "what is the issue",
+      "law_reference": "Section X of Act Y states...",
+      "suggestion": "specific suggestion to fix",
       "category": "penalty/liability/ip/dispute/termination/..."
     }
   ],
   "missing_clauses": [
     {
-      "clause": "tên điều khoản thiếu",
+      "clause": "name of missing clause",
       "importance": "HIGH/MEDIUM/LOW",
-      "suggestion": "nên thêm điều khoản... theo Điều X Luật Y"
+      "suggestion": "should add clause... as per Section X"
     }
   ],
   "compliance": {
-    "bo_luat_dan_su_2015": {"status": "OK/PARTIAL/VIOLATION", "issues": []},
-    "luat_thuong_mai_2005": {"status": "OK/PARTIAL/VIOLATION", "issues": []},
-    "luat_lao_dong_2019": {"status": "OK/PARTIAL/VIOLATION/N_A", "issues": []},
-    "luat_doanh_nghiep_2020": {"status": "OK/PARTIAL/VIOLATION/N_A", "issues": []}
+    "indian_contract_act_1872": {"status": "OK/PARTIAL/VIOLATION", "issues": []},
+    "companies_act_2013": {"status": "OK/PARTIAL/VIOLATION/N_A", "issues": []},
+    "labour_codes_2020": {"status": "OK/PARTIAL/VIOLATION/N_A", "issues": []},
+    "consumer_protection_act_2019": {"status": "OK/PARTIAL/VIOLATION/N_A", "issues": []}
   },
   "recommendations": [
     {
       "priority": 1,
-      "action": "hành động cụ thể",
-      "reason": "lý do, trích dẫn luật"
+      "action": "specific action",
+      "reason": "reason, legal citation"
     }
   ]
 }
 
-Quy tắc phân tích:
-1. Phạt vi phạm HĐ thương mại không được quá 8% giá trị phần nghĩa vụ bị vi phạm (Điều 301 Luật TM 2005)
-2. Thời gian thử việc tối đa: 60 ngày (công việc cần CĐ/ĐH), 30 ngày (TC/CN), 6 ngày (khác) — Điều 25 BLLĐ 2019
-3. Lương thử việc ≥ 85% lương chính thức — Điều 26 BLLĐ 2019
-4. HĐ lao động phải có BHXH, BHYT, BHTN — Điều 168 BLLĐ 2019
-5. Thời giờ làm việc ≤ 8h/ngày, 48h/tuần — Điều 105 BLLĐ 2019
-6. Lãi suất vay không quá 20%/năm (dân sự) — Điều 468 BLDS 2015
-7. Hợp đồng phải có điều khoản giải quyết tranh chấp
-8. Nên có điều khoản bất khả kháng (force majeure) — Điều 156 BLDS 2015
-9. Điều khoản bảo mật phải có thời hạn cụ thể
-10. Quyền SHTT phải quy định rõ ràng
+Analysis Rules:
+1. Penalty for breach of contract must be reasonable compensation (Section 74, Indian Contract Act).
+2. Probation period typically 3-6 months based on Standing Orders/Appointment letter.
+3. No statutory minimum for probation salary, but minimum wages must apply (Code on Wages, 2019).
+4. Employment contracts must comply with EPF, ESI, Gratuity (Social Security Code 2020).
+5. Working hours ≤ 8h/day, 48h/week (Factories Act / OSH Code 2020).
+6. Interest rates subject to RBI guidelines and Usurious Loans Act state-level limits.
+7. Contracts must have a dispute resolution clause (Arbitration & Conciliation Act 1996).
+8. Force majeure (Section 56 Indian Contract Act).
+9. Confidentiality clauses must have a specific duration.
+10. Intellectual Property rights must be clearly defined (IT Act, Copyright Act, Patents Act).
 
-CHỈ trả về JSON, không giải thích thêm."""
+RETURN ONLY JSON, do not explain further."""
 
 
 class ContractReviewService:
     """
-    Contract Review AI - Uses Claude LLM for intelligent contract analysis
+    Contract Review AI - Uses Ollama LLM for intelligent contract analysis
     """
     
     def __init__(self):
-        api_key = os.getenv("ANTHROPIC_API_KEY")
-        if not api_key:
-            raise ValueError("ANTHROPIC_API_KEY not set")
-        self.client = Anthropic(api_key=api_key)
-        self.model = os.getenv("ANTHROPIC_MODEL", "claude-sonnet-4-20250514")
+        self.provider = OllamaProvider()
     
-    def review_contract(
+    async def review_contract_async(
         self,
         contract_text: str,
         contract_name: str = "",
@@ -95,53 +92,43 @@ class ContractReviewService:
         parties: Optional[list] = None
     ) -> Dict:
         """
-        Main review function — uses Claude to analyze contract
-        
-        Args:
-            contract_text: Full contract text
-            contract_name: Name of contract
-            contract_type: Type of contract (optional)
-            parties: List of parties (optional)
-        
-        Returns:
-            Dict with complete review results
+        Main review function — uses Ollama to analyze contract
         """
         if len(contract_text.strip()) < 50:
             return {
                 "success": False,
-                "error": "Nội dung hợp đồng quá ngắn để phân tích"
+                "error": "Contract content is too short to analyze"
             }
         
-        # Truncate if too long (Claude context limit)
-        max_chars = 100000  # ~25K tokens
+        # Truncate if too long
+        max_chars = 100000 
         if len(contract_text) > max_chars:
-            contract_text = contract_text[:max_chars] + "\n\n[... nội dung bị cắt do quá dài ...]"
+            contract_text = contract_text[:max_chars] + "\n\n[... content truncated due to length ...]"
         
         # Build user message
-        user_message = f"""Rà soát hợp đồng sau:
+        user_message = f"""Review the following contract:
 
-Tên: {contract_name or 'Không rõ'}
-Loại: {contract_type or 'Tự xác định'}
+Title: {contract_name or 'Unknown'}
+Type: {contract_type or 'Auto-detect'}
 
----NỘI DUNG HỢP ĐỒNG---
+---CONTRACT CONTENT---
 {contract_text}
----HẾT NỘI DUNG---
+---END CONTENT---
 
-Phân tích đầy đủ 10 danh mục rủi ro và trả về JSON."""
+Fully analyze all risk categories and return a JSON."""
 
         try:
-            # Call Claude API
-            response = self.client.messages.create(
-                model=self.model,
-                max_tokens=4096,
+            # Call Ollama API
+            response = await self.provider.chat(
                 system=REVIEW_SYSTEM_PROMPT,
-                messages=[{"role": "user", "content": user_message}]
+                messages=[{"role": "user", "content": user_message}],
+                max_tokens=4096
             )
             
             # Extract JSON from response
-            response_text = response.content[0].text.strip()
+            response_text = response["content"][0]["text"].strip()
             
-            # Try to parse JSON (Claude might wrap in ```json blocks)
+            # Try to parse JSON (Ollama might wrap in ```json blocks)
             if response_text.startswith("```"):
                 # Remove markdown code block
                 lines = response_text.split("\n")
@@ -159,7 +146,7 @@ Phân tích đầy đủ 10 danh mục rủi ro và trả về JSON."""
             
             review_result = json.loads(response_text)
             review_result["success"] = True
-            review_result["ai_model"] = self.model
+            review_result["ai_model"] = self.provider.model
             
             # Add metadata
             review_result["review_id"] = f"review_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
@@ -168,24 +155,27 @@ Phân tích đầy đủ 10 danh mục rủi ro và trả về JSON."""
             
             # Ensure contract_title is set
             if not review_result.get("contract_title"):
-                review_result["contract_title"] = contract_name or "Hợp đồng"
+                review_result["contract_title"] = contract_name or "Contract"
             
             return review_result
             
         except json.JSONDecodeError as e:
-            logger.error(f"Failed to parse Claude response as JSON: {e}")
-            # Return the raw text as fallback
+            logger.error(f"Failed to parse Ollama response as JSON: {e}")
             return {
                 "success": True,
                 "raw_analysis": response_text,
-                "parse_error": "AI trả về không đúng format JSON, hiển thị dạng text",
-                "ai_model": self.model,
-                "contract_title": contract_name or "Hợp đồng",
+                "parse_error": "AI returned invalid JSON, showing text format",
+                "ai_model": self.provider.model,
+                "contract_title": contract_name or "Contract",
                 "reviewed_at": datetime.now().isoformat()
             }
         except Exception as e:
             logger.error(f"Contract review failed: {e}")
             return {
                 "success": False,
-                "error": f"Lỗi phân tích: {str(e)}"
+                "error": f"Analysis error: {str(e)}"
             }
+            
+    def review_contract(self, *args, **kwargs) -> Dict:
+        """Sync wrapper for async method"""
+        return asyncio.run(self.review_contract_async(*args, **kwargs))
