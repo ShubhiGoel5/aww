@@ -183,7 +183,7 @@ async def login(data: LoginRequest):
         )
     
     # FIX 7: Sanitize email in logs
-    from ..security_utils import sanitize_log
+    from src.api.security_utils import sanitize_log
     logging.info(f"LOGIN ATTEMPT: email={sanitize_log(data.email)}")
     
     with get_db() as conn:
@@ -227,7 +227,7 @@ async def login(data: LoginRequest):
         
         # Audit log for login
         try:
-            from ..main import log_audit
+            from src.api.main import log_audit
             log_audit(str(user["company_id"]), str(user["id"]), "login", "auth")
         except Exception:
             pass

@@ -111,25 +111,25 @@ async def get_status(current_user: dict = Depends(get_current_user)):
                 # Using default
                 return {
                     "configured": False,
-                    "provider": "anthropic",
-                    "model": "claude-sonnet-4-20250514",
+                    "provider": "groq",
+                    "model": "groq-llama",
                     "auth_method": "env_var",
-                    "note": "Using default ANTHROPIC_API_KEY from environment"
+                    "note": "Using default GROQ_API_KEY from environment"
                 }
             
             llm_config = row["metadata"].get("llm_provider", {})
             if not llm_config:
                 return {
                     "configured": False,
-                    "provider": "anthropic",
-                    "model": "claude-sonnet-4-20250514",
+                    "provider": "groq",
+                    "model": "groq-llama",
                     "auth_method": "env_var"
                 }
             
             return {
                 "configured": True,
-                "provider": llm_config.get("provider", "anthropic"),
-                "model": llm_config.get("model", "claude-sonnet-4-20250514"),
+                "provider": llm_config.get("provider", "groq"),
+                "model": llm_config.get("model", "groq-llama"),
                 "auth_method": llm_config.get("auth_method", "api_key"),
                 "base_url": llm_config.get("base_url") if llm_config.get("provider") == "custom" else None
             }
@@ -152,9 +152,9 @@ async def list_models(
                 
                 if row and row.get("metadata"):
                     llm_config = row["metadata"].get("llm_provider", {})
-                    provider = llm_config.get("provider", "anthropic")
+                    provider = llm_config.get("provider", "groq")
                 else:
-                    provider = "anthropic"
+                    provider = "groq"
     
     if provider not in PROVIDERS:
         raise HTTPException(400, f"Unknown provider: {provider}")
@@ -224,7 +224,7 @@ async def set_model(
     return {
         "success": True,
         "model": model,
-        "provider": llm_config.get("provider", "anthropic")
+        "provider": llm_config.get("provider", "groq")
     }
 
 

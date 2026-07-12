@@ -9,7 +9,7 @@ import logging
 import asyncio
 from typing import Dict, Optional
 from datetime import datetime
-from src.services.llm_provider import OllamaProvider
+from src.services.llm_provider import GroqProvider
 
 logger = logging.getLogger(__name__)
 
@@ -82,7 +82,7 @@ class ContractReviewService:
     """
     
     def __init__(self):
-        self.provider = OllamaProvider()
+        self.provider = GroqProvider()
     
     async def review_contract_async(
         self,

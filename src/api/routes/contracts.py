@@ -77,51 +77,29 @@ def extract_file_text(file_path: str, file_ext: str, content: bytes = None) -> O
 
 
 async def ai_analyze_contract(text: str) -> dict:
-    """Use Claude to extract contract metadata from text"""
-    CLAUDE_OAUTH_TOKEN = os.getenv("CLAUDE_OAUTH_TOKEN", "")
+    """Use LLM to extract contract metadata from text"""
+    from src.services.llm_provider import call_llm_simple
     
-    system_prompt = """Phân tích văn bản hợp đồng và trích xuất thông tin. Trả về JSON thuần túy (không markdown):
+    system_prompt = """Analyze the contract text and extract information. Return pure JSON (no markdown):
 {
-    "title": "Tên hợp đồng (ví dụ: Hợp đồng lao động giữa Công ty ABC và Nguyễn Văn A)",
-    "contract_type": "hop_dong_lao_dong|hop_dong_dich_vu|hop_dong_thue|hop_dong_mua_ban|hop_dong_hop_tac|khac",
-    "parties": ["Bên A: Công ty ABC", "Bên B: Nguyễn Văn A"],
-    "start_date": "YYYY-MM-DD hoặc null",
-    "end_date": "YYYY-MM-DD hoặc null",
-    "value": số tiền (số nguyên VNĐ) hoặc null,
-    "summary": "Tóm tắt nội dung chính trong 2-3 câu"
+    "title": "Contract name (e.g. Employment Contract between ABC Corp and John Doe)",
+    "contract_type": "employment_contract|service_contract|lease_contract|sales_contract|partnership_contract|other",
+    "parties": ["Party A: ABC Corp", "Party B: John Doe"],
+    "start_date": "YYYY-MM-DD or null",
+    "end_date": "YYYY-MM-DD or null",
+    "value": amount (integer) or null,
+    "summary": "Summary of main content in 2-3 sentences"
 }
-Chỉ trả về JSON, không thêm text hay markdown."""
+Return ONLY JSON, no text or markdown."""
 
-    headers = {
-        "Authorization": f"Bearer {CLAUDE_OAUTH_TOKEN}",
-        "anthropic-beta": "oauth-2025-04-20",
-        "anthropic-version": "2023-06-01",
-        "content-type": "application/json"
-    }
-    
-    payload = {
-        "model": "claude-sonnet-4-20250514",
-        "max_tokens": 1024,
-        "system": system_prompt,
-        "messages": [{"role": "user", "content": f"Phân tích hợp đồng:\n\n{text[:15000]}"}]
-    }
-    
     try:
-        async with httpx.AsyncClient(timeout=60) as client:
-            response = await client.post(
-                "https://api.anthropic.com/v1/messages",
-                headers=headers,
-                json=payload
-            )
-            response.raise_for_status()
-            data = response.json()
-            content = data["content"][0]["text"]
-            # Clean markdown code blocks if any
-            content = content.strip()
-            if content.startswith("```"):
-                content = content.split("\n", 1)[1] if "\n" in content else content
-                content = content.rsplit("```", 1)[0] if "```" in content else content
-            return json.loads(content.strip())
+        result = await call_llm_simple(system_prompt, f"Analyze contract:\n\n{text[:15000]}", max_tokens=1024)
+        content = result["content"].strip()
+        # Clean markdown code blocks if any
+        if content.startswith("```"):
+            content = content.split("\n", 1)[1] if "\n" in content else content
+            content = content.rsplit("```", 1)[0] if "```" in content else content
+        return json.loads(content.strip())
     except Exception as e:
         print(f"AI contract analysis error: {e}")
         return {}
@@ -159,9 +137,9 @@ class ContractReview(BaseModel):
 # Helpers
 # ============================================
 
-async def call_claude_for_review(contract_text: str, contract_type: str = None) -> dict:
-    """Call Claude for contract review"""
-    CLAUDE_OAUTH_TOKEN = os.getenv("CLAUDE_OAUTH_TOKEN", "")
+async def call_llm_for_review(contract_text: str, contract_type: str = None) -> dict:
+    """Call LLM for contract review"""
+    from src.services.llm_provider import call_llm_simple
     
     system_prompt = """You are a senior lawyer specializing in contract review under Indian law, specifically the Industrial Relations Code, 2020 (IR Code), Indian Contract Act 1872, Companies Act 2013, and related guiding documents.
 
@@ -214,45 +192,39 @@ IMPORTANT:
 
 Please review and return the JSON as requested."""
 
-    headers = {
-        "Authorization": f"Bearer {CLAUDE_OAUTH_TOKEN}",
-        "anthropic-beta": "oauth-2025-04-20",
-        "anthropic-version": "2023-06-01",
-        "content-type": "application/json"
-    }
+    result = await call_llm_simple(system_prompt, user_message, max_tokens=8192)
     
-    payload = {
-        "model": "claude-sonnet-4-20250514",
-        "max_tokens": 8192,
-        "system": system_prompt,
-        "messages": [{"role": "user", "content": user_message}]
-    }
+    content = result["content"]
     
-    async with httpx.AsyncClient(timeout=120) as client:
-        response = await client.post(
-            "https://api.anthropic.com/v1/messages",
-            headers=headers,
-            json=payload
-        )
-        response.raise_for_status()
-        data = response.json()
-        
-        content = data["content"][0]["text"]
-        
-        # Try to parse JSON from Claude's response
-        try:
-            review_result = json.loads(content)
-        except:
-            # If not valid JSON, wrap it
-            review_result = {"raw_analysis": content}
-        
-        return {
-            "review": review_result,
-            "tokens": {
-                "input": data["usage"]["input_tokens"],
-                "output": data["usage"]["output_tokens"]
-            }
+    # Try to parse JSON from LLM's response
+    try:
+        # Clean markdown if present
+        content_clean = content.strip()
+        if content_clean.startswith("```"):
+            lines = content_clean.split("\n")
+            json_lines = []
+            in_block = False
+            for line in lines:
+                if line.startswith("```") and not in_block:
+                    in_block = True
+                    continue
+                elif line.startswith("```") and in_block:
+                    break
+                elif in_block:
+                    json_lines.append(line)
+            content_clean = "\n".join(json_lines)
+        review_result = json.loads(content_clean)
+    except:
+        # If not valid JSON, wrap it
+        review_result = {"raw_analysis": content}
+    
+    return {
+        "review": review_result,
+        "tokens": {
+            "input": result.get("input_tokens", 0),
+            "output": result.get("output_tokens", 0)
         }
+    }
 
 # ============================================
 # Endpoints
@@ -288,7 +260,7 @@ async def analyze_uploaded_file(
     if not extracted_text or len(extracted_text.strip()) < 20:
         return {
             "success": False,
-            "message": "Không thể đọc nội dung file. Vui lòng nhập thông tin thủ công.",
+            "message": "Cannot read file content. Vui lòng nhập thông tin thủ công.",
             "extracted_text": extracted_text,
             "metadata": {}
         }
@@ -385,7 +357,7 @@ async def create_contract(
         
         # Audit log for upload
         try:
-            from ..main import log_audit
+            from src.api.main import log_audit
             log_audit(str(current_user["company_id"]), str(current_user.get("id")), "upload", "contract", str(contract["id"]))
         except Exception:
             pass
@@ -491,7 +463,7 @@ async def get_contract(contract_id: str, current_user: Dict = Depends(get_curren
         
         # Audit log for view
         try:
-            from ..main import log_audit
+            from src.api.main import log_audit
             log_audit(str(current_user["company_id"]), str(current_user.get("user_id")), "view", "contract", contract_id)
         except Exception:
             pass
@@ -590,7 +562,7 @@ async def delete_contract(
         
         # Audit log for delete
         try:
-            from ..main import log_audit
+            from src.api.main import log_audit
             log_audit(str(current_user["company_id"]), str(current_user.get("user_id")), "delete", "contract", contract_id)
         except Exception:
             pass
@@ -628,7 +600,7 @@ async def review_contract(
             )
         
         # Call Claude for review
-        result = await call_claude_for_review(text, contract.get("contract_type"))
+        result = await call_llm_for_review(text, contract.get("contract_type"))
         
         # Save review result
         cur.execute("""
@@ -678,7 +650,7 @@ async def review_contract_text(
     if not review.contract_text:
         raise HTTPException(status_code=400, detail="contract_text is required")
     
-    result = await call_claude_for_review(review.contract_text)
+    result = await call_llm_for_review(review.contract_text)
     
     # Update usage
     with get_db() as conn:

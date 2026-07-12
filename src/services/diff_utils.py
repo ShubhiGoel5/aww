@@ -68,7 +68,7 @@ def generate_inline_diff(original: str, edited: str) -> Dict:
     if deletions > 0:
         summary.append(f"-{deletions} dòng xóa")
     
-    summary_text = ", ".join(summary) if summary else "Không có thay đổi"
+    summary_text = ", ".join(summary) if summary else "No changes"
     
     return {
         'diff_html': diff_html,

@@ -1,7 +1,7 @@
 """
 Legal AI Agent API
 - Full-text search Vietnamese law database
-- Claude OAuth for AI processing
+- Groq LLM for AI processing
 - Multi-tenant API key authentication
 - User authentication and management
 """
@@ -61,7 +61,7 @@ from .routes import auth, company, keys, usage, chats, documents, admin, contrac
 # from .middleware.logging import PlatformLoggingMiddleware  # disabled for deploy
 
 # Import agent (initialized after DB functions are defined)
-from ..agents import legal_agent
+from src.agents import legal_agent
 
 # Import LLM Provider Manager
 from ..services.llm_provider import LLMProviderManager
@@ -114,7 +114,7 @@ async def security_headers(request: Request, call_next):
         "style-src 'self' 'unsafe-inline'; "
         "img-src 'self' data: https:; "
         "font-src 'self' data:; "
-        "connect-src 'self' https://api.anthropic.com"
+        "connect-src 'self' https://api.groq.com"
     )
     
     return response
@@ -769,7 +769,7 @@ async def favicon():
 @app.get("/health")
 @app.get("/v1/health")
 async def health():
-    status = {"status": "ok", "version": "2.0.0", "timestamp": time.time(), "ai_engine": "claude-sonnet-4"}
+    status = {"status": "ok", "version": "2.0.0", "timestamp": time.time(), "ai_engine": "groq-llama"}
     try:
         with get_db() as conn:
             cur = conn.cursor()
@@ -797,7 +797,7 @@ async def chat_upload_file(file: UploadFile = File(...), company: dict = Depends
     file_ext = os.path.splitext(filename)[1].lower()
     allowed = {".pdf", ".docx", ".doc", ".txt"}
     if file_ext not in allowed:
-        raise HTTPException(status_code=400, detail=f"Loại file không hỗ trợ: {file_ext}. Chỉ chấp nhận: {', '.join(allowed)}")
+        raise HTTPException(status_code=400, detail=f"Unsupported file type: {file_ext}. Only accepts: {', '.join(allowed)}")
 
     content = await file.read()
     if len(content) > 10 * 1024 * 1024:  # 10MB
@@ -825,7 +825,7 @@ async def chat_upload_file(file: UploadFile = File(...), company: dict = Depends
                 extracted_text = extract_file_text(tmp_path, file_ext, content)
             except Exception as e:
                 print(f"Extraction error: {e}")
-                extracted_text = f"[Không thể trích xuất text tự động. File đã được lưu: {filename}]"
+                extracted_text = f"[Cannot extract text automatically. File saved: {filename}]"
 
         if not extracted_text or len(extracted_text.strip()) < 10:
             extracted_text = f"[File uploaded: {filename}]"
@@ -1188,7 +1188,7 @@ CÂU HỎI: {query.question}"""
                 json.dumps(citations),
                 0.85 if citations else 0.5,
                 total_tokens,
-                result.get("model", "claude-sonnet-4-20250514")
+                result.get("model", "groq-llama")
             ))
             
             cur.execute("""
@@ -1217,7 +1217,7 @@ CÂU HỎI: {query.question}"""
         citations=citations,
         confidence=0.85 if citations else 0.5,
         tokens_used=result.get("input_tokens", 0) + result.get("output_tokens", 0),
-        model=result.get("model", "claude-sonnet-4-20250514"),
+        model=result.get("model", "groq-llama"),
         session_id=str(session_id) if session_id else None
     )
 
@@ -1344,7 +1344,7 @@ CÂU HỎI: {query.question}"""
 
                     cur.execute("""
                         INSERT INTO messages (session_id, company_id, role, content, citations, confidence, tokens_used, model)
-                        VALUES (%s, %s, 'assistant', %s, %s, %s, 0, 'claude-sonnet-4-20250514')
+                        VALUES (%s, %s, 'assistant', %s, %s, %s, 0, 'groq-llama')
                     """, (
                         saved_session_id, company["company_id"],
                         complete_text, json.dumps(all_citations),
@@ -1872,7 +1872,7 @@ async def compare_contracts(req: ContractCompareRequest, company: dict = Depends
             """, (cid, company["company_id"]))
             contract = cur.fetchone()
             if not contract:
-                raise HTTPException(status_code=404, detail=f"Không tìm thấy hợp đồng: {cid}")
+                raise HTTPException(status_code=404, detail=f"Contract not found: {cid}")
             c = dict(contract)
             for key in ["start_date", "end_date"]:
                 if c.get(key):
@@ -2066,7 +2066,7 @@ async def annotate_document(doc_id: str, annotation: AnnotationCreate, company: 
             SELECT id FROM contracts WHERE id::text = %s AND company_id = %s AND status != 'deleted'
         """, (doc_id, company["company_id"], doc_id, company["company_id"]))
         if not cur.fetchone():
-            raise HTTPException(status_code=404, detail="Tài liệu không tồn tại")
+            raise HTTPException(status_code=404, detail="Document does not exist")
 
         cur.execute("""
             INSERT INTO document_annotations
@@ -2126,7 +2126,7 @@ async def delete_annotation(doc_id: str, annotation_id: str, company: dict = Dep
             WHERE id::text = %s AND document_id::text = %s AND company_id = %s
         """, (annotation_id, doc_id, company["company_id"]))
         if cur.rowcount == 0:
-            raise HTTPException(status_code=404, detail="Annotation không tồn tại")
+            raise HTTPException(status_code=404, detail="Annotation does not exist")
         conn.commit()
     return {"message": "Đã xóa annotation"}
 
@@ -2209,7 +2209,7 @@ async def generate_contract_report(contract_id: str, company: dict = Depends(ver
             )
             contract = cur.fetchone()
             if not contract:
-                raise HTTPException(404, "Hợp đồng không tồn tại")
+                raise HTTPException(404, "Contract does not exist")
     except HTTPException:
         raise
     except Exception as e:
@@ -2410,7 +2410,7 @@ async def contract_risk_overview(company: dict = Depends(verify_api_key)):
                 "type": "no_end_date",
                 "severity": "info",
                 "contract": contract_info,
-                "message": "Không có ngày kết thúc"
+                "message": "No end date"
             })
 
     # Sort risk items by severity
@@ -2515,7 +2515,7 @@ async def compare_contracts_detailed(req: ContractCompareRequest, company: dict 
             """, (cid, company["company_id"]))
             contract = cur.fetchone()
             if not contract:
-                raise HTTPException(status_code=404, detail=f"Không tìm thấy hợp đồng: {cid}")
+                raise HTTPException(status_code=404, detail=f"Contract not found: {cid}")
             c = dict(contract)
             for key in ["start_date", "end_date"]:
                 if c.get(key):
@@ -2635,7 +2635,7 @@ async def ai_fill_template(
                 template = cur.fetchone()
 
             if not template:
-                raise HTTPException(404, "Template không tồn tại")
+                raise HTTPException(404, "Template does not exist")
     except HTTPException:
         raise
     except Exception as e:
@@ -2867,7 +2867,7 @@ async def upload_contract_version(
         cur.execute("SELECT * FROM contracts WHERE id = %s AND company_id = %s AND status != 'deleted'", (contract_id, company_id))
         contract = cur.fetchone()
         if not contract:
-            raise HTTPException(404, "Hợp đồng không tồn tại")
+            raise HTTPException(404, "Contract does not exist")
 
         # Get current version number
         current_version = contract.get("metadata", {}).get("version", 1) if contract.get("metadata") else 1
@@ -2939,7 +2939,7 @@ async def get_contract_versions(contract_id: str, company: dict = Depends(verify
         cur.execute("SELECT metadata, name, original_filename, updated_at FROM contracts WHERE id = %s AND company_id = %s AND status != 'deleted'", (contract_id, company_id))
         contract = cur.fetchone()
         if not contract:
-            raise HTTPException(404, "Hợp đồng không tồn tại")
+            raise HTTPException(404, "Contract does not exist")
 
     metadata = contract.get("metadata") or {}
     versions = metadata.get("versions", [])
@@ -2977,7 +2977,7 @@ async def add_contract_note(
     note_type = request.get("type", "note")  # note, warning, action, resolved
 
     if not note_text:
-        raise HTTPException(400, "Ghi chú không được trống")
+        raise HTTPException(400, "Note cannot be empty")
 
     with get_db() as conn:
         cur = conn.cursor(cursor_factory=RealDictCursor)
@@ -2986,7 +2986,7 @@ async def add_contract_note(
         cur.execute("SELECT metadata FROM contracts WHERE id = %s AND company_id = %s AND status != 'deleted'", (contract_id, company_id))
         contract = cur.fetchone()
         if not contract:
-            raise HTTPException(404, "Hợp đồng không tồn tại")
+            raise HTTPException(404, "Contract does not exist")
 
         metadata = contract.get("metadata") or {}
         notes = metadata.get("notes", [])
@@ -3222,7 +3222,7 @@ async def export_chat(session_id: str, company: dict = Depends(verify_api_key)):
                 pass
 
     if not messages:
-        raise HTTPException(404, "Không tìm thấy cuộc hội thoại")
+        raise HTTPException(404, "Conversation not found")
 
     # Build markdown
     md = f"# Cuộc hội thoại - AI Legal Agent\n"
@@ -3387,7 +3387,7 @@ async def batch_upload_contracts(
     for file in files[:10]:  # Max 10 files
         file_ext = os.path.splitext(file.filename)[1].lower()
         if file_ext not in allowed_ext:
-            results.append({"filename": file.filename, "status": "error", "error": f"Loại file không hỗ trợ: {file_ext}"})
+            results.append({"filename": file.filename, "status": "error", "error": f"Unsupported file type: {file_ext}"})
             continue
 
         try:
@@ -3611,19 +3611,19 @@ async def contract_version_diff(
         cur.execute("SELECT id, name, content FROM contracts WHERE id = %s AND company_id = %s AND status != 'deleted'", (contract_id, company_id))
         contract1 = cur.fetchone()
         if not contract1:
-            raise HTTPException(404, "Hợp đồng không tồn tại")
+            raise HTTPException(404, "Contract does not exist")
         
         if compare_with:
             cur.execute("SELECT id, name, content FROM contracts WHERE id = %s AND company_id = %s AND status != 'deleted'", (compare_with, company_id))
             contract2 = cur.fetchone()
             if not contract2:
-                raise HTTPException(404, "Hợp đồng so sánh không tồn tại")
+                raise HTTPException(404, "Comparison contract does not exist")
         else:
             # Compare with previous version from metadata
             metadata = contract1.get("metadata") or {}
             versions = metadata.get("versions", [])
             if not versions:
-                raise HTTPException(400, "Không có phiên bản trước để so sánh")
+                raise HTTPException(400, "No previous version to compare")
             contract2 = {"name": f"v{versions[-1].get('version', '?')}", "content": ""}
     
     # Simple diff: split into paragraphs and compare
@@ -3671,7 +3671,7 @@ async def get_contract_suggestions(contract_id: str, company: dict = Depends(ver
         contract = cur.fetchone()
     
     if not contract:
-        raise HTTPException(404, "Hợp đồng không tồn tại")
+        raise HTTPException(404, "Contract does not exist")
     
     content = (contract.get("content") or "")[:5000].lower()
     suggestions = []
@@ -3725,7 +3725,7 @@ async def get_contract_suggestions(contract_id: str, company: dict = Depends(ver
         suggestions.append({
             "type": "missing_amount",
             "importance": "high",
-            "suggestion": "Không tìm thấy giá trị hợp đồng cụ thể. Cần ghi rõ số tiền và đơn vị tiền tệ."
+            "suggestion": "Specific contract value not found. Amount and currency must be specified."
         })
     
     # Sort by importance
@@ -3849,7 +3849,7 @@ async def update_company_profile(
     updates = {k: v for k, v in request.items() if k in allowed_fields and v is not None}
     
     if not updates:
-        raise HTTPException(400, "Không có thông tin cần cập nhật")
+        raise HTTPException(400, "No information to update")
     
     with get_db() as conn:
         cur = conn.cursor(cursor_factory=RealDictCursor)
@@ -3887,7 +3887,7 @@ async def get_company_profile(company: dict = Depends(verify_api_key)):
         profile = cur.fetchone()
     
     if not profile:
-        raise HTTPException(404, "Công ty không tồn tại")
+        raise HTTPException(404, "Company does not exist")
     
     return {
         "id": str(profile["id"]),

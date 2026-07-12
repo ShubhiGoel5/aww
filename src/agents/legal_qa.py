@@ -11,7 +11,7 @@ from src.models.schemas import (
     Citation,
     LegalDomain,
 )
-from src.services.llm_provider import OllamaProvider
+from src.services.llm_provider import GroqProvider
 
 SYSTEM_PROMPT = """You are a professional AI Legal Assistant specializing in Indian Law.
 
@@ -48,7 +48,7 @@ class LegalQAAgent:
     """Agent that answers legal questions using RAG."""
     
     def __init__(self):
-        self.provider = OllamaProvider()
+        self.provider = GroqProvider()
         self.embedder = get_embedder()
     
     async def answer(self, request: LegalQuestionRequest) -> LegalAnswerResponse:

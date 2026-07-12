@@ -38,7 +38,7 @@ DEFAULT_TEMPLATES = [
             "position": {"label": "Vị trí", "type": "text", "required": True},
             "salary": {"label": "Mức lương", "type": "number", "required": True},
             "start_date": {"label": "Ngày bắt đầu", "type": "date", "required": True},
-            "contract_type": {"label": "Loại HĐ", "type": "select", "options": ["Xác định thời hạn", "Không xác định thời hạn"], "required": True},
+            "contract_type": {"label": "Contract Type", "type": "select", "options": ["Fixed term", "Indefinite term"], "required": True},
             "duration_months": {"label": "Thời hạn (tháng)", "type": "number", "required": False},
         }
     },
@@ -300,9 +300,9 @@ REQUIREMENTS:
 
 Please create a complete document, following standard Indian legal formatting."""
 
-    # Call Claude
-    from ..main import call_claude
-    result = await call_claude(system_prompt, user_message, max_tokens=4096)
+    # Call LLM
+    from src.services.llm_provider import call_llm_simple
+    result = await call_llm_simple(system_prompt, user_message, max_tokens=4096)
     
     # Save to generated_documents
     with get_db() as conn:

@@ -21,7 +21,7 @@ def load_pricing():
         return {"tiers": [], "features_comparison": {}, "addons": []}
 
 @router.get("")
-async def get_pricing(lang: str = Query("vi", regex="^(vi|en)$")):
+async def get_pricing(lang: str = Query("vi", pattern="^(vi|en)$")):
     """
     Get pricing tiers and plans
     
@@ -99,7 +99,7 @@ async def get_pricing(lang: str = Query("vi", regex="^(vi|en)$")):
     }
 
 @router.get("/tiers/{tier_id}")
-async def get_pricing_tier(tier_id: str, lang: str = Query("vi", regex="^(vi|en)$")):
+async def get_pricing_tier(tier_id: str, lang: str = Query("vi", pattern="^(vi|en)$")):
     """Get details of a specific pricing tier"""
     pricing_data = load_pricing()
     
@@ -135,10 +135,10 @@ async def get_pricing_tier(tier_id: str, lang: str = Query("vi", regex="^(vi|en)
 @router.get("/calculate")
 async def calculate_pricing(
     tier_id: str = Query(...),
-    billing: str = Query("monthly", regex="^(monthly|annual)$"),
+    billing: str = Query("monthly", pattern="^(monthly|annual)$"),
     team_size: int = Query(1, ge=1),
     discount_code: str = Query(None),
-    lang: str = Query("vi", regex="^(vi|en)$")
+    lang: str = Query("vi", pattern="^(vi|en)$")
 ):
     """
     Calculate total pricing with discounts

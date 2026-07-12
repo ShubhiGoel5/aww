@@ -186,7 +186,7 @@ async def build_user_context(company_id: str, user_id: str = None) -> str:
             elif 18 <= hour < 22:
                 sections.append("Buổi tối — có thể đang làm thêm giờ")
             else:
-                sections.append("Khuya — trả lời ngắn gọn, không hỏi nhiều")
+                sections.append("Late night — answer briefly, do not ask much")
 
     except Exception as e:
         print(f"Error building user context: {e}")

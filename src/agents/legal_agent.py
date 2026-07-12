@@ -23,7 +23,7 @@ _detect_domain = None
 _fetch_company_context = None
 _llm_provider_manager = None
 
-CLAUDE_API_URL = "https://api.anthropic.com/v1/messages"
+# LLM calls are routed through GroqProvider (no direct API URL needed)
 
 
 def init_agent(get_db_fn, multi_query_search_fn, search_laws_fn, detect_domain_fn, fetch_company_context_fn, llm_provider_manager_fn=None):
@@ -457,35 +457,14 @@ When the user asks for a complex task, you can call multiple tools sequentially:
 """
 
 # ============================================
-# Claude API helpers (with tool_use support)
+# LLM API helpers (Groq Provider)
 # ============================================
 
-def _get_claude_headers():
-    """Build headers for Claude API"""
-    oauth_token = os.getenv("CLAUDE_OAUTH_TOKEN", "")
-    api_key = os.getenv("ANTHROPIC_API_KEY", "")
-
-    headers = {
-        "anthropic-version": "2023-06-01",
-        "content-type": "application/json"
-    }
-
-    if oauth_token:
-        headers["Authorization"] = f"Bearer {oauth_token}"
-        headers["anthropic-beta"] = "oauth-2025-04-20"
-    elif api_key:
-        headers["x-api-key"] = api_key
-    else:
-        raise ValueError("Chưa cấu hình API key. Vui lòng vào Cài đặt → AI Provider để nhập API key.")
-
-    return headers
-
-
-async def _call_claude_with_tools(messages: list, tools: list, system: str = AGENT_SYSTEM_PROMPT, max_tokens: int = 8192, model: str = "gemma3:4b", company_id: str = None) -> dict:
-    """Call LLM API (Ollama Provider) with tool definitions, return raw response dict"""
-    from src.services.llm_provider import OllamaProvider
+async def _call_llm_with_tools(messages: list, tools: list, system: str = AGENT_SYSTEM_PROMPT, max_tokens: int = 8192, model: str = None, company_id: str = None) -> dict:
+    """Call LLM API (Groq Provider) with tool definitions, return raw response dict"""
+    from src.services.llm_provider import GroqProvider
     
-    provider = OllamaProvider(model=model)
+    provider = GroqProvider(model=model) if model else GroqProvider()
     result = await provider.chat(messages=messages, system=system, max_tokens=max_tokens, tools=tools)
     return result
 
@@ -609,118 +588,65 @@ def extract_inline_actions(answer_text: str, tools_used: list, tool_results: lis
 
 
 async def quick_answer(question: str, chat_history: list = None) -> dict:
-    """Direct Claude call without tools — for simple questions"""
-    headers = _get_claude_headers()
+    """Direct LLM call without tools — for simple questions"""
+    from src.services.llm_provider import GroqProvider
+    
+    provider = GroqProvider()
     messages = []
     if chat_history:
         for msg in chat_history:
             messages.append({"role": msg["role"], "content": msg["content"]})
     messages.append({"role": "user", "content": question})
     
-    payload = {
-        "model": "claude-sonnet-4-20250514",
-        "max_tokens": 2048,
-        "system": AGENT_SYSTEM_PROMPT,
-        "messages": messages
-    }
+    result = await provider.chat(
+        system=AGENT_SYSTEM_PROMPT,
+        messages=messages,
+        max_tokens=2048
+    )
     
-    async with httpx.AsyncClient(timeout=60) as client:
-        response = await client.post(CLAUDE_API_URL, headers=headers, json=payload)
-        response.raise_for_status()
-        data = response.json()
-    
-    text = "".join(b.get("text", "") for b in data.get("content", []) if b.get("type") == "text")
-    usage = data.get("usage", {})
+    text = "".join(b.get("text", "") for b in result.get("content", []) if b.get("type") == "text")
+    usage = result.get("usage", {})
     return {
         "answer": text,
         "citations": [],
-        "input_tokens": usage.get("input_tokens", 0),
-        "output_tokens": usage.get("output_tokens", 0),
-        "model": data.get("model", ""),
+        "input_tokens": usage.get("input", 0),
+        "output_tokens": usage.get("output", 0),
+        "model": result.get("model", ""),
         "tool_calls_made": 0
     }
 
 
-async def _call_claude_with_tools_stream(messages: list, tools: list, system: str = AGENT_SYSTEM_PROMPT, max_tokens: int = 8192):
-    """Call Claude API with tools + streaming. Yields raw SSE events."""
-    headers = _get_claude_headers()
-
-    payload = {
-        "model": "claude-sonnet-4-20250514",
-        "max_tokens": max_tokens,
-        "system": system,
-        "messages": messages,
-        "tools": tools,
-        "stream": True
-    }
-
-    async with httpx.AsyncClient(timeout=180) as client:
-        async with client.stream("POST", CLAUDE_API_URL, headers=headers, json=payload) as response:
-            response.raise_for_status()
-            async for line in response.aiter_lines():
-                if line.startswith("data: "):
-                    data_str = line[6:]
-                    if data_str.strip() == "[DONE]":
-                        break
-                    try:
-                        yield json.loads(data_str)
-                    except json.JSONDecodeError:
-                        continue
+async def _call_llm_with_tools_stream(messages: list, tools: list, system: str = AGENT_SYSTEM_PROMPT, max_tokens: int = 8192):
+    """Call LLM API with tools + streaming. Uses GroqProvider (non-streaming wrapper)."""
+    from src.services.llm_provider import GroqProvider
+    provider = GroqProvider()
+    result = await provider.chat(messages=messages, system=system, max_tokens=max_tokens, tools=tools)
+    # Yield the full result as a single event (Groq doesn't support streaming with tools easily)
+    yield result
 
 
 async def _stream_final_text(messages: list, system: str = AGENT_SYSTEM_PROMPT, company_id: str = None) -> AsyncGenerator[str, None]:
-    """Stream Claude response without tools — for fast path"""
-    # Try company provider first (supports OAuth tokens from DB)
-    if _llm_provider_manager and company_id:
-        try:
-            provider = _llm_provider_manager.get_company_provider(company_id)
-            print(f"[DEBUG] _stream_final_text using provider: {type(provider).__name__}, oauth: {getattr(provider, 'is_oauth', False)}")
-            event_count = 0
-            async for event in provider.chat_stream(messages=messages, system=system, max_tokens=4096):
-                # Anthropic SDK stream events
-                event_type = getattr(event, 'type', '')
-                event_count += 1
-                if event_type == 'content_block_delta':
-                    delta = getattr(event, 'delta', None)
-                    if delta and getattr(delta, 'type', '') == 'text_delta':
-                        text = getattr(delta, 'text', '')
-                        if text:
-                            yield f"data: {json.dumps({'type': 'delta', 'text': text}, ensure_ascii=False)}\n\n"
-            print(f"[DEBUG] _stream_final_text completed: {event_count} events")
-            return
-        except Exception as e:
-            print(f"[DEBUG] Provider stream error: {e}")
-            import traceback; traceback.print_exc()
-            yield f"data: {json.dumps({'type': 'error', 'message': str(e)}, ensure_ascii=False)}\n\n"
-            return
-
-    # Fallback: raw httpx with env headers
-    headers = _get_claude_headers()
-    payload = {
-        "model": "claude-sonnet-4-20250514",
-        "max_tokens": 4096,
-        "system": system,
-        "messages": messages,
-        "stream": True
-    }
-    async with httpx.AsyncClient(timeout=120) as client:
-        async with client.stream("POST", CLAUDE_API_URL, headers=headers, json=payload) as response:
-            response.raise_for_status()
-            async for line in response.aiter_lines():
-                if line.startswith("data: "):
-                    data_str = line[6:]
-                    if data_str.strip() == "[DONE]":
-                        break
-                    try:
-                        event = json.loads(data_str)
-                        if event.get("type") == "content_block_delta":
-                            delta = event.get("delta", {})
-                            if delta.get("type") == "text_delta":
-                                text = delta.get("text", "")
-                                if text:
-                                    yield f"data: {json.dumps({'type': 'delta', 'text': text}, ensure_ascii=False)}\n\n"
-                    except json.JSONDecodeError:
-                        continue
+    """Stream LLM response without tools — for fast path"""
+    from src.services.llm_provider import GroqProvider
+    
+    try:
+        provider = GroqProvider()
+        result = await provider.chat(messages=messages, system=system, max_tokens=4096)
+        
+        # Extract text from result and yield as SSE delta events
+        text_parts = [b.get("text", "") for b in result.get("content", []) if b.get("type") == "text"]
+        full_text = "".join(text_parts)
+        
+        if full_text:
+            # Yield in chunks to simulate streaming for the frontend
+            chunk_size = 20  # characters per chunk
+            for i in range(0, len(full_text), chunk_size):
+                chunk = full_text[i:i+chunk_size]
+                yield f"data: {json.dumps({'type': 'delta', 'text': chunk}, ensure_ascii=False)}\n\n"
+    except Exception as e:
+        print(f"[DEBUG] Provider error: {e}")
+        import traceback; traceback.print_exc()
+        yield f"data: {json.dumps({'type': 'error', 'message': str(e)}, ensure_ascii=False)}\n\n"
 
 
 # ============================================
@@ -757,7 +683,7 @@ async def execute_tool(tool_name: str, tool_input: dict, company_id: str) -> dic
             cur.execute("SELECT name, content, parties, start_date, end_date, contract_type, metadata FROM contracts WHERE id = %s AND company_id = %s AND status != 'deleted'", (contract_id, company_id))
             contract = cur.fetchone()
         if not contract:
-            return {"error": "Không tìm thấy hợp đồng"}
+            return {"error": "Contract not found"}
         content = contract.get("content", "")[:5000]
         return {
             "name": contract["name"],
@@ -776,7 +702,7 @@ async def execute_tool(tool_name: str, tool_input: dict, company_id: str) -> dic
             cur.execute("SELECT name, content, contract_type FROM contracts WHERE id = %s AND company_id = %s AND status != 'deleted'", (contract_id, company_id))
             contract = cur.fetchone()
         if not contract:
-            return {"error": "Không tìm thấy hợp đồng"}
+            return {"error": "Contract not found"}
         content = contract.get("content", "")[:10000]
         checks = {
             "labor": [
@@ -957,7 +883,7 @@ async def execute_tool(tool_name: str, tool_input: dict, company_id: str) -> dic
                 doc = cur.fetchone()
             
             if not doc:
-                return {"error": f"Không tìm thấy tài liệu với ID: {document_id}"}
+                return {"error": f"Document not found với ID: {document_id}"}
             
             content = doc.get("extracted_text", "") or ""
             
@@ -1060,13 +986,13 @@ async def execute_tool(tool_name: str, tool_input: dict, company_id: str) -> dic
                 content_col = "extracted_text"
             
             if not doc:
-                return {"error": f"Không tìm thấy tài liệu: {document_id}"}
+                return {"error": f"Document not found: {document_id}"}
             
             old_content = doc.get("extracted_text", "") or ""
             
             # Replace old_text with new_text
             if old_text not in old_content:
-                return {"error": f"Không tìm thấy đoạn text cần thay thế: '{old_text[:50]}...'"}
+                return {"error": f"Could not find text to replace: '{old_text[:50]}...'"}
             
             new_content = old_content.replace(old_text, new_text, 1)
             
@@ -1201,7 +1127,7 @@ async def execute_tool(tool_name: str, tool_input: dict, company_id: str) -> dic
             cur.execute("SELECT id FROM folders WHERE name = %s AND company_id = %s", (target_folder, company_id))
             folder_row = cur.fetchone()
             if not folder_row:
-                return {"error": f"Không tìm thấy thư mục: {target_folder}"}
+                return {"error": f"Folder not found: {target_folder}"}
             
             folder_id = folder_row["id"]
             
@@ -1223,7 +1149,7 @@ async def execute_tool(tool_name: str, tool_input: dict, company_id: str) -> dic
                 doc = cur.fetchone()
             
             if not doc:
-                return {"error": f"Không tìm thấy tài liệu: {document_id}"}
+                return {"error": f"Document not found: {document_id}"}
             
             conn.commit()
             
@@ -1270,7 +1196,7 @@ async def execute_tool(tool_name: str, tool_input: dict, company_id: str) -> dic
                 doc = cur.fetchone()
             
             if not doc:
-                return {"error": f"Không tìm thấy tài liệu: {document_id}"}
+                return {"error": f"Document not found: {document_id}"}
             
             conn.commit()
             
@@ -1298,73 +1224,56 @@ async def execute_tool(tool_name: str, tool_input: dict, company_id: str) -> dic
         if not doc_type or not requirements:
             return {"error": "Thiếu thông tin: cần type và requirements"}
         
-        # Call Claude to generate the document
+        # Call LLM to generate the document
         try:
-            oauth_token = os.getenv("CLAUDE_OAUTH_TOKEN", "")
-            api_key = os.getenv("ANTHROPIC_API_KEY", "")
+            from src.services.llm_provider import GroqProvider
+            provider = GroqProvider()
             
-            headers = {
-                "anthropic-version": "2023-06-01",
-                "content-type": "application/json"
-            }
+            system_prompt = """You are an expert in drafting Indian legal documents. Draft comprehensive, professional documents in compliance with the law."""
             
-            if oauth_token:
-                headers["Authorization"] = f"Bearer {oauth_token}"
-                headers["anthropic-beta"] = "oauth-2025-04-20"
-            elif api_key:
-                headers["x-api-key"] = api_key
-            
-            system_prompt = """Bạn là chuyên gia soạn thảo văn bản pháp lý Việt Nam. Soạn thảo văn bản đầy đủ, chuyên nghiệp, tuân thủ pháp luật."""
-            
-            user_message = f"""Soạn thảo văn bản pháp lý:
+            user_message = f"""Draft legal document:
 
-Loại: {doc_type}
-Yêu cầu: {requirements}
-Các bên: {', '.join(parties) if parties else 'N/A'}
-Điều khoản chính: {json.dumps(key_terms, ensure_ascii=False)}
+Type: {doc_type}
+Requirements: {requirements}
+Parties: {', '.join(parties) if parties else 'N/A'}
+Key terms: {json.dumps(key_terms, ensure_ascii=False)}
 
-Trả về văn bản hoàn chỉnh, đúng format, đầy đủ các điều khoản bắt buộc theo luật."""
+Return a complete, correctly formatted document containing all legally required clauses."""
             
-            payload = {
-                "model": "claude-sonnet-4-20250514",
-                "max_tokens": 8192,
-                "system": system_prompt,
-                "messages": [{"role": "user", "content": user_message}]
+            result = await provider.chat(
+                system=system_prompt,
+                messages=[{"role": "user", "content": user_message}],
+                max_tokens=8192
+            )
+            
+            generated_content = result["content"][0]["text"] if result.get("content") else ""
+            
+            # Save if requested
+            if save:
+                with _get_db() as conn:
+                    cur = conn.cursor(cursor_factory=RealDictCursor)
+                    cur.execute("""
+                        INSERT INTO documents (company_id, name, extracted_text, doc_type, status, file_path, file_size, mime_type)
+                        VALUES (%s, %s, %s, 'other', 'analyzed', 'ai-generated', %s, 'text/plain')
+                        RETURNING id
+                    """, (company_id, f"{doc_type}_{parties[0] if parties else 'generated'}", generated_content, len(generated_content.encode('utf-8'))))
+                    
+                    doc_id = cur.fetchone()["id"]
+                    conn.commit()
+            else:
+                doc_id = None
+            
+            return {
+                "success": True,
+                "document_type": doc_type,
+                "content": generated_content,
+                "document_id": str(doc_id) if doc_id else None,
+                "saved": save,
+                "message": "✅ Document generated successfully"
             }
-            
-            async with httpx.AsyncClient(timeout=120) as client:
-                response = await client.post(CLAUDE_API_URL, headers=headers, json=payload)
-                response.raise_for_status()
-                data = response.json()
-                
-                generated_content = data["content"][0]["text"]
-                
-                # Save if requested
-                if save:
-                    with _get_db() as conn:
-                        cur = conn.cursor(cursor_factory=RealDictCursor)
-                        cur.execute("""
-                            INSERT INTO documents (company_id, name, extracted_text, doc_type, status, file_path, file_size, mime_type)
-                            VALUES (%s, %s, %s, 'other', 'analyzed', 'ai-generated', %s, 'text/plain')
-                            RETURNING id
-                        """, (company_id, f"{doc_type}_{parties[0] if parties else 'generated'}", generated_content, len(generated_content.encode('utf-8'))))
-                        
-                        doc_id = cur.fetchone()["id"]
-                        conn.commit()
-                else:
-                    doc_id = None
-                
-                return {
-                    "success": True,
-                    "document_type": doc_type,
-                    "content": generated_content,
-                    "document_id": str(doc_id) if doc_id else None,
-                    "saved": save,
-                    "message": "✅ Đã soạn thảo văn bản thành công"
-                }
         
         except Exception as e:
-            return {"error": f"Lỗi soạn thảo: {str(e)}"}
+            return {"error": f"Generation error: {str(e)}"}
     
     elif tool_name == "batch_review":
         document_ids = tool_input.get("document_ids", [])
@@ -1532,7 +1441,7 @@ async def _tool_read_contract(tool_input: dict, company_id: str) -> dict:
         contract = cur.fetchone()
 
     if not contract:
-        return {"error": f"Không tìm thấy hợp đồng với ID: {contract_id}"}
+        return {"error": f"Contract not found với ID: {contract_id}"}
 
     result = dict(contract)
     # Convert dates to strings
@@ -1800,7 +1709,7 @@ async def _tool_get_company_profile(company_id: str) -> dict:
         """, (company_id,))
         company = cur.fetchone()
         if not company:
-            return {"error": "Không tìm thấy thông tin công ty"}
+            return {"error": "Company information not found"}
 
         # Contract stats
         cur.execute("""
@@ -1842,7 +1751,7 @@ async def _tool_compare_contracts(tool_input: dict, company_id: str) -> dict:
     for cid in contract_ids[:5]:
         contract_data = await _tool_read_contract({"contract_id": cid}, company_id)
         if "error" in contract_data:
-            return {"error": f"Không thể đọc hợp đồng {cid}: {contract_data['error']}"}
+            return {"error": f"Cannot read contract {cid}: {contract_data['error']}"}
         contracts_data.append(contract_data["contract"])
 
     comparison = []
@@ -1861,7 +1770,7 @@ async def _tool_compare_contracts(tool_input: dict, company_id: str) -> dict:
     return {
         "contracts": comparison,
         "count": len(comparison),
-        "instruction": "Hãy so sánh chi tiết các hợp đồng này. Tìm điểm khác biệt, điểm không nhất quán, và đánh giá hợp đồng nào có lợi hơn cho công ty."
+        "instruction": "Please compare these contracts in detail. Find differences, inconsistencies, and assess which contract is more beneficial for the company."
     }
 
 
@@ -1932,50 +1841,49 @@ async def _tool_edit_and_diff_document(tool_input: dict, company_id: str) -> dic
             doc = cur.fetchone()
     
     if not doc:
-        return {"error": f"Không tìm thấy tài liệu với ID: {document_id}"}
+        return {"error": f"Document not found với ID: {document_id}"}
     
     original_text = doc.get("extracted_text") or doc.get("content", "")
     doc_name = doc.get("name", "document")
     
     if not original_text:
-        return {"error": "Tài liệu không có nội dung"}
+        return {"error": "Document has no content"}
     
     # Generate edited version using AI
     # For now, we'll use a simple approach: use the LLM to generate the edited version
     if _llm_provider_manager:
         try:
             # Build edit prompt
-            edit_prompt = f"""Bạn là trợ lý pháp lý AI. Hãy chỉnh sửa văn bản sau đây để khắc phục các vấn đề pháp lý.
+            edit_prompt = f"""You are an AI legal assistant. Please edit the following document to fix legal issues.
 
-ĐỂ BẢO CHẤT LƯỢNG: Chỉ thực hiện các thay đổi hợp lý, không thay đổi quá 20% nội dung gốc.
+TO MAINTAIN QUALITY: Only make reasonable changes, do not change more than 20% of the original content.
 
-VĂN BẢN GỐC:
+ORIGINAL DOCUMENT:
 {original_text[:10000]}
 
-YÊU CẦU CHỈNH SỬA:
-{edit_instructions if edit_instructions else "Tự động phát hiện và sửa các lỗi pháp lý, bổ sung điều khoản thiếu theo Indian Law"}
+EDIT REQUIREMENTS:
+{edit_instructions if edit_instructions else "Automatically detect and fix legal issues, add missing clauses according to Indian Law"}
 
-{"CHỈNH SỬA TỰ ĐỘNG: Bổ sung điều khoản bảo mật, phạt vi phạm, chấm dứt hợp đồng nếu thiếu." if auto_fix else ""}
+{"AUTOMATIC FIX: Add confidentiality, penalty, and termination clauses if missing." if auto_fix else ""}
 
-Hãy trả về TOÀN BỘ văn bản đã chỉnh sửa (không chỉ phần sửa). Giữ nguyên định dạng, chỉ sửa nội dung cần thiết."""
+Please return the ENTIRE edited document (not just the edits). Keep the original formatting, only modify what is necessary."""
 
             # Call LLM
-            from anthropic import AsyncAnthropic
-            client = AsyncAnthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
+            from src.services.llm_provider import GroqProvider
+            provider = GroqProvider()
             
-            response = await client.messages.create(
-                model="claude-3-5-sonnet-20241022",
-                max_tokens=16000,
-                messages=[{"role": "user", "content": edit_prompt}]
+            result = await provider.chat(
+                messages=[{"role": "user", "content": edit_prompt}],
+                max_tokens=8192
             )
             
             edited_text = ""
-            for block in response.content:
-                if block.type == "text":
-                    edited_text += block.text
+            for block in result.get("content", []):
+                if block.get("type") == "text":
+                    edited_text += block.get("text", "")
             
             if not edited_text:
-                return {"error": "Không thể tạo bản chỉnh sửa"}
+                return {"error": "Could not generate edited version"}
             
             # Generate diff
             diff_result = generate_inline_diff(original_text, edited_text)
@@ -1993,13 +1901,13 @@ Hãy trả về TOÀN BỘ văn bản đã chỉnh sửa (không chỉ phần s�
                 "deletions": diff_result["deletions"],
                 "changes_count": diff_result["changes_count"],
                 "summary": diff_result["summary"],
-                "edit_instructions": edit_instructions or "Tự động rà soát và sửa lỗi pháp lý"
+                "edit_instructions": edit_instructions or "Automatically review and fix legal issues"
             }
             
         except Exception as e:
-            return {"error": f"Lỗi khi chỉnh sửa: {str(e)}"}
+            return {"error": f"Error during editing: {str(e)}"}
     else:
-        return {"error": "LLM provider chưa được cấu hình"}
+        return {"error": "LLM provider not configured"}
 
 
 # ============================================
@@ -2049,7 +1957,7 @@ async def run_agent(
     max_iterations = 25
 
     for i in range(max_iterations):
-        response = await _call_claude_with_tools(messages, TOOLS, system=system_prompt, company_id=company_id)
+        response = await _call_llm_with_tools(messages, TOOLS, system=system_prompt, company_id=company_id)
 
         usage = response.get("usage", {})
         total_input_tokens += usage.get("input_tokens", 0)
@@ -2071,7 +1979,7 @@ async def run_agent(
                     "citations": all_citations,
                     "input_tokens": total_input_tokens,
                     "output_tokens": total_output_tokens,
-                    "model": response.get("model", "claude-sonnet-4-20250514"),
+                    "model": response.get("model", "groq-llama"),
                     "tool_calls_made": i
                 }
 
@@ -2103,11 +2011,11 @@ async def run_agent(
 
     # Max iterations reached
     return {
-        "answer": "Xin lỗi, tôi không thể xử lý yêu cầu này trong số bước cho phép. Vui lòng thử lại với câu hỏi cụ thể hơn.",
+        "answer": "Sorry, I cannot process this request within the allowed steps. Please try again with a more specific question.",
         "citations": all_citations,
         "input_tokens": total_input_tokens,
         "output_tokens": total_output_tokens,
-        "model": "claude-sonnet-4-20250514",
+        "model": "groq-llama",
         "tool_calls_made": max_iterations
     }
 
@@ -2162,7 +2070,7 @@ async def run_agent_stream(
     for iteration in range(max_iterations):
         # For non-final iterations, use non-streaming to get tool calls
         # For final iteration (text response), use streaming
-        response = await _call_claude_with_tools(messages, TOOLS, company_id=company_id)
+        response = await _call_llm_with_tools(messages, TOOLS, company_id=company_id)
         content_blocks = response.get("content", [])
         stop_reason = response.get("stop_reason", "")
 
@@ -2305,7 +2213,7 @@ async def run_agent_stream_final_text(
     full_response_parts = []
 
     for iteration in range(max_iterations):
-        response = await _call_claude_with_tools(messages, TOOLS, system=system_prompt, company_id=company_id)
+        response = await _call_llm_with_tools(messages, TOOLS, system=system_prompt, company_id=company_id)
         content_blocks = response.get("content", [])
 
         tool_uses = [b for b in content_blocks if b.get("type") == "tool_use"]

@@ -598,8 +598,8 @@ DOCUMENT:
         
         # Call Claude for analysis
         try:
-            from ..main import call_claude
-            result = await call_claude(system_prompt, user_message, max_tokens=4096)
+            from src.services.llm_provider import call_llm_simple
+            result = await call_llm_simple(system_prompt, user_message, max_tokens=4096)
             
             # Parse JSON response
             try:
@@ -674,28 +674,28 @@ async def compare_documents(
             raise HTTPException(status_code=400, detail="Both documents must have extracted text")
         
         # Claude prompt for comparison
-        system_prompt = "Bạn là chuyên gia so sánh văn bản pháp lý Việt Nam."
+        system_prompt = "You are an expert in comparing legal documents."
         
-        user_message = f"""So sánh hai văn bản sau và trả về JSON với các trường:
+        user_message = f"""Compare the following two documents and return a JSON with these fields:
 {{
-  "similarities": ["các điểm giống nhau"],
-  "differences": [{{"aspect": "khía cạnh", "doc1": "nội dung văn bản 1", "doc2": "nội dung văn bản 2", "significance": "high/medium/low"}}],
-  "risk_changes": [{{"change": "thay đổi", "risk_impact": "tăng/giảm/không đổi", "description": "mô tả"}}],
-  "recommendation": "Nên chọn văn bản nào và tại sao",
-  "summary": "Tóm tắt so sánh"
+  "similarities": ["similar points"],
+  "differences": [{{"aspect": "aspect", "doc1": "doc1 content", "doc2": "doc2 content", "significance": "high/medium/low"}}],
+  "risk_changes": [{{"change": "change", "risk_impact": "increase/decrease/unchanged", "description": "description"}}],
+  "recommendation": "Which document to choose and why",
+  "summary": "Comparison summary"
 }}
 
-CHỈ trả về JSON, không giải thích thêm.
+Return ONLY JSON, no explanations.
 
-VĂN BẢN 1 ({doc1['name']}):
+DOCUMENT 1 ({doc1['name']}):
 {doc1['extracted_text'][:15000]}
 
-VĂN BẢN 2 ({doc2['name']}):
+DOCUMENT 2 ({doc2['name']}):
 {doc2['extracted_text'][:15000]}"""
         
         try:
-            from ..main import call_claude
-            result = await call_claude(system_prompt, user_message, max_tokens=4096)
+            from src.services.llm_provider import call_llm_simple
+            result = await call_llm_simple(system_prompt, user_message, max_tokens=4096)
             
             # Parse JSON response
             try:

@@ -238,7 +238,7 @@ async def get_company_detail(company_id: str, admin: Dict = Depends(require_supe
         cur.execute("SELECT * FROM companies WHERE id = %s", (company_id,))
         company = cur.fetchone()
         if not company:
-            raise HTTPException(404, "Công ty không tồn tại")
+            raise HTTPException(404, "Company does not exist")
         
         company = dict(company)
         company["id"] = str(company["id"])
@@ -309,7 +309,7 @@ async def update_company(
             params.append(update.is_active)
         
         if not updates:
-            raise HTTPException(400, "Không có cập nhật nào")
+            raise HTTPException(400, "No updates")
         
         query = f"UPDATE companies SET {', '.join(updates)} WHERE id = %s RETURNING *"
         params.append(company_id)
@@ -318,7 +318,7 @@ async def update_company(
         updated = cur.fetchone()
         
         if not updated:
-            raise HTTPException(404, "Công ty không tồn tại")
+            raise HTTPException(404, "Company does not exist")
         
         conn.commit()
         
@@ -447,7 +447,7 @@ async def change_user_role(
         
         updated = cur.fetchone()
         if not updated:
-            raise HTTPException(404, "Người dùng không tồn tại")
+            raise HTTPException(404, "User does not exist")
         
         conn.commit()
         
@@ -472,7 +472,7 @@ async def change_user_status(
         
         updated = cur.fetchone()
         if not updated:
-            raise HTTPException(404, "Người dùng không tồn tại")
+            raise HTTPException(404, "User does not exist")
         
         conn.commit()
         
@@ -500,8 +500,8 @@ async def get_platform_settings(admin: Dict = Depends(require_superadmin)):
         
         # Merge all settings into one object
         result = {
-            "default_llm_provider": settings.get("llm", {}).get("default_provider", "anthropic"),
-            "default_llm_model": settings.get("llm", {}).get("default_model", "claude-sonnet-4-20250514"),
+            "default_llm_provider": settings.get("llm", {}).get("default_provider", "groq"),
+            "default_llm_model": settings.get("llm", {}).get("default_model", "groq-llama"),
             "max_file_size_mb": settings.get("limits", {}).get("max_file_size_mb", 50),
             "max_queries_per_day_free": settings.get("limits", {}).get("max_queries_per_day_free", 10),
             "max_contracts_free": settings.get("limits", {}).get("max_contracts_free", 1),
@@ -701,8 +701,8 @@ async def get_llm_usage(admin: Dict = Depends(require_superadmin)):
         
         total_tokens_month = (month.get("input") or 0) + (month.get("output") or 0)
         
-        # Simple cost estimation (Claude Sonnet 4: $3 per 1M input, $15 per 1M output)
-        estimated_cost = ((month.get("input") or 0) / 1_000_000 * 3) + ((month.get("output") or 0) / 1_000_000 * 15)
+        # Simple cost estimation (Groq Llama 3.3 70B: $0.59 per 1M input, $0.79 per 1M output)
+        estimated_cost = ((month.get("input") or 0) / 1_000_000 * 0.59) + ((month.get("output") or 0) / 1_000_000 * 0.79)
         
         return {
             "total_tokens_today": (today.get("input") or 0) + (today.get("output") or 0),

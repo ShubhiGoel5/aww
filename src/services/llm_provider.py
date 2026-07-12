@@ -1,5 +1,6 @@
 """
-LLM Provider Service (Ollama Exclusive)
+LLM Provider Service (Groq — Free Cloud LLM API)
+Uses Groq's OpenAI-compatible endpoint to run Llama/Mixtral models for free.
 """
 import os
 import json
@@ -8,16 +9,19 @@ from typing import Dict, List, Optional, AsyncGenerator
 
 logger = logging.getLogger(__name__)
 
-class OllamaProvider:
-    """Ollama local LLM provider using OpenAI-compatible endpoint."""
+class GroqProvider:
+    """Groq cloud LLM provider using OpenAI-compatible endpoint."""
     
-    def __init__(self, base_url: str = None, model: str = None):
+    def __init__(self, base_url: str = None, model: str = None, api_key: str = None):
         from openai import OpenAI
-        self.base_url = base_url or os.getenv("OLLAMA_BASE_URL", "http://localhost:11434/v1")
-        self.model = model or os.getenv("OLLAMA_MODEL", "gemma3:4b")
+        self.base_url = base_url or os.getenv("GROQ_BASE_URL", "https://api.groq.com/openai/v1")
+        self.model = model or os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
+        self.api_key = api_key or os.getenv("GROQ_API_KEY", "")
         
-        # Ollama's OpenAI API compatibility layer doesn't need an API key
-        self.client = OpenAI(api_key="ollama", base_url=self.base_url)
+        if not self.api_key:
+            raise ValueError("GROQ_API_KEY environment variable is required. Get a free key at https://console.groq.com")
+        
+        self.client = OpenAI(api_key=self.api_key, base_url=self.base_url)
     
     async def chat(self, messages, system="", max_tokens=4096, tools=None):
         msgs = []
@@ -46,7 +50,7 @@ class OllamaProvider:
             "messages": msgs,
         }
         
-        # Convert Anthropic tools to OpenAI function format
+        # Convert Anthropic-style tools to OpenAI function format
         if tools:
             openai_tools = []
             for tool in tools:
@@ -90,7 +94,7 @@ class OllamaProvider:
                 "stop_reason": stop_reason,
             }
         except Exception as e:
-            logger.error(f"Error calling Ollama: {e}")
+            logger.error(f"Error calling Groq: {e}")
             raise
 
     async def chat_stream(self, messages, system="", max_tokens=4096, tools=None):
@@ -98,20 +102,65 @@ class OllamaProvider:
         result = await self.chat(messages, system, max_tokens, tools)
         yield result
 
+
+# Keep backward compatibility alias
+OllamaProvider = GroqProvider
+
+
 class LLMProviderManager:
     """Manages LLM provider connections."""
     
     def __init__(self, db_connection=None):
         self.db = db_connection
     
-    def get_company_provider(self, company_id: str) -> OllamaProvider:
-        """Always returns Ollama provider."""
-        return OllamaProvider()
+    def get_company_provider(self, company_id: str) -> GroqProvider:
+        """Always returns Groq provider."""
+        return GroqProvider()
+    
+    @staticmethod
+    def list_providers():
+        """List available providers."""
+        return PROVIDERS
 
 PROVIDERS = {
-    "ollama": {
-        "name": "Ollama Local LLM",
-        "default_model": "gemma3:4b",
-        "auth_method": "env_var"
+    "groq": {
+        "name": "Groq Cloud LLM (Free)",
+        "default_model": "llama-3.3-70b-versatile",
+        "auth_method": "api_key",
+        "models": [
+            {"id": "llama-3.3-70b-versatile", "name": "Llama 3.3 70B Versatile", "context": 131072},
+            {"id": "llama-3.1-8b-instant", "name": "Llama 3.1 8B Instant", "context": 131072},
+            {"id": "gemma2-9b-it", "name": "Gemma 2 9B IT", "context": 8192},
+            {"id": "mixtral-8x7b-32768", "name": "Mixtral 8x7B", "context": 32768},
+        ]
     }
 }
+
+
+async def call_llm_simple(system_prompt: str, user_message: str, max_tokens: int = 4096) -> dict:
+    """
+    Simple helper to call the LLM without tool use.
+    Returns {"content": str, "input_tokens": int, "output_tokens": int, "model": str}
+    Used by routes (contracts, documents, templates) that need a quick LLM call.
+    """
+    provider = GroqProvider()
+    
+    messages = [{"role": "user", "content": user_message}]
+    
+    try:
+        result = await provider.chat(
+            system=system_prompt,
+            messages=messages,
+            max_tokens=max_tokens
+        )
+        text = result["content"][0]["text"] if result.get("content") else ""
+        usage = result.get("usage", {})
+        return {
+            "content": text,
+            "input_tokens": usage.get("input", 0),
+            "output_tokens": usage.get("output", 0),
+            "model": result.get("model", provider.model)
+        }
+    except Exception as e:
+        logger.error(f"LLM call error: {e}")
+        raise
