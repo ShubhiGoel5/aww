@@ -58,21 +58,21 @@ Legal AI can autonomously manage your documents and contracts:
 
 #### Example Commands:
 ```
-"Liệt kê tất cả hợp đồng"
-"Đọc hợp đồng thuê mặt bằng số 123"
-"Sửa điều khoản phạt trong HĐ này cho đúng luật"
-"Soạn NDA giữa công ty A và B, thời hạn 2 năm"
-"So sánh bản cũ và bản mới của HĐ lao động"
-"Review tất cả 5 hợp đồng trong thư mục Dự án X"
-"Tạo thư mục 'Khách hàng ABC' và di chuyển 3 hợp đồng vào đó"
-"Xem lịch sử chỉnh sửa của tài liệu này"
+"List all contracts"
+"Read lease agreement number 123"
+"Edit the penalty clause in this contract to comply with the law"
+"Draft an NDA between company A and B, duration 2 years"
+"Compare the old and new version of the labor contract"
+"Review all 5 contracts in the Project X folder"
+"Create folder 'Client ABC' and move 3 contracts into it"
+"View the edit history of this document"
 ```
 
 #### Multi-Step Autonomous Workflows:
 The AI can chain multiple tools together to complete complex tasks:
 
 ```
-User: "Sửa điều khoản phạt trong HĐ ABC cho đúng luật"
+User: "Edit the penalty clause in Contract ABC to comply with the law"
 AI: 
   1. read_document → Gets current content
   2. search_law → Finds relevant penalty law (8% max per Commercial Law)
@@ -81,10 +81,10 @@ AI:
 ```
 
 ```
-User: "Soạn NDA giữa công ty A và B, lưu vào thư mục Khách hàng A"
+User: "Draft an NDA between company A and B, save to Client A folder"
 AI:
   1. generate_document → Creates NDA from requirements
-  2. create_folder → Creates "Khách hàng A" folder (if doesn't exist)
+  2. create_folder → Creates "Client A" folder (if doesn't exist)
   3. write_document → Saves NDA to folder
 ```
 
@@ -113,15 +113,15 @@ Upload contracts for instant AI-powered review:
 
 ### Risk Categories Analyzed
 
-1. **Điều khoản bất lợi** — One-sided clauses favoring one party
-2. **Phạt vi phạm cao** — Excessive penalty clauses (>8% per Vietnamese law)
-3. **Thời hạn bất hợp lý** — Unreasonable deadlines/terms
-4. **Thiếu điều khoản bảo vệ** — Missing protective clauses
-5. **Mâu thuẫn với luật** — Clauses contradicting Vietnamese law
-6. **Điều khoản tự động gia hạn** — Auto-renewal traps
-7. **Giới hạn trách nhiệm** — Liability limitations
-8. **Bảo mật và SHTT** — IP/confidentiality issues
-9. **Giải quyết tranh chấp** — Dispute resolution (arbitration vs court)
+1. **Unfavorable clauses** — One-sided clauses favoring one party
+2. **High violation penalty** — Excessive penalty clauses (>8% per Vietnamese law)
+3. **Unreasonable duration** — Unreasonable deadlines/terms
+4. **Missing protective clauses** — Missing protective clauses
+5. **Conflict with law** — Clauses contradicting Vietnamese law
+6. **Auto-renewal clauses** — Auto-renewal traps
+7. **Liability limitations** — Liability limitations
+8. **Confidentiality and IP** — IP/confidentiality issues
+9. **Dispute resolution** — Dispute resolution (arbitration vs court)
 10. **Force majeure** — Missing or weak force majeure
 
 ### Supported Contract Types
