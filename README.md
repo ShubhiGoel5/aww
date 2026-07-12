@@ -24,27 +24,7 @@ An AI platform for legal research, contract review, and legal document drafting 
 
 ---
 
-## 📸 Screenshots
 
-<p align="center">
-  <img src="docs/screenshots/landing.jpg" width="800" alt="Landing Page">
-  <br><em>Landing Page — Hero, features, pricing</em>
-</p>
-
-<p align="center">
-  <img src="docs/screenshots/dashboard.jpg" width="800" alt="Dashboard">
-  <br><em>Dashboard — VSCode-style 3-panel layout</em>
-</p>
-
-<p align="center">
-  <img src="docs/screenshots/ai-review.jpg" width="400" alt="AI Contract Review">
-  <br><em>AI Contract Review — Risk analysis, highlights, recommendations</em>
-</p>
-
-<p align="center">
-  <img src="docs/screenshots/upload.jpg" width="400" alt="Contract Upload">
-  <br><em>Contract Upload — Drag & drop, AI auto-analysis</em>
-</p>
 
 ## ✨ Features
 
