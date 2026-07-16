@@ -471,10 +471,10 @@ async def _call_llm_with_tools(messages: list, tools: list, system: str = AGENT_
 
 # Fast path detection — skip agent loop for simple questions
 SIMPLE_PATTERNS = [
-    "xin chào", "hello", "hi", "chào", "cảm ơn", "thank", 
-    "bạn là ai", "giới thiệu", "bạn có thể làm gì"
+    "hello", "hi", "hey", "thanks", "thank", 
+    "who are you", "introduce yourself", "what can you do"
 ]
-# Note: "ok", "được", "có", "vâng", "ừ" are NOT simple — they are confirmations
+# Note: "ok", "yes", "sure", "yeah", "yep" are NOT simple — they are confirmations
 # that NEED chat history context to understand what user is agreeing to
 
 def is_simple_question(question: str) -> bool:
@@ -494,12 +494,12 @@ def is_followup_question(question: str, chat_history: list = None) -> bool:
     """Check if this is a follow-up that doesn't need tools"""
     q = question.strip().lower()
     followup_markers = [
-        "giải thích thêm", "chi tiết hơn", "ý bạn là gì",
-        "ví dụ", "ngoại lệ", "trường hợp", "còn gì nữa",
-        "tóm tắt lại", "ngắn gọn hơn", "dịch sang tiếng anh",
-        "có gì khác", "so sánh", "tại sao", "cụ thể hơn",
-        "nói rõ hơn", "ý nghĩa", "hiểu thế nào", "áp dụng",
-        "thực tế", "ví dụ cụ thể", "giải thích", "nghĩa là gì"
+        "explain more", "more detail", "what do you mean",
+        "example", "exception", "use case", "what else",
+        "summarise", "summarize", "shorter", "translate",
+        "anything else", "compare", "why", "more specific",
+        "clarify", "meaning", "how to understand", "apply",
+        "in practice", "specific example", "explain", "what does it mean"
     ]
     if any(m in q for m in followup_markers) and chat_history and len(chat_history) >= 2:
         return True
@@ -512,40 +512,40 @@ def generate_quick_replies(question: str, answer: str, tools_used: list) -> list
 
     if 'search_law' in tools_used:
         suggestions.extend([
-            {"text": "Phân tích chi tiết hơn", "icon": "📊"},
-            {"text": "Điều khoản liên quan", "icon": "🔗"},
-            {"text": "So sánh với luật trước đó", "icon": "⚖️"}
+            {"text": "Analyse in more detail", "icon": "📊"},
+            {"text": "Related provisions", "icon": "🔗"},
+            {"text": "Compare with earlier law", "icon": "⚖️"}
         ])
     elif 'read_contract' in tools_used or 'analyze_contract_risk' in tools_used:
         suggestions.extend([
-            {"text": "Đề xuất sửa đổi cụ thể", "icon": "✏️"},
-            {"text": "Xuất báo cáo rà soát", "icon": "📥"},
-            {"text": "So sánh với hợp đồng khác", "icon": "🔄"}
+            {"text": "Suggest specific revisions", "icon": "✏️"},
+            {"text": "Export review report", "icon": "📥"},
+            {"text": "Compare with another contract", "icon": "🔄"}
         ])
     elif 'list_contracts' in tools_used:
         suggestions.extend([
-            {"text": "Phân tích rủi ro tổng thể", "icon": "⚠️"},
-            {"text": "Hợp đồng nào sắp hết hạn?", "icon": "📅"},
-            {"text": "So sánh tất cả hợp đồng", "icon": "📊"}
+            {"text": "Overall risk analysis", "icon": "⚠️"},
+            {"text": "Which contracts are expiring?", "icon": "📅"},
+            {"text": "Compare all contracts", "icon": "📊"}
         ])
     elif 'draft_document' in tools_used:
         suggestions.extend([
-            {"text": "Chỉnh sửa nội dung", "icon": "✏️"},
-            {"text": "Thêm điều khoản bảo mật", "icon": "🔒"},
-            {"text": "Xuất ra Word", "icon": "📄"}
+            {"text": "Edit content", "icon": "✏️"},
+            {"text": "Add confidentiality clause", "icon": "🔒"},
+            {"text": "Export to Word", "icon": "📄"}
         ])
     elif 'search_company_docs' in tools_used:
         suggestions.extend([
-            {"text": "Phân tích tài liệu này", "icon": "📊"},
-            {"text": "Tìm tài liệu liên quan", "icon": "🔍"},
-            {"text": "So sánh với quy định pháp luật", "icon": "⚖️"}
+            {"text": "Analyse this document", "icon": "📊"},
+            {"text": "Find related documents", "icon": "🔍"},
+            {"text": "Compare with legal provisions", "icon": "⚖️"}
         ])
     else:
         # General/greeting
         suggestions.extend([
-            {"text": "Tra cứu luật lao động", "icon": "🔍"},
-            {"text": "Rà soát hợp đồng", "icon": "📄"},
-            {"text": "Soạn văn bản mới", "icon": "✍️"}
+            {"text": "Search labour law", "icon": "🔍"},
+            {"text": "Review a contract", "icon": "📄"},
+            {"text": "Draft a new document", "icon": "✍️"}
         ])
 
     return suggestions[:4]  # Max 4 suggestions
@@ -706,29 +706,29 @@ async def execute_tool(tool_name: str, tool_input: dict, company_id: str) -> dic
         content = contract.get("content", "")[:10000]
         checks = {
             "labor": [
-                {"item": "Thông tin người lao động", "keywords": ["họ tên", "ngày sinh", "CMND", "CCCD", "số căn cước"]},
-                {"item": "Loại hợp đồng lao động", "keywords": ["xác định thời hạn", "không xác định thời hạn", "thời vụ"]},
-                {"item": "Công việc phải làm", "keywords": ["công việc", "nhiệm vụ", "chức danh", "vị trí"]},
-                {"item": "Thời giờ làm việc", "keywords": ["giờ làm việc", "thời gian làm việc", "ca làm"]},
-                {"item": "Tiền lương", "keywords": ["lương", "tiền công", "thù lao", "mức lương"]},
-                {"item": "Bảo hiểm xã hội", "keywords": ["bảo hiểm xã hội", "BHXH", "bảo hiểm y tế", "BHYT"]},
-                {"item": "Điều kiện chấm dứt", "keywords": ["chấm dứt", "đơn phương", "thôi việc", "sa thải"]},
+                {"item": "Employee Information", "keywords": ["name", "date of birth", "aadhaar", "pan", "employee id"]},
+                {"item": "Type of Employment Contract", "keywords": ["fixed term", "permanent", "probation", "contractual", "apprentice"]},
+                {"item": "Job Description", "keywords": ["duties", "responsibilities", "designation", "position", "role"]},
+                {"item": "Working Hours", "keywords": ["working hours", "shift", "overtime", "leaves"]},
+                {"item": "Salary & Remuneration", "keywords": ["salary", "wages", "remuneration", "ctc", "compensation"]},
+                {"item": "Provident Fund & ESI", "keywords": ["provident fund", "pf", "esi", "esic", "gratuity"]},
+                {"item": "Termination Conditions", "keywords": ["termination", "notice period", "resignation", "dismissal", "retrenchment"]},
             ],
             "commercial": [
-                {"item": "Thông tin các bên", "keywords": ["bên A", "bên B", "đại diện", "mã số thuế"]},
-                {"item": "Đối tượng hợp đồng", "keywords": ["đối tượng", "hàng hóa", "dịch vụ", "sản phẩm"]},
-                {"item": "Giá trị hợp đồng", "keywords": ["giá", "giá trị", "thanh toán", "số tiền"]},
-                {"item": "Thời hạn thực hiện", "keywords": ["thời hạn", "ngày giao", "thời gian"]},
-                {"item": "Quyền và nghĩa vụ", "keywords": ["quyền", "nghĩa vụ", "trách nhiệm"]},
-                {"item": "Phạt vi phạm", "keywords": ["phạt", "vi phạm", "bồi thường"]},
-                {"item": "Giải quyết tranh chấp", "keywords": ["tranh chấp", "trọng tài", "tòa án"]},
+                {"item": "Party Details", "keywords": ["party a", "party b", "authorized signatory", "gst number", "cin"]},
+                {"item": "Subject Matter", "keywords": ["subject", "goods", "services", "product", "scope"]},
+                {"item": "Contract Value", "keywords": ["price", "value", "payment", "amount", "consideration"]},
+                {"item": "Delivery Timeline", "keywords": ["timeline", "delivery date", "schedule", "deadline"]},
+                {"item": "Rights and Obligations", "keywords": ["rights", "obligations", "responsibilities", "duties"]},
+                {"item": "Penalty for Breach", "keywords": ["penalty", "breach", "liquidated damages", "compensation"]},
+                {"item": "Dispute Resolution", "keywords": ["dispute", "arbitration", "court", "jurisdiction"]},
             ],
             "service": [
-                {"item": "Phạm vi dịch vụ", "keywords": ["phạm vi", "nội dung", "dịch vụ"]},
-                {"item": "Tiêu chuẩn chất lượng", "keywords": ["chất lượng", "tiêu chuẩn", "KPI"]},
-                {"item": "Thời hạn và gia hạn", "keywords": ["thời hạn", "gia hạn", "kéo dài"]},
-                {"item": "Bảo mật thông tin", "keywords": ["bảo mật", "thông tin", "confidential"]},
-                {"item": "Điều khoản chấm dứt", "keywords": ["chấm dứt", "hủy bỏ", "kết thúc"]},
+                {"item": "Scope of Services", "keywords": ["scope", "services", "deliverables", "work order"]},
+                {"item": "Quality Standards", "keywords": ["quality", "standards", "kpi", "sla", "benchmark"]},
+                {"item": "Duration and Renewal", "keywords": ["duration", "renewal", "extension", "term"]},
+                {"item": "Confidentiality", "keywords": ["confidential", "non-disclosure", "nda", "proprietary"]},
+                {"item": "Termination Clause", "keywords": ["termination", "cancellation", "exit", "discontinue"]},
             ]
         }
         content_lower = content.lower()
@@ -790,12 +790,12 @@ async def execute_tool(tool_name: str, tool_input: dict, company_id: str) -> dic
                     "source": doc['source'],
                     "content_preview": doc['content'][:2000],
                     "full_content": doc['content'],
-                    "message": f"✅ Đã crawl thành công!\n\n📄 **{doc['title']}**\n🔗 {url}\n📊 {crawl_result['content_length']:,} ký tự, {crawl_result['chunks']} chunks\n📁 Nguồn: {doc['source']}"
+                    "message": f"✅ Crawled successfully!\n\n📄 **{doc['title']}**\n🔗 {url}\n📊 {crawl_result['content_length']:,} characters, {crawl_result['chunks']} chunks\n📁 Source: {doc['source']}"
                 }
             else:
-                return {"error": f"❌ Crawl thất bại: {crawl_result['error']}"}
+                return {"error": f"❌ Crawl failed: {crawl_result['error']}"}
         except Exception as e:
-            return {"error": f"❌ Lỗi crawl: {str(e)}"}
+            return {"error": f"❌ Crawl error: {str(e)}"}
     
     # ============================================
     # NEW AGENTIC TOOLS — Full Document Control
@@ -883,7 +883,7 @@ async def execute_tool(tool_name: str, tool_input: dict, company_id: str) -> dic
                 doc = cur.fetchone()
             
             if not doc:
-                return {"error": f"Document not found với ID: {document_id}"}
+                return {"error": f"Document not found with ID: {document_id}"}
             
             content = doc.get("extracted_text", "") or ""
             
@@ -915,7 +915,7 @@ async def execute_tool(tool_name: str, tool_input: dict, company_id: str) -> dic
         tags = tool_input.get("tags", [])
         
         if not title or not content:
-            return {"error": "Thiếu thông tin: cần có title và content"}
+            return {"error": "Missing info: title and content are required"}
         
         with _get_db() as conn:
             cur = conn.cursor(cursor_factory=RealDictCursor)
@@ -949,7 +949,7 @@ async def execute_tool(tool_name: str, tool_input: dict, company_id: str) -> dic
                 "success": True,
                 "document_id": str(new_doc["id"]),
                 "title": new_doc["name"],
-                "message": f"✅ Đã tạo tài liệu: {title}",
+                "message": f"✅ Document created: {title}",
                 "created_at": str(new_doc.get("created_at", ""))
             }
     
@@ -960,7 +960,7 @@ async def execute_tool(tool_name: str, tool_input: dict, company_id: str) -> dic
         description = tool_input.get("description", "AI edit")
         
         if not document_id or not old_text:
-            return {"error": "Thiếu thông tin: cần document_id và old_text"}
+            return {"error": "Missing info: document_id and old_text are required"}
         
         with _get_db() as conn:
             cur = conn.cursor(cursor_factory=RealDictCursor)
@@ -1015,7 +1015,7 @@ async def execute_tool(tool_name: str, tool_input: dict, company_id: str) -> dic
                 "success": True,
                 "document_id": str(doc["id"]),
                 "document_name": doc["name"],
-                "message": f"✅ Đã sửa tài liệu: {doc['name']}",
+                "message": f"✅ Document updated: {doc['name']}",
                 "old_text_preview": old_text[:100],
                 "new_text_preview": new_text[:100]
             }
@@ -1043,7 +1043,7 @@ async def execute_tool(tool_name: str, tool_input: dict, company_id: str) -> dic
                     docs.append(dict(doc))
             
             if len(docs) != 2:
-                return {"error": "Không tìm thấy một hoặc cả hai tài liệu"}
+                return {"error": "One or both documents not found"}
             
             # Simple diff using difflib
             import difflib
@@ -1063,7 +1063,7 @@ async def execute_tool(tool_name: str, tool_input: dict, company_id: str) -> dic
                 ))
                 diff_text = '\n'.join(diff[:100])  # Limit to 100 lines
             else:
-                diff_text = f"Tương đồng: {ratio*100:.1f}%"
+                diff_text = f"Similarity: {ratio*100:.1f}%"
             
             # Count changes
             added = text2.count('\n') - text1.count('\n')
@@ -1083,7 +1083,7 @@ async def execute_tool(tool_name: str, tool_input: dict, company_id: str) -> dic
         parent_folder = tool_input.get("parent_folder")
         
         if not name:
-            return {"error": "Thiếu tên thư mục"}
+            return {"error": "Folder name is required"}
         
         with _get_db() as conn:
             cur = conn.cursor(cursor_factory=RealDictCursor)
@@ -1110,7 +1110,7 @@ async def execute_tool(tool_name: str, tool_input: dict, company_id: str) -> dic
                 "success": True,
                 "folder_id": str(folder["id"]),
                 "name": folder["name"],
-                "message": f"✅ Đã tạo thư mục: {name}"
+                "message": f"✅ Folder created: {name}"
             }
     
     elif tool_name == "move_document":
@@ -1118,7 +1118,7 @@ async def execute_tool(tool_name: str, tool_input: dict, company_id: str) -> dic
         target_folder = tool_input.get("target_folder", "")
         
         if not document_id or not target_folder:
-            return {"error": "Thiếu thông tin: cần document_id và target_folder"}
+            return {"error": "Missing info: document_id and target_folder are required"}
         
         with _get_db() as conn:
             cur = conn.cursor(cursor_factory=RealDictCursor)
@@ -1165,7 +1165,7 @@ async def execute_tool(tool_name: str, tool_input: dict, company_id: str) -> dic
                 "document_id": str(doc["id"]),
                 "document_name": doc["name"],
                 "target_folder": target_folder,
-                "message": f"✅ Đã di chuyển '{doc['name']}' vào thư mục '{target_folder}'"
+                "message": f"✅ Moved '{doc['name']}' to folder '{target_folder}'"
             }
     
     elif tool_name == "delete_document":
@@ -1173,7 +1173,7 @@ async def execute_tool(tool_name: str, tool_input: dict, company_id: str) -> dic
         reason = tool_input.get("reason", "AI deletion")
         
         if not document_id:
-            return {"error": "Thiếu document_id"}
+            return {"error": "Missing document_id"}
         
         with _get_db() as conn:
             cur = conn.cursor(cursor_factory=RealDictCursor)
@@ -1211,7 +1211,7 @@ async def execute_tool(tool_name: str, tool_input: dict, company_id: str) -> dic
                 "success": True,
                 "document_id": str(doc["id"]),
                 "document_name": doc["name"],
-                "message": f"✅ Đã xóa tài liệu: {doc['name']} (có thể khôi phục trong 30 ngày)"
+                "message": f"✅ Document deleted: {doc['name']} (recoverable within 30 days)"
             }
     
     elif tool_name == "generate_document":
@@ -1222,7 +1222,7 @@ async def execute_tool(tool_name: str, tool_input: dict, company_id: str) -> dic
         save = tool_input.get("save", True)
         
         if not doc_type or not requirements:
-            return {"error": "Thiếu thông tin: cần type và requirements"}
+            return {"error": "Missing info: type and requirements are required"}
         
         # Call LLM to generate the document
         try:
@@ -1280,7 +1280,7 @@ Return a complete, correctly formatted document containing all legally required 
         focus = tool_input.get("focus", "all")
         
         if not document_ids or len(document_ids) == 0:
-            return {"error": "Thiếu danh sách tài liệu"}
+            return {"error": "Missing document list"}
         
         reviews = []
         
@@ -1309,20 +1309,20 @@ Return a complete, correctly formatted document containing all legally required 
                 risk_score = 0
                 
                 # Check for common issues
-                if "phạt" not in content and "vi phạm" not in content:
-                    risks.append("Thiếu điều khoản phạt vi phạm")
+                if "penalty" not in content and "breach" not in content:
+                    risks.append("Missing penalty clause")
                     risk_score += 20
                 
-                if "bảo mật" not in content:
-                    risks.append("Thiếu điều khoản bảo mật")
+                if "confidentiality" not in content:
+                    risks.append("Missing confidentiality clause")
                     risk_score += 15
                 
-                if "tranh chấp" not in content:
-                    risks.append("Thiếu điều khoản giải quyết tranh chấp")
+                if "dispute" not in content:
+                    risks.append("Missing dispute resolution clause")
                     risk_score += 20
                 
-                if "chấm dứt" not in content:
-                    risks.append("Thiếu điều khoản chấm dứt")
+                if "termination" not in content:
+                    risks.append("Missing termination clause")
                     risk_score += 15
                 
                 reviews.append({
@@ -1348,7 +1348,7 @@ Return a complete, correctly formatted document containing all legally required 
         document_id = tool_input.get("document_id", "")
         
         if not document_id:
-            return {"error": "Thiếu document_id"}
+            return {"error": "Missing document_id"}
         
         with _get_db() as conn:
             cur = conn.cursor(cursor_factory=RealDictCursor)
@@ -1386,7 +1386,7 @@ Return a complete, correctly formatted document containing all legally required 
 
 
 async def _tool_search_law(tool_input: dict, company_id: str) -> dict:
-    """Search Vietnamese law database"""
+    """Search Indian law database"""
     query = tool_input.get("query", "")
     domains = tool_input.get("domains", None)
     limit = tool_input.get("limit", 10)
@@ -1441,7 +1441,7 @@ async def _tool_read_contract(tool_input: dict, company_id: str) -> dict:
         contract = cur.fetchone()
 
     if not contract:
-        return {"error": f"Contract not found với ID: {contract_id}"}
+        return {"error": f"Contract not found with ID: {contract_id}"}
 
     result = dict(contract)
     # Convert dates to strings
@@ -1548,13 +1548,13 @@ async def _tool_analyze_contract_risk(tool_input: dict, company_id: str) -> dict
 
     contract = contract_data["contract"]
     contract_text = contract.get("extracted_text", "")
-    contract_type = contract.get("contract_type", "hợp đồng")
+    contract_type = contract.get("contract_type", "contract")
 
     if not contract_text or len(contract_text) < 50:
-        return {"error": "Hợp đồng chưa có nội dung text để phân tích. Vui lòng upload lại file hợp đồng."}
+        return {"error": "Contract has no text content to analyse. Please re-upload the contract file."}
 
     # Search relevant laws for this contract type
-    search_query = f"{contract_type} điều khoản quyền nghĩa vụ"
+    search_query = f"{contract_type} clauses rights obligations Indian law"
     law_results = _multi_query_search(search_query, None, 10)
 
     law_context = []
@@ -1572,7 +1572,7 @@ async def _tool_analyze_contract_risk(tool_input: dict, company_id: str) -> dict
         "contract_text": contract_text[:15000],
         "parties": contract.get("parties"),
         "relevant_laws": law_context,
-        "instruction": "Hãy phân tích rủi ro pháp lý của hợp đồng này dựa trên nội dung và các luật liên quan. Đánh giá: tính hợp pháp, điều khoản thiếu, rủi ro cho các bên, đề xuất sửa đổi."
+        "instruction": "Analyse the legal risks of this contract based on its content and applicable Indian law. Evaluate: legality, missing clauses, risks for each party, and recommended amendments."
     }
 
 
@@ -1593,10 +1593,10 @@ async def _tool_review_contract_ai(tool_input: dict, company_id: str) -> dict:
     contract = contract_data["contract"]
     contract_text = contract.get("extracted_text", "")
     contract_type = contract.get("contract_type")
-    contract_name = contract.get("name", "Hợp đồng")
+    contract_name = contract.get("name", "Contract")
     
     if not contract_text or len(contract_text) < 50:
-        return {"error": "Hợp đồng chưa có nội dung để phân tích. Vui lòng upload lại file hợp đồng."}
+        return {"error": "Contract has no content to analyse. Please re-upload the contract file."}
     
     # Parse parties
     parties = contract.get("parties")
@@ -1651,7 +1651,7 @@ async def _tool_review_contract_ai(tool_input: dict, company_id: str) -> dict:
         },
         "top_recommendations": review_result["recommendations"][:3],
         "full_review": review_result,
-        "message": f"✅ Đã rà soát hợp đồng '{contract_name}' — Phát hiện {review_result['total_issues']} vấn đề. Điểm rủi ro: {review_result['risk_score']}/100 ({review_result['risk_level']})"
+        "message": f"✅ Reviewed contract '{contract_name}' — Found {review_result['total_issues']} issue(s). Risk score: {review_result['risk_score']}/100 ({review_result['risk_level']})"
     }
 
 
@@ -1662,7 +1662,7 @@ async def _tool_draft_document(tool_input: dict, company_id: str) -> dict:
     template_id = tool_input.get("template_id")
 
     # Search relevant laws for this doc type
-    search_query = doc_type.replace("_", " ") + " mẫu quy định"
+    search_query = doc_type.replace("_", " ") + " template rule regulation"
     law_results = _search_laws(search_query, None, 8)
 
     law_context = []
@@ -1745,7 +1745,7 @@ async def _tool_compare_contracts(tool_input: dict, company_id: str) -> dict:
     """Compare multiple contracts side-by-side"""
     contract_ids = tool_input.get("contract_ids", [])
     if len(contract_ids) < 2:
-        return {"error": "Cần ít nhất 2 hợp đồng để so sánh"}
+        return {"error": "At least 2 contracts are required for comparison"}
 
     contracts_data = []
     for cid in contract_ids[:5]:
@@ -1794,12 +1794,12 @@ async def _tool_crawl_legal_document(tool_input: dict, company_id: str) -> dict:
                 "source": doc['source'],
                 "content_preview": doc['content'][:2000],
                 "full_content": doc['content'],
-                "message": f"✅ Đã crawl thành công!\n\n📄 **{doc['title']}**\n🔗 {url}\n📊 {crawl_result['content_length']:,} ký tự, {crawl_result['chunks']} chunks\n📁 Nguồn: {doc['source']}"
+                "message": f"✅ Crawled successfully!\n\n📄 **{doc['title']}**\n🔗 {url}\n📊 {crawl_result['content_length']:,} characters, {crawl_result['chunks']} chunks\n📁 Source: {doc['source']}"
             }
         else:
-            return {"error": f"❌ Crawl thất bại: {crawl_result['error']}"}
+            return {"error": f"❌ Crawl failed: {crawl_result['error']}"}
     except Exception as e:
-        return {"error": f"❌ Lỗi crawl: {str(e)}"}
+        return {"error": f"❌ Crawl error: {str(e)}"}
 
 
 async def _tool_edit_and_diff_document(tool_input: dict, company_id: str) -> dict:
@@ -1819,7 +1819,7 @@ async def _tool_edit_and_diff_document(tool_input: dict, company_id: str) -> dic
     auto_fix = tool_input.get("auto_fix", True)
     
     if not document_id:
-        return {"error": "Thiếu document_id"}
+        return {"error": "Missing document_id"}
     
     # Read the document
     with _get_db() as conn:
@@ -1841,7 +1841,7 @@ async def _tool_edit_and_diff_document(tool_input: dict, company_id: str) -> dic
             doc = cur.fetchone()
     
     if not doc:
-        return {"error": f"Document not found với ID: {document_id}"}
+        return {"error": f"Document not found with ID: {document_id}"}
     
     original_text = doc.get("extracted_text") or doc.get("content", "")
     doc_name = doc.get("name", "document")
@@ -2025,19 +2025,10 @@ async def run_agent(
 # ============================================
 
 TOOL_STATUS_LABELS = {
-    "search_law": "🔍 Đang tra cứu văn bản pháp luật...",
-    "read_contract": "📋 Đang đọc hợp đồng...",
-    "list_contracts": "📋 Đang liệt kê hợp đồng...",
-    "search_company_docs": "📄 Đang tìm kiếm tài liệu nội bộ...",
-    "analyze_contract_risk": "⚖️ Đang phân tích rủi ro hợp đồng...",
-    "review_contract_ai": "🤖 Đang rà soát hợp đồng với AI (10 danh mục rủi ro)...",
-    "draft_document": "✍️ Đang chuẩn bị soạn thảo văn bản...",
-    "get_company_profile": "🏢 Đang lấy thông tin công ty...",
-    "compare_contracts": "⚖️ Đang so sánh hợp đồng...",
-    "summarize_contract": "📋 Đang tóm tắt hợp đồng...",
-    "check_legal_compliance": "✅ Đang kiểm tra tuân thủ...",
-    "generate_clause": "✍️ Đang soạn điều khoản...",
-    "edit_and_diff_document": "✏️ Đang chỉnh sửa và tạo diff view..."
+    "summarize_contract": "📋 Summarising contract...",
+    "check_legal_compliance": "✅ Checking compliance...",
+    "generate_clause": "✍️ Drafting clause...",
+    "edit_and_diff_document": "✏️ Editing and generating diff view..."
 }
 
 
@@ -2050,7 +2041,7 @@ async def run_agent_stream(
 ) -> AsyncGenerator[str, None]:
     """
     Streaming agent loop. Yields SSE events:
-    - {"type": "tool_status", "tool": "search_law", "status": "running", "label": "🔍 Đang tra cứu..."}
+    - {"type": "tool_status", "tool": "search_law", "status": "running", "label": "🔍 Searching law..."}
     - {"type": "tool_status", "tool": "search_law", "status": "done"}
     - {"type": "citations", "citations": [...]}
     - {"type": "delta", "text": "chunk"}
@@ -2107,7 +2098,7 @@ async def run_agent_stream(
             tool_id = tool_use.get("id", "")
 
             # Notify frontend
-            label = TOOL_STATUS_LABELS.get(tool_name, f"🔧 Đang xử lý {tool_name}...")
+            label = TOOL_STATUS_LABELS.get(tool_name, f"🔧 Processing {tool_name}...")
             yield f"data: {json.dumps({'type': 'tool_status', 'tool': tool_name, 'status': 'running', 'label': label}, ensure_ascii=False)}\n\n"
 
             try:
@@ -2129,7 +2120,7 @@ async def run_agent_stream(
         messages.append({"role": "user", "content": tool_results})
 
     # Max iterations
-    yield f"data: {json.dumps({'type': 'error', 'message': 'Đã xử lý quá nhiều bước. Vui lòng thử lại với câu hỏi cụ thể hơn.'}, ensure_ascii=False)}\n\n"
+    yield f"data: {json.dumps({'type': 'error', 'message': 'Too many processing steps. Please try again with a more specific question.'}, ensure_ascii=False)}\n\n"
 
 
 async def run_agent_stream_final_text(
@@ -2273,7 +2264,7 @@ async def run_agent_stream_final_text(
             if tool_name not in all_tools_used:
                 all_tools_used.append(tool_name)
 
-            label = TOOL_STATUS_LABELS.get(tool_name, f"🔧 Đang xử lý {tool_name}...")
+            label = TOOL_STATUS_LABELS.get(tool_name, f"🔧 Processing {tool_name}...")
             yield f"data: {json.dumps({'type': 'tool_status', 'tool': tool_name, 'status': 'running', 'label': label}, ensure_ascii=False)}\n\n"
 
             try:
@@ -2301,4 +2292,4 @@ async def run_agent_stream_final_text(
 
         messages.append({"role": "user", "content": tool_results})
 
-    yield f"data: {json.dumps({'type': 'error', 'message': 'Đã xử lý quá nhiều bước. Vui lòng thử lại với câu hỏi cụ thể hơn.'}, ensure_ascii=False)}\n\n"
+    yield f"data: {json.dumps({'type': 'error', 'message': 'Too many processing steps. Please try again with a more specific question.'}, ensure_ascii=False)}\n\n"

@@ -26,7 +26,7 @@ def init_memory(get_db_fn):
 async def get_company_memory(company_id: str) -> str:
     """
     Fetch company memory summary for AI context injection.
-    Returns a concise Vietnamese string ready for system prompt.
+    Returns a concise English string ready for system prompt.
     """
     if not _get_db:
         return ""
@@ -52,7 +52,7 @@ async def get_company_memory(company_id: str) -> str:
                 """, (company_id,))
             company = cur.fetchone()
             if company:
-                parts.append(f"- Tên: {company['name']}")
+                parts.append(f"- Name: {company['name']}")
                 # Parse metadata for custom notes (if column exists)
                 metadata = company.get("metadata")
                 if metadata:
@@ -63,9 +63,9 @@ async def get_company_memory(company_id: str) -> str:
                             metadata = {}
                     if isinstance(metadata, dict):
                         if metadata.get("industry"):
-                            parts.append(f"- Ngành: {metadata['industry']}")
+                            parts.append(f"- Industry: {metadata['industry']}")
                         if metadata.get("notes"):
-                            parts.append(f"- Ghi chú: {metadata['notes']}")
+                            parts.append(f"- Notes: {metadata['notes']}")
                         if metadata.get("memory"):
                             for k, v in metadata["memory"].items():
                                 parts.append(f"- {k}: {v}")
@@ -82,7 +82,7 @@ async def get_company_memory(company_id: str) -> str:
             if contracts:
                 active = [c for c in contracts if c.get("status") == "active"]
                 expired = [c for c in contracts if c.get("status") == "expired"]
-                
+
                 contract_lines = []
                 for c in contracts[:5]:
                     name = c.get("name", "N/A")
@@ -92,12 +92,12 @@ async def get_company_memory(company_id: str) -> str:
                         if isinstance(end, (date, datetime)):
                             days = (end - date.today()).days if isinstance(end, date) else (end.date() - date.today()).days
                             if days < 0:
-                                status_str = f", đã hết hạn {abs(days)} ngày"
+                                status_str = f", expired {abs(days)} days ago"
                             elif days <= 30:
-                                status_str = f", sắp hết hạn ({days} ngày)"
+                                status_str = f", expiring soon ({days} days)"
                             else:
-                                status_str = f", hết hạn {end}"
-                    
+                                status_str = f", expires {end}"
+
                     parties_str = ""
                     if c.get("parties"):
                         try:
@@ -109,13 +109,13 @@ async def get_company_memory(company_id: str) -> str:
                                         party_names.append(party.get("name", str(party)))
                                     else:
                                         party_names.append(str(party))
-                                parties_str = f" với {', '.join(party_names[:2])}"
+                                parties_str = f" with {', '.join(party_names[:2])}"
                         except:
                             pass
-                    
+
                     contract_lines.append(f"  • {name}{parties_str}{status_str}")
-                
-                parts.append(f"- HĐ đang có: {len(active)} active, {len(expired)} expired (tổng {len(contracts)})")
+
+                parts.append(f"- Contracts: {len(active)} active, {len(expired)} expired (total {len(contracts)})")
                 if contract_lines:
                     parts.extend(contract_lines)
 
@@ -126,7 +126,7 @@ async def get_company_memory(company_id: str) -> str:
             """, (company_id,))
             doc_stats = cur.fetchone()
             if doc_stats and doc_stats["total"] > 0:
-                parts.append(f"- Tài liệu: {doc_stats['total']} files ({doc_stats['types']} loại)")
+                parts.append(f"- Documents: {doc_stats['total']} files ({doc_stats['types']} types)")
 
             # 4. Recent chat topics (last 5 sessions)
             cur.execute("""
@@ -148,7 +148,7 @@ async def get_company_memory(company_id: str) -> str:
                             clean = clean[:60] + "..."
                         recent_topics.append(clean)
                 if recent_topics:
-                    parts.append(f"- Chủ đề chat gần đây: {'; '.join(recent_topics)}")
+                    parts.append(f"- Recent chat topics: {'; '.join(recent_topics)}")
 
     except Exception as e:
         # Don't break the agent if memory fetch fails
@@ -158,7 +158,7 @@ async def get_company_memory(company_id: str) -> str:
     if not parts:
         return ""
 
-    return "## Bộ nhớ công ty:\n" + "\n".join(parts)
+    return "## Company Memory:\n" + "\n".join(parts)
 
 
 async def update_company_memory(company_id: str, key: str, value: str):
@@ -172,7 +172,7 @@ async def update_company_memory(company_id: str, key: str, value: str):
     try:
         with _get_db() as conn:
             cur = conn.cursor(cursor_factory=RealDictCursor)
-            
+
             # Get current metadata (column may not exist)
             try:
                 cur.execute("SELECT metadata FROM companies WHERE id = %s", (company_id,))

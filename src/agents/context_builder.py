@@ -26,13 +26,13 @@ def init_context(get_db_fn):
 async def build_user_context(company_id: str, user_id: str = None) -> str:
     """
     Build rich context string for system prompt injection.
-    Returns Vietnamese context ready to append to system prompt.
+    Returns English context ready to append to system prompt.
     """
     if not _get_db:
         return ""
 
     sections = []
-    now = datetime.now(timezone(timedelta(hours=7)))  # Vietnam timezone
+    now = datetime.now(timezone(timedelta(hours=5, minutes=30)))  # India Standard Time (IST, GMT+5:30)
 
     try:
         with _get_db() as conn:
@@ -56,18 +56,18 @@ async def build_user_context(company_id: str, user_id: str = None) -> str:
                 cur.execute("SELECT name, plan, metadata FROM companies WHERE id = %s", (company_id,))
                 company = cur.fetchone()
                 if company:
-                    sections.append(f"## Công ty: {company['name']} (gói {company.get('plan', 'free')})")
+                    sections.append(f"## Company: {company['name']} (plan: {company.get('plan', 'free')})")
             else:
                 user_name = user_info.get('full_name') or user_info.get('email', '').split('@')[0]
-                sections.append(f"## Người dùng: {user_name}")
-                sections.append(f"- Vai trò: {_role_label(user_info.get('role', 'user'))}")
-                sections.append(f"- Công ty: {user_info['company_name']} (gói {user_info.get('plan', 'free')})")
-                
+                sections.append(f"## User: {user_name}")
+                sections.append(f"- Role: {_role_label(user_info.get('role', 'user'))}")
+                sections.append(f"- Company: {user_info['company_name']} (plan: {user_info.get('plan', 'free')})")
+
                 # Usage stats
                 used = user_info.get('used_quota', 0)
                 quota = user_info.get('monthly_quota', 100)
                 remaining = max(0, quota - used)
-                sections.append(f"- Lượt dùng tháng này: {used}/{quota} (còn {remaining})")
+                sections.append(f"- Usage this month: {used}/{quota} ({remaining} remaining)")
 
                 # Company metadata
                 metadata = user_info.get('metadata') or {}
@@ -77,9 +77,9 @@ async def build_user_context(company_id: str, user_id: str = None) -> str:
                     except:
                         metadata = {}
                 if metadata.get('industry'):
-                    sections.append(f"- Ngành nghề: {metadata['industry']}")
+                    sections.append(f"- Industry: {metadata['industry']}")
                 if metadata.get('notes'):
-                    sections.append(f"- Ghi chú: {metadata['notes']}")
+                    sections.append(f"- Notes: {metadata['notes']}")
 
             # ─── 2. Document Inventory ───
             cur.execute("""
@@ -92,7 +92,7 @@ async def build_user_context(company_id: str, user_id: str = None) -> str:
             if doc_types:
                 total = sum(d['cnt'] for d in doc_types)
                 type_summary = ", ".join(f"{d['doc_type']}: {d['cnt']}" for d in doc_types)
-                sections.append(f"\n## Kho tài liệu: {total} files ({type_summary})")
+                sections.append(f"\n## Document Library: {total} files ({type_summary})")
 
             # Recent documents (last 5)
             cur.execute("""
@@ -104,7 +104,7 @@ async def build_user_context(company_id: str, user_id: str = None) -> str:
             """, (company_id,))
             recent_docs = cur.fetchall()
             if recent_docs:
-                sections.append("### Tài liệu gần đây:")
+                sections.append("### Recent Documents:")
                 for d in recent_docs:
                     created = d['created_at'].strftime('%d/%m') if d.get('created_at') else ''
                     sections.append(f"  • {d['name']} ({d.get('doc_type', 'other')}, {created})")
@@ -131,11 +131,11 @@ async def build_user_context(company_id: str, user_id: str = None) -> str:
                             if 0 <= days_left <= 30:
                                 expiring_soon.append((c['name'], days_left))
 
-                sections.append(f"\n## Hợp đồng: {len(contracts)} tổng, {len(active)} đang hiệu lực")
+                sections.append(f"\n## Contracts: {len(contracts)} total, {len(active)} active")
                 if expiring_soon:
-                    sections.append("⚠️ Sắp hết hạn:")
+                    sections.append("⚠️ Expiring soon:")
                     for name, days in expiring_soon:
-                        sections.append(f"  • {name} — còn {days} ngày!")
+                        sections.append(f"  • {name} — {days} days left!")
 
                 for c in contracts[:3]:
                     parties = _format_parties(c.get('parties'))
@@ -151,7 +151,7 @@ async def build_user_context(company_id: str, user_id: str = None) -> str:
             folders = cur.fetchall()
             if folders:
                 folder_list = ", ".join(f"{f['name']} ({f['doc_count']})" for f in folders)
-                sections.append(f"\n## Thư mục: {folder_list}")
+                sections.append(f"\n## Folders: {folder_list}")
 
             # ─── 5. Recent Chat Topics ───
             cur.execute("""
@@ -172,19 +172,19 @@ async def build_user_context(company_id: str, user_id: str = None) -> str:
                             clean = clean[:50] + "..."
                         topics.append(clean)
                 if topics:
-                    sections.append(f"\n## Chủ đề gần đây: {'; '.join(topics)}")
+                    sections.append(f"\n## Recent Topics: {'; '.join(topics)}")
 
             # ─── 6. Time Context ───
-            sections.append(f"\n## Thời gian: {now.strftime('%H:%M %d/%m/%Y')} (GMT+7)")
+            sections.append(f"\n## Current Time: {now.strftime('%H:%M %d/%m/%Y')} (IST, GMT+5:30)")
             hour = now.hour
             if 6 <= hour < 12:
-                sections.append("Buổi sáng — chào buổi sáng nếu là tin nhắn đầu tiên")
+                sections.append("Morning — greet the user if this is the first message")
             elif 12 <= hour < 14:
-                sections.append("Giờ trưa — ngắn gọn, người dùng có thể đang nghỉ trưa")
+                sections.append("Lunch hour — keep responses concise, user may be on a break")
             elif 14 <= hour < 18:
-                sections.append("Buổi chiều — thời gian làm việc chính")
+                sections.append("Afternoon — peak working hours")
             elif 18 <= hour < 22:
-                sections.append("Buổi tối — có thể đang làm thêm giờ")
+                sections.append("Evening — user may be working overtime")
             else:
                 sections.append("Late night — answer briefly, do not ask much")
 
@@ -202,11 +202,11 @@ async def build_user_context(company_id: str, user_id: str = None) -> str:
 
 def _role_label(role: str) -> str:
     labels = {
-        'owner': 'Chủ sở hữu',
-        'admin': 'Quản trị viên',
-        'editor': 'Biên tập viên',
-        'viewer': 'Người xem',
-        'user': 'Người dùng'
+        'owner': 'Owner',
+        'admin': 'Administrator',
+        'editor': 'Editor',
+        'viewer': 'Viewer',
+        'user': 'User'
     }
     return labels.get(role, role)
 
@@ -224,7 +224,7 @@ def _format_parties(parties) -> str:
                     names.append(p.get('name', str(p)))
                 else:
                     names.append(str(p))
-            return f" (các bên: {', '.join(names)})"
+            return f" (parties: {', '.join(names)})"
     except:
         pass
     return ""
