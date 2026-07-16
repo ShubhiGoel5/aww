@@ -14,4 +14,4 @@ We will respond within 48 hours.
 ## Important Notes
 - Never commit API keys, passwords, or tokens
 - All database credentials must use environment variables
-- AI outputs must include disclaimer: "Khuyến nghị tham khảo ý kiến luật sư"
+- AI outputs must include disclaimer: "Khuyn ngh tham kho  kin lut s"

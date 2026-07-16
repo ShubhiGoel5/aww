@@ -7,11 +7,11 @@
   <a href="https://www.python.org/downloads/"><img src="https://img.shields.io/badge/python-3.10+-blue.svg" alt="Python"></a>
 </p>
 
-🇻🇳 [Tiếng Việt](README_VI.md) | 🇺🇸 English
+🇮🇳 [Hindi](README_HI.md) | 🇺🇸 English
 
-> **Created by [Lê Minh Hiếu](https://github.com/Paparusi)** — Trader turned Builder 🇻🇳
+> **Created by [L Minh Hiu](https://github.com/Paparusi)** — Trader turned Builder 🇮🇳
 
-**AI-powered legal assistant for Vietnamese businesses**
+**AI-powered legal assistant for Indiaese businesses**
 
 An AI platform for legal research, contract review, and legal document drafting — all in a VSCode-style interface.
 
@@ -29,9 +29,9 @@ An AI platform for legal research, contract review, and legal document drafting 
 ## ✨ Features
 
 ### 🤖 AI Agent (24 Tools)
-- **Legal search** — Search across 40,000+ Vietnamese legal documents
+- **Legal search** — Search across 40,000+ Indiaese legal documents
 - **Contract review** — Risk analysis, missing clauses, amendment suggestions
-- **Compliance check** — Verify labor/commercial/service contracts against Vietnamese law
+- **Compliance check** — Verify labor/commercial/service contracts against Indiaese law
 - **Clause drafting** — Generate confidentiality, penalty, termination, force majeure clauses...
 - **Contract summary** — Quick summary of parties, value, duration
 - **Contract comparison** — Side-by-side diff of 2 contracts
@@ -106,18 +106,18 @@ AI:
 Upload contracts for instant AI-powered review:
 
 - ⚠️ **Risk identification and scoring** — 10 risk categories analyzed
-- ⚖️ **Vietnamese law compliance check** — Civil Code, Commercial Law, Labor Law
+- ⚖️ **Indiaese law compliance check** — Civil Code, Commercial Law, Labor Law
 - 💡 **Revision suggestions** — Specific amendments with legal references
 - 📊 **Clause-by-clause analysis** — Risk levels: LOW / MEDIUM / HIGH / CRITICAL
-- 📄 **8+ contract templates** — Ready-to-use Vietnamese templates
+- 📄 **8+ contract templates** — Ready-to-use Indiaese templates
 
 ### Risk Categories Analyzed
 
 1. **Unfavorable clauses** — One-sided clauses favoring one party
-2. **High violation penalty** — Excessive penalty clauses (>8% per Vietnamese law)
+2. **High violation penalty** — Excessive penalty clauses (>8% per Indiaese law)
 3. **Unreasonable duration** — Unreasonable deadlines/terms
 4. **Missing protective clauses** — Missing protective clauses
-5. **Conflict with law** — Clauses contradicting Vietnamese law
+5. **Conflict with law** — Clauses contradicting Indiaese law
 6. **Auto-renewal clauses** — Auto-renewal traps
 7. **Liability limitations** — Liability limitations
 8. **Confidentiality and IP** — IP/confidentiality issues
@@ -125,14 +125,14 @@ Upload contracts for instant AI-powered review:
 10. **Force majeure** — Missing or weak force majeure
 
 ### Supported Contract Types
-- Employment (Hợp đồng lao động)
-- Lease (Hợp đồng thuê mặt bằng)
-- Sale (Hợp đồng mua bán)
-- Service (Hợp đồng dịch vụ)
-- NDA / Confidentiality (Bảo mật thông tin)
-- Loan (Hợp đồng vay)
-- Agency (Hợp đồng đại lý)
-- Business Cooperation (Hợp đồng hợp tác kinh doanh)
+- Employment (Employment Contract)
+- Lease (Lease Agreement)
+- Sale (Sale Contract)
+- Service (Service Contract)
+- NDA / Confidentiality (NDA / Confidentiality)
+- Loan (Loan Contract)
+- Agency (Agency Contract)
+- Business Cooperation (Business Cooperation)
 
 ### API Usage
 
@@ -150,29 +150,29 @@ GET /v1/contracts/{contract_id}/review-ai
 ```json
 {
   "review_id": "review_20250319_143000",
-  "contract_title": "Hợp đồng thuê mặt bằng",
+  "contract_title": "Lease Agreement",
   "contract_type": "lease",
-  "parties": ["Công ty A", "Công ty B"],
+  "parties": ["Company A", "Company B"],
   "risk_score": 72,
   "risk_level": "HIGH",
-  "summary": "Hợp đồng có 5 điều khoản rủi ro cao...",
+  "summary": "Contract has 5 high-risk clauses...",
   "clauses": [
     {
-      "clause_number": "Điều 5",
-      "title": "Phạt vi phạm",
-      "content": "Bên B phải trả phạt 20%...",
+      "clause_number": "Article 5",
+      "title": "Penalty for breach",
+      "content": "Party B must pay a 20% penalty...",
       "risk_level": "CRITICAL",
       "risk_score": 95,
-      "issue": "Mức phạt 20% vượt quá quy định",
-      "law_reference": "Điều 301 Luật TM 2005: phạt ≤ 8%",
-      "suggestion": "Giảm mức phạt xuống ≤ 8%"
+      "issue": "20% penalty exceeds legal limits",
+      "law_reference": "iu 301 Companies Act 2013: pht ≤ 8%",
+      "suggestion": "Reduce penalty to ≤ 8%"
     }
   ],
   "missing_clauses": [
     {
       "clause": "Force Majeure",
       "importance": "HIGH",
-      "suggestion": "Thêm Điều 156 BLDS 2015"
+      "suggestion": "Add Section 56 of Indian Contract Act 1872"
     }
   ],
   "compliance": {
@@ -183,8 +183,8 @@ GET /v1/contracts/{contract_id}/review-ai
   "recommendations": [
     {
       "priority": 1,
-      "action": "Sửa Điều 5: giảm phạt 20% → 8%",
-      "reason": "Vi phạm Điều 301 Luật TM 2005"
+      "action": "Amend Article 5: reduce penalty 20% → 8%",
+      "reason": "Violation of Section 301 Companies Act 2013"
     }
   ]
 }
@@ -230,7 +230,7 @@ https://your-domain.com/platform-admin
 
 # Available stats:
 - Total companies, users, documents, contracts
-- Vietnamese law database size (60K+ documents, 117K+ chunks)
+- Indiaese law database size (60K+ documents, 117K+ chunks)
 - Daily/monthly query volumes
 - Active users, storage usage
 - Usage trends (30-day charts)
@@ -257,12 +257,12 @@ https://your-domain.com/platform-admin
 - Keyboard shortcuts
 
 ### 🕷️ Data Crawler (Powered by CrawlKit)
-Legal AI Agent can automatically crawl Vietnamese legal websites to build and update your document database.
+Legal AI Agent can automatically crawl Indiaese legal websites to build and update your document database.
 
 #### Supported Sources
-- 📚 **Thư Viện Pháp Luật** (thuvienphapluat.vn) — Largest Vietnamese legal document database
-- 🏛️ **Văn Bản Pháp Luật Chính Phủ** (vbpl.vn) — Official government legal portal
-- 📰 **Công Báo** (congbao.chinhphu.vn) — Official Gazette of Vietnam
+- 📚 **India Code** (indiacode.nic.in) — Largest Indiaese legal document database
+- 🏛️ **India Code** (indiacode.nic.in) — Official government legal portal
+- 📰 **Gazette of India** (egazette.nic.in) — Official Gazette of India
 - 🌐 **Any legal website URL** — Custom legal document sources
 
 #### Setup
@@ -279,13 +279,13 @@ Legal AI Agent can automatically crawl Vietnamese legal websites to build and up
 ```bash
 POST /crawler/crawl
 {
-  "url": "https://thuvienphapluat.vn/van-ban/..."
+  "url": "https://indiacode.nic.in/van-ban/..."
 }
 ```
 
 **Via AI Chat:**
 ```
-"Crawl văn bản tại https://thuvienphapluat.vn/van-ban/123"
+"Crawl vn bn ti https://indiacode.nic.in/van-ban/123"
 ```
 
 **Other endpoints:**
@@ -331,7 +331,7 @@ cp .env.example .env
 # Run migrations
 python scripts/run_migration.py
 
-# Load Vietnamese law data (optional, ~40K documents)
+# Load Indiaese law data (optional, ~40K documents)
 python scripts/load_law_data.py
 python scripts/index_chunks.py
 ```
@@ -367,7 +367,7 @@ This starts PostgreSQL 15 (with pgvector) and the FastAPI app automatically.
 **⚠️ Note:** The database schema is created automatically on first startup, but **law documents are empty by default**. To populate the legal database:
 
 ```bash
-# Option 1: Crawl Vietnamese legal websites (recommended)
+# Option 1: Crawl Indiaese legal websites (recommended)
 docker compose exec app python scripts/crawl_thuvien.py
 
 # Option 2: Load from backup (if you have one)
@@ -551,12 +551,12 @@ ANTHROPIC_API_KEY=your-anthropic-key
 
 ## 💰 Pricing
 
-| Tier | USD | VND | Queries/day | Contracts | Key Features |
+| Tier | USD | INR | Queries/day | Contracts | Key Features |
 |------|-----|-----|-------------|-----------|--------------|
-| **Free** | $0 | 0₫ | 10 | 1 | Basic search, 2 templates |
-| **Starter** | $29/mo | 725K₫ | 100 | 20 | AI review, all templates |
-| **Professional** | $99/mo | 2.5M₫ | 500 | Unlimited | API, custom LLM, analytics |
-| **Enterprise** | $499/mo | 12.5M₫ | Unlimited | Unlimited | SLA 99.9%, dedicated support |
+| **Free** | $0 | 0₹ | 10 | 1 | Basic search, 2 templates |
+| **Starter** | $29/mo | 725K₹ | 100 | 20 | AI review, all templates |
+| **Professional** | $99/mo | 2.5M₹ | 500 | Unlimited | API, custom LLM, analytics |
+| **Enterprise** | $499/mo | 12.5M₹ | Unlimited | Unlimited | SLA 99.9%, dedicated support |
 
 **Discounts:** Annual -20% · Startups -30% · NGOs -50%
 
@@ -566,18 +566,18 @@ GET /v1/pricing  # Get pricing tiers
 
 ## 📄 Contract Templates
 
-8 ready-to-use Vietnamese contract templates:
+8 ready-to-use Indiaese contract templates:
 
 | Template | Law Reference |
 |----------|--------------|
-| Hợp đồng lao động | BLLĐ 2019 |
-| Hợp đồng thuê mặt bằng | BLDS 2015 |
-| Hợp đồng mua bán | Luật TM 2005 |
-| Hợp đồng dịch vụ | BLDS 2015 |
-| Hợp tác kinh doanh (BCC) | Luật ĐT 2020 |
-| NDA / Bảo mật | Luật SHTT 2005 |
-| Hợp đồng vay | BLDS 2015 |
-| Hợp đồng đại lý | Luật TM 2005 |
+| Employment Contract | Industrial Disputes Act 1947 |
+| Lease Agreement | Indian Contract Act 1872 |
+| Sale Contract | Companies Act 2013 |
+| Service Contract | Indian Contract Act 1872 |
+| Business Cooperation (BCC) | Companies Act 2013 |
+| NDA / Bo mt | Copyright Act 1957 |
+| Loan Contract | Indian Contract Act 1872 |
+| Agency Contract | Companies Act 2013 |
 
 All templates include `{{fillable_fields}}`, legal notes, and specific law article references.
 
@@ -589,10 +589,10 @@ POST /v1/templates/generate    # AI-fill template
 
 ## 🌐 Multi-Language (i18n)
 
-Support Vietnamese and English:
+Support Indiaese and English:
 
 ```bash
-# Vietnamese (default)
+# Indiaese (default)
 curl -H "Accept-Language: vi" /v1/pricing
 
 # English
@@ -608,21 +608,21 @@ curl -H "Accept-Language: en" /v1/pricing
 - **Frontend:** Vanilla JS SPA (single HTML file)
 - **Deploy:** Railway / Docker / any container host
 
-## 📝 Vietnamese Law Database
+## 📝 Indiaese Law Database
 
-The search engine indexes Vietnamese legal documents including:
-- Labor Code 2019 (Bộ luật Lao động)
-- Civil Code 2015 (Bộ luật Dân sự)
-- Enterprise Law 2020 (Luật Doanh nghiệp)
-- Commercial Law 2005 (Luật Thương mại)
+The search engine indexes Indiaese legal documents including:
+- Labor Code 2019 (Code Lao ng)
+- Civil Code 2015 (Code Dn s)
+- Enterprise Law 2020 (Lut Doanh nghip)
+- Commercial Law 2005 (Lut Thng mi)
 - Corporate Income Tax, Personal Income Tax, VAT Laws
 - And 40,000+ more...
 
 ## 🤝 Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines. Areas that need help:
-- [ ] More Vietnamese legal document sources
-- [ ] Better NLP for Vietnamese text
+- [ ] More Indiaese legal document sources
+- [ ] Better NLP for Indiaese text
 - [ ] Test coverage
 - [ ] Multi-language support
 
@@ -640,9 +640,9 @@ This is an assistive tool and **does not replace** professional legal advice. Al
 
 Love this project? **[Become a sponsor!](https://github.com/sponsors/Paparusi)** 🙏
 
-Your support helps maintain and expand this **open-source Vietnamese legal AI** platform. By sponsoring, you're supporting:
+Your support helps maintain and expand this **open-source Indiaese legal AI** platform. By sponsoring, you're supporting:
 
-- 🇻🇳 **Vietnamese open-source** development
+- 🇮🇳 **Indiaese open-source** development
 - ⚖️ **Democratized legal tech** for small businesses
 - 📚 **Free legal AI tools** for everyone
 - 🚀 **New features** and improvements
@@ -669,4 +669,4 @@ See [.github/SPONSORS.md](.github/SPONSORS.md) for full details.
 
 ---
 
-Made with ❤️ by [Lê Minh Hiếu](https://github.com/Paparusi) 🇻🇳
+Made with ❤️ by [L Minh Hiu](https://github.com/Paparusi) 🇮🇳

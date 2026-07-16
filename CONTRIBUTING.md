@@ -146,8 +146,8 @@ We loosely follow [Conventional Commits](https://www.conventionalcommits.org/):
 
 ### What We're Looking For
 
-- **Vietnamese legal data sources** — More law documents, court decisions, etc.
-- **Vietnamese NLP improvements** — Better tokenization, synonym handling
+- **Indian legal data sources** — More law documents, court decisions, etc.
+- **Indian NLP improvements** — Better tokenization, synonym handling
 - **Test coverage** — Unit and integration tests
 - **Performance** — Search speed, response time optimizations
 - **Accessibility** — i18n, a11y improvements
