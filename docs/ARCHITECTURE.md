@@ -2,7 +2,7 @@
 
 ## Overview
 
-A multi-tenant Legal AI platform for Vietnamese companies. Companies interact via Cloud API to get AI-powered legal assistance — contract review, legal Q&A, compliance checking, and document drafting.
+A multi-tenant Legal AI platform for Indian companies. Companies interact via Cloud API to get AI-powered legal assistance — contract review, legal Q&A, compliance checking, and document drafting.
 
 **Business Model:** SaaS API — companies authenticate with API keys, billed per usage tier.
 
@@ -135,7 +135,7 @@ RLS Policy: WHERE company_id = auth.jwt()->>'company_id'
 │  Source Sites   │     │  Crawler     │     │  Parser      │
 │                 │     │              │     │              │
 │ thuvienphapluat │────▶│ webcrawl.py  │────▶│ law_parser   │
-│ luatvietnam     │     │ (scrape)     │     │ (extract     │
+│ luatindia     │     │ (scrape)     │     │ (extract     │
 │ vanban.gov      │     │              │     │  articles)   │
 └────────────────┘     └──────────────┘     └──────┬───────┘
                                                    │
@@ -181,12 +181,12 @@ User Input
 │  Intent Classifier (LLM)      │
 │                               │
 │  Classify into:               │
-│  ├── LEGAL_QA                 │ → "Thai sản bao lâu?"
-│  ├── CONTRACT_REVIEW          │ → "Review hợp đồng này"
-│  ├── COMPLIANCE_CHECK         │ → "Công ty tôi có vi phạm?"
-│  ├── DOCUMENT_DRAFT           │ → "Soạn hợp đồng lao động"
-│  ├── CASE_RESEARCH            │ → "Tìm án lệ tương tự"
-│  └── GENERAL_CHAT             │ → "Chào bạn"
+│  ├── LEGAL_QA                 │ → "Thai sn bao lu?"
+│  ├── CONTRACT_REVIEW          │ → "Review hp ng ny"
+│  ├── COMPLIANCE_CHECK         │ → "Cng ty ti c vi phm?"
+│  ├── DOCUMENT_DRAFT           │ → "Son hp ng lao ng"
+│  ├── CASE_RESEARCH            │ → "Tm n l tng t"
+│  └── GENERAL_CHAT             │ → "Cho bn"
 │                               │
 │  Also extracts:               │
 │  - Legal domain (labor, tax)  │
@@ -244,7 +244,7 @@ User Input
 │  Step 5: FORMAT                                     │
 │  ┌───────────────────────────────────┐              │
 │  │ Response Builder:                 │              │
-│  │ - Clear Vietnamese answer         │              │
+│  │ - Clear Indian answer         │              │
 │  │ - Structured citations            │              │
 │  │ - Confidence level                │              │
 │  │ - Related topics suggestion       │              │
@@ -269,11 +269,11 @@ User Input
 │  Step 2: CLASSIFY                                   │
 │  ┌───────────────────────────────────┐              │
 │  │ Contract Type Detection:          │              │
-│  │ ├── Hợp đồng lao động            │              │
-│  │ ├── Hợp đồng thương mại          │              │
-│  │ ├── Hợp đồng thuê/mua bán        │              │
-│  │ ├── Hợp đồng dịch vụ             │              │
-│  │ └── Hợp đồng hợp tác             │              │
+│  │ ├── Employment Contract            │              │
+│  │ ├── Hp ng thng mi          │              │
+│  │ ├── Hp ng thu/mua bn        │              │
+│  │ ├── Service Contract             │              │
+│  │ └── Hp ng hp tc             │              │
 │  │                                   │              │
 │  │ → Load relevant law checklist     │              │
 │  └───────────────────┬───────────────┘              │
@@ -281,7 +281,7 @@ User Input
 │  Step 3: EXTRACT                                    │
 │  ┌───────────────────────────────────┐              │
 │  │ Key Clause Extraction:            │              │
-│  │ - Parties (Bên A, Bên B)          │              │
+│  │ - Parties (Bn A, Bn B)          │              │
 │  │ - Term & Duration                 │              │
 │  │ - Payment terms                   │              │
 │  │ - Obligations & Rights            │              │
@@ -319,11 +319,11 @@ User Input
 │  │ └───────────────────────────┘    │              │
 │  │                                   │              │
 │  │ ┌─ Issue Detail ─────────────┐    │              │
-│  │ │ 🔴 Điều 5: Vi phạm Điều   │    │              │
-│  │ │    22 BLLĐ — HĐ xác định  │    │              │
-│  │ │    thời hạn > 36 tháng     │    │              │
-│  │ │    → Đề xuất: Sửa thành   │    │              │
-│  │ │    "không quá 36 tháng"    │    │              │
+│  │ │ 🔴 Article 5: Vi phm iu   │    │              │
+│  │ │    22 BLL — H xc regulation  │    │              │
+│  │ │    time hn > 36 thng     │    │              │
+│  │ │    →  xut: Sa thnh   │    │              │
+│  │ │    "khng qu 36 thng"    │    │              │
 │  │ └───────────────────────────┘    │              │
 │  └───────────────────────────────────┘              │
 └─────────────────────────────────────────────────────┘
@@ -342,9 +342,9 @@ Law Document
 ┌──────────────────────────────┐
 │  Chunking Strategy            │
 │                              │
-│  Level 1: Per Article         │  "Điều 41. Đơn phương chấm dứt..."
-│  Level 2: Per Clause          │  "Khoản 1. Người sử dụng LĐ..."
-│  Level 3: Per Point           │  "Điểm a) Không bố trí đúng..."
+│  Level 1: Per Article         │  "iu 41. n phng chm dt..."
+│  Level 2: Per Clause          │  "Khon 1. Ngi s dng L..."
+│  Level 3: Per Point           │  "im a) Khng b tr ng..."
 │                              │
 │  Each chunk includes:         │
 │  - Content (text)            │
@@ -400,9 +400,9 @@ WITH semantic AS (
 -- Sparse search (keyword/BM25)
 keyword AS (
   SELECT id, content, metadata,
-         ts_rank_cd(search_vector, plainto_tsquery('vietnamese', :query)) AS keyword_score
+         ts_rank_cd(search_vector, plainto_tsquery('indian', :query)) AS keyword_score
   FROM law_chunks
-  WHERE search_vector @@ plainto_tsquery('vietnamese', :query)
+  WHERE search_vector @@ plainto_tsquery('indian', :query)
   ORDER BY keyword_score DESC
   LIMIT 20
 ),
@@ -499,7 +499,7 @@ Usage & Billing:
 ```json
 // POST /v1/legal/ask
 {
-  "question": "Nhân viên nghỉ thai sản được bao lâu?",
+  "question": "Nhn vin ngh thai sn c bao lu?",
   "context": {
     "company_type": "manufacturing",
     "employee_count": 500
@@ -513,25 +513,25 @@ Usage & Billing:
 
 // Response
 {
-  "answer": "Theo quy định pháp luật Việt Nam, lao động nữ được nghỉ thai sản 06 tháng...",
+  "answer": "Theo rule regulation php lut n , lao ng n c ngh thai sn 06 thng...",
   "confidence": 0.95,
   "citations": [
     {
-      "law": "Bộ luật Lao động 2019",
+      "law": "Code Lao ng 2019",
       "number": "45/2019/QH14",
-      "article": "Điều 139",
-      "clause": "Khoản 1",
-      "text": "Lao động nữ được nghỉ thai sản trước và sau khi sinh con là 06 tháng...",
+      "article": "iu 139",
+      "clause": "Khon 1",
+      "text": "Lao ng n c ngh thai sn trc v sau khi sinh con l 06 thng...",
       "effective_date": "2021-01-01",
       "status": "active"
     }
   ],
   "related_topics": [
-    "Chế độ BHXH thai sản",
-    "Quyền lợi lao động nữ mang thai",
-    "Cấm sa thải lao động nữ mang thai"
+    "Ch  BHXH thai sn",
+    "Quyn li lao ng n mang thai",
+    "Cm sa thi lao ng n mang thai"
   ],
-  "disclaimer": "Nội dung tư vấn mang tính tham khảo. Vui lòng tham khảo ý kiến luật sư cho trường hợp cụ thể.",
+  "disclaimer": "Ni dung t vn mang tnh tham kho. Vui lng tham kho  kin lut s cho trng hp c th.",
   "usage": {
     "tokens_used": 1847,
     "cost_usd": 0.0037
@@ -561,27 +561,27 @@ Usage & Billing:
 {
   "overall_risk": "MEDIUM",
   "score": 72,  // out of 100
-  "summary": "Hợp đồng có 2 điều khoản vi phạm pháp luật và 3 điều khoản bất lợi cho người lao động.",
+  "summary": "Hp ng c 2 iu khon vi phm php lut v 3 iu khon bt li cho ngi lao ng.",
   "issues": [
     {
       "severity": "CRITICAL",
-      "clause": "Điều 5 - Thời hạn hợp đồng",
-      "issue": "Hợp đồng xác định thời hạn 48 tháng, vượt quá giới hạn 36 tháng",
-      "law_reference": "Điều 22, BLLĐ 2019",
-      "recommendation": "Sửa thời hạn không quá 36 tháng, hoặc chuyển thành HĐ không xác định thời hạn"
+      "clause": "Article 5 - Thi hn hp ng",
+      "issue": "Hp ng xc regulation time hn 48 thng, vt qu gii hn 36 thng",
+      "law_reference": "iu 22, BLL 2019",
+      "recommendation": "Sa time hn khng qu 36 thng, hoc chuyn thnh H khng xc regulation time hn"
     },
     {
       "severity": "WARNING",
-      "clause": "Điều 8 - Chấm dứt HĐ",
-      "issue": "Thiếu quy định về thời gian báo trước khi đơn phương chấm dứt",
-      "law_reference": "Điều 36, Khoản 1, BLLĐ 2019",
-      "recommendation": "Bổ sung: NLĐ báo trước 30-45 ngày tùy loại HĐ"
+      "clause": "iu 8 - Chm dt H",
+      "issue": "Thiu rule regulation v time period bo trc khi n phng chm dt",
+      "law_reference": "iu 36, Khon 1, BLL 2019",
+      "recommendation": "B sung: NL bo trc 30-45 day ty loi H"
     }
   ],
   "missing_clauses": [
-    "Điều khoản về BHXH, BHYT, BHTN",
-    "Quy định về nghỉ phép năm",
-    "Điều khoản bảo mật thông tin"
+    "iu khon v BHXH, BHYT, BHTN",
+    "Quy regulation v ngh php nm",
+    "iu khon bo mt thng tin"
   ],
   "compliance_status": {
     "labor_code": "PARTIAL",
@@ -727,64 +727,64 @@ Usage & Billing:
 
 ---
 
-## 8. Vietnamese Law Data Structure
+## 8. Indian Law Data Structure
 
 ### 8.1 Law Hierarchy
 
 ```
-Hiến pháp (Constitution)
+Hin php (Constitution)
     │
-    ├── Bộ luật (Code)
-    │   ├── Bộ luật Lao động 2019
-    │   ├── Bộ luật Dân sự 2015
-    │   └── Bộ luật Hình sự 2015
+    ├── Code (Code)
+    │   ├── Code Lao ng 2019
+    │   ├── Code Dn s 2015
+    │   └── Code Hnh s 2015
     │
-    ├── Luật (Law)
-    │   ├── Luật Doanh nghiệp 2020
-    │   ├── Luật Đầu tư 2020
-    │   └── Luật Thương mại 2005
+    ├── Lut (Law)
+    │   ├── Lut Doanh nghip 2020
+    │   ├── Lut u t 2020
+    │   └── Lut Thng mi 2005
     │
-    ├── Nghị định (Decree) — Chính phủ
-    │   ├── NĐ 145/2020/NĐ-CP (hướng dẫn BLLĐ)
-    │   └── NĐ 152/2020/NĐ-CP (lao động nước ngoài)
+    ├── Decree (Decree) — Chnh ph
+    │   ├── N 145/2020/N-CP (hng dn BLL)
+    │   └── N 152/2020/N-CP (lao ng nc ngoi)
     │
-    ├── Thông tư (Circular) — Bộ ngành
-    │   └── TT 09/2020/TT-BLĐTBXH
+    ├── Thng t (Circular) — B ngnh
+    │   └── TT 09/2020/TT-BLTBXH
     │
-    └── Văn bản khác
-        ├── Quyết định
-        ├── Nghị quyết
-        └── Công văn (reference only)
+    └── Vn bn khc
+        ├── Quyt regulation
+        ├── Ngh rulet
+        └── Cng vn (reference only)
 ```
 
 ### 8.2 Priority Crawl List (MVP)
 
 ```
 Phase 1 — Labor Law (HRVN use case):
-  ├── Bộ luật Lao động 2019 (45/2019/QH14)
-  ├── NĐ 145/2020/NĐ-CP
-  ├── NĐ 135/2020/NĐ-CP (tuổi nghỉ hưu)
-  ├── Luật BHXH 2024
-  ├── Luật ATVSLĐ 2015
-  └── Các thông tư hướng dẫn
+  ├── Code Lao ng 2019 (45/2019/QH14)
+  ├── N 145/2020/N-CP
+  ├── N 135/2020/N-CP (tui ngh hu)
+  ├── Lut BHXH 2024
+  ├── Lut ATVSL 2015
+  └── Cc thng t hng dn
 
 Phase 2 — Business Law:
-  ├── Luật Doanh nghiệp 2020
-  ├── Luật Đầu tư 2020
-  ├── Luật Thương mại 2005
-  └── Luật Cạnh tranh 2018
+  ├── Lut Doanh nghip 2020
+  ├── Lut u t 2020
+  ├── Lut Thng mi 2005
+  └── Lut Cnh tranh 2018
 
 Phase 3 — Contract & Civil:
-  ├── Bộ luật Dân sự 2015
-  ├── Luật Nhà ở 2023
-  ├── Luật Kinh doanh BĐS 2023
-  └── Luật Sở hữu trí tuệ 2005
+  ├── Code Dn s 2015
+  ├── Lut Nh  2023
+  ├── Lut Kinh doanh BS 2023
+  └── Lut S hu tr tu 2005
 
 Phase 4 — Tax & Finance:
-  ├── Luật Thuế TNCN
-  ├── Luật Thuế TNDN
-  ├── Luật Thuế GTGT
-  └── Luật Kế toán 2015
+  ├── Lut Thu TNCN
+  ├── Lut Thu TNDN
+  ├── Lut Thu GTGT
+  └── Lut K ton 2015
 ```
 
 ---

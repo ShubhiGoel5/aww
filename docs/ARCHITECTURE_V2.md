@@ -1,25 +1,25 @@
 # Legal AI Platform v2 — Full Legal Department Replacement
 
-> **Tầm nhìn:** Thay thế hoàn toàn bộ phận pháp lý truyền thống trong doanh nghiệp.
-> Không chỉ chatbot — mà là một **Legal Operating System**.
+> **Tm nhn:** Thay th hon ton b phn php l truyn thng trong doanh nghip.
+> Khng ch chatbot — m l mt **Legal Operating System**.
 
 ---
 
 ## 1. Product Vision
 
 ```
-TRƯỚC (Truyền thống):                    SAU (Legal AI Platform):
+TRC (Truyn thng):                    SAU (Legal AI Platform):
                                          
-Thuê luật sư ─── 15-50tr/tháng          ┌─────────────────────────┐
-Thuê legal staff ── 10-20tr/tháng        │   LEGAL AI PLATFORM     │
+Thu lut s ─── 15-50tr/thng          ┌─────────────────────────┐
+Hire Legal Staff ── 10-20tr/thng        │   LEGAL AI PLATFORM     │
                                          │                         │
-Soạn HĐ ──── 2-3 ngày                   │   Soạn HĐ ── 5 phút    │
-Review HĐ ── 1-2 ngày                   │   Review ─── 30 giây    │
-Tra cứu luật ── vài giờ                 │   Tra cứu ── tức thì    │
-Soạn nội quy ── 1 tuần                  │   Nội quy ── 10 phút    │
-Tư vấn ───── đặt lịch, chờ             │   Tư vấn ─── 24/7       │
+Son H ──── 2-3 day                   │   Son H ── 5 pht    │
+Review H ── 1-2 day                   │   Review ─── 30 giy    │
+Tra cu lut ── vi gi                 │   Tra cu ── tc th    │
+Son ni rule ── 1 tun                  │   Ni rule ── 10 pht    │
+T vn ───── t lch, ch             │   T vn ─── 24/7       │
                                          │                         │
-Chi phí: 30-70tr/tháng                   │   Chi phí: 3-8tr/tháng  │
+Chi ph: 30-70tr/thng                   │   Chi ph: 3-8tr/thng  │
                                          └─────────────────────────┘
 ```
 
@@ -33,126 +33,126 @@ Chi phí: 30-70tr/tháng                   │   Chi phí: 3-8tr/tháng  │
 │                                                             │
 │  ┌──────────────┐  ┌──────────────┐  ┌──────────────────┐   │
 │  │  📄 DRAFT    │  │  🔍 REVIEW   │  │  💬 CONSULT      │   │
-│  │  Soạn thảo   │  │  Rà soát     │  │  Tư vấn          │   │
-│  │  văn bản     │  │  hợp đồng    │  │  pháp lý         │   │
+│  │  Son tho   │  │  R sot     │  │  T vn          │   │
+│  │  vn bn     │  │  hp ng    │  │  php l         │   │
 │  └──────────────┘  └──────────────┘  └──────────────────┘   │
 │                                                             │
 │  ┌──────────────┐  ┌──────────────┐  ┌──────────────────┐   │
 │  │  📚 LIBRARY  │  │  ✅ COMPLY   │  │  📊 MANAGE       │   │
-│  │  Thư viện    │  │  Tuân thủ    │  │  Quản lý         │   │
-│  │  mẫu & luật  │  │  pháp luật   │  │  văn bản DN      │   │
+│  │  Th vin    │  │  Tun th    │  │  Qun l         │   │
+│  │  mu & lut  │  │  php lut   │  │  vn bn DN      │   │
 │  └──────────────┘  └──────────────┘  └──────────────────┘   │
 │                                                             │
 │  ┌──────────────┐  ┌──────────────┐                         │
 │  │  🔄 BATCH    │  │  🔌 API      │                         │
-│  │  Xử lý      │  │  Tích hợp    │                         │
-│  │  hàng loạt   │  │  hệ thống    │                         │
+│  │  X l      │  │  Tch hp    │                         │
+│  │  hng lot   │  │  h thng    │                         │
 │  └──────────────┘  └──────────────┘                         │
 └─────────────────────────────────────────────────────────────┘
 ```
 
-### Module 1: DRAFT (Soạn thảo)
-**Thay thế:** Luật sư soạn hợp đồng, admin soạn văn bản
+### Module 1: DRAFT (Son tho)
+**Thay th:** Lut s son hp ng, admin son vn bn
 ```
-Input:  Loại văn bản + thông tin cần thiết
-Output: Văn bản hoàn chỉnh (Word/PDF), đúng pháp luật
+Input:  Loi vn bn + thng tin cn thit
+Output: Vn bn hon chnh (Word/PDF), ng php lut
 
-Hỗ trợ:
-├── Hợp đồng (lao động, dịch vụ, mua bán, thuê, hợp tác, đại lý)
-├── Phụ lục (gia hạn, sửa đổi, bổ sung, thanh lý)
-├── Văn bản nội bộ (nội quy, quy chế, quyết định, thông báo, biên bản)
-├── Văn bản đối ngoại (công văn, giấy ủy quyền, đơn khiếu nại)
-├── HR documents (HĐLĐ, quyết định lương, kỷ luật, sa thải, BHXH)
-└── Báo cáo pháp lý (tuân thủ, rà soát, đánh giá rủi ro)
-```
-
-### Module 2: REVIEW (Rà soát)
-**Thay thế:** Luật sư review hợp đồng
-```
-Input:  File hợp đồng (PDF/Word/ảnh)
-Output: Báo cáo rủi ro + đề xuất sửa đổi
-
-Chức năng:
-├── Phát hiện điều khoản vi phạm pháp luật
-├── Highlight điều khoản bất lợi
-├── Kiểm tra thiếu sót (điều khoản bắt buộc)
-├── So sánh với template chuẩn
-├── Đề xuất sửa đổi cụ thể
-├── Chấm điểm rủi ro (0-100)
-└── Tạo redline version (markup thay đổi)
+H tr:
+├── Hp ng (lao ng, dch v, mua bn, thu, hp tc, i l)
+├── Ph lc (gia hn, sa i, b sung, thanh l)
+├── Vn bn ni b (ni rule, rule ch, rulet regulation, thng bo, bin bn)
+├── Vn bn i ngoi (cng vn, giy y rulen, n khiu ni)
+├── HR documents (HL, rulet regulation lng, k lut, sa thi, BHXH)
+└── Bo co php l (tun th, r sot, nh gi ri ro)
 ```
 
-### Module 3: CONSULT (Tư vấn)
-**Thay thế:** Luật sư tư vấn, hotline pháp lý
+### Module 2: REVIEW (R sot)
+**Thay th:** Lut s review hp ng
 ```
-Input:  Câu hỏi pháp lý (text/voice)
-Output: Câu trả lời + trích dẫn điều luật cụ thể
+Input:  File hp ng (PDF/Word/nh)
+Output: Bo co ri ro +  xut sa i
 
-Chức năng:
-├── Q&A pháp luật 37+ lĩnh vực
-├── Trích dẫn điều luật chính xác
-├── Phân tích tình huống cụ thể
-├── Gợi ý hành động tiếp theo
-├── Lịch sử tư vấn (audit trail)
+Chc nng:
+├── Pht hin iu khon vi phm php lut
+├── Highlight iu khon bt li
+├── Kim tra thiu st (iu khon bt buc)
+├── So snh vi template chun
+├──  xut sa i c th
+├── Chm im ri ro (0-100)
+└── To redline version (markup thay i)
+```
+
+### Module 3: CONSULT (T vn)
+**Thay th:** Lut s t vn, hotline php l
+```
+Input:  Cu hi php l (text/voice)
+Output: Cu tr li + trch dn iu lut c th
+
+Chc nng:
+├── Q&A php lut 37+ lnh vc
+├── Trch dn iu lut chnh xc
+├── Phn tch tnh hung c th
+├── Gi  hnh ng tip theo
+├── Lch s t vn (audit trail)
 └── Multi-language (VN/EN/CN/KR/JP)
 ```
 
-### Module 4: LIBRARY (Thư viện)
-**Thay thế:** Tủ sách pháp luật, dịch vụ tra cứu
+### Module 4: LIBRARY (Th vin)
+**Thay th:** T sch php lut, dch v tra cu
 ```
-├── 600+ văn bản pháp luật VN (Luật, NĐ, TT)
-├── Template library (50+ mẫu văn bản)
+├── 600+ vn bn php lut VN (Lut, N, TT)
+├── Template library (50+ mu vn bn)
 ├── Smart search (semantic + keyword)
-├── Cross-reference (luật liên quan)
-├── Version tracking (luật sửa đổi)
+├── Cross-reference (lut lin quan)
+├── Version tracking (lut sa i)
 ├── Bookmark & highlight
-└── Auto-update khi luật mới ban hành
+└── Auto-update khi lut mi ban hnh
 ```
 
-### Module 5: COMPLY (Tuân thủ)
-**Thay thế:** Kiểm toán pháp lý
+### Module 5: COMPLY (Tun th)
+**Thay th:** Kim ton php l
 ```
-Input:  Thông tin doanh nghiệp (ngành, quy mô, hoạt động)
-Output: Checklist tuân thủ + cảnh báo vi phạm
+Input:  Thng tin doanh nghip (ngnh, rule m, hot ng)
+Output: Checklist tun th + cnh bo vi phm
 
-Chức năng:
-├── Compliance checklist theo ngành
-├── Deadline nhắc nhở (báo cáo thuế, BHXH, PCCC)
-├── Scanning nội quy vs luật hiện hành
-├── Alert khi luật mới ảnh hưởng DN
-└── Báo cáo tuân thủ định kỳ
-```
-
-### Module 6: MANAGE (Quản lý)
-**Thay thế:** Tủ hồ sơ, Excel tracking
-```
-├── Kho văn bản DN (upload, phân loại, search)
-├── Tracking hợp đồng (hết hạn, gia hạn)
-├── Quản lý phiên bản (ai sửa, khi nào)
-├── Workflow phê duyệt (draft → review → approve)
-├── Nhắc nhở deadline (hợp đồng sắp hết, giấy phép hết hạn)
-└── Báo cáo tổng hợp (bao nhiêu HĐ, trạng thái)
+Chc nng:
+├── Compliance checklist theo ngnh
+├── Deadline nhc nh (bo co thu, BHXH, PCCC)
+├── Scanning ni rule vs lut hin hnh
+├── Alert khi lut mi nh hng DN
+└── Bo co tun th regulation k
 ```
 
-### Module 7: BATCH (Xử lý hàng loạt)
-**Thay thế:** Admin/HR soạn hàng trăm HĐLĐ
+### Module 6: MANAGE (Qun l)
+**Thay th:** T h s, Excel tracking
 ```
-Input:  Template + Excel data (tên, lương, vị trí...)
-Output: Hàng loạt văn bản hoàn chỉnh
+├── Kho vn bn DN (upload, phn loi, search)
+├── Tracking hp ng (ht hn, gia hn)
+├── Qun l phin bn (ai sa, khi no)
+├── Workflow ph duyt (draft → review → approve)
+├── Nhc nh deadline (hp ng sp ht, giy php ht hn)
+└── Bo co tng hp (bao nhiu H, trng thi)
+```
+
+### Module 7: BATCH (X l hng lot)
+**Thay th:** Admin/HR son hng trm HL
+```
+Input:  Template + Excel data (tn, lng, v tr...)
+Output: Hng lot vn bn hon chnh
 
 Use cases:
-├── 500 HĐLĐ cho công nhân mới (HRVN!)
-├── 200 phụ lục gia hạn
-├── 100 quyết định tăng lương
-├── 50 thông báo nghỉ việc
+├── 500 HL cho cng nhn mi (HRVN!)
+├── 200 ph lc gia hn
+├── 100 rulet regulation tng lng
+├── 50 thng bo ngh vic
 └── Batch export Word/PDF
 ```
 
-### Module 8: API (Tích hợp)
+### Module 8: API (Tch hp)
 ```
 REST API + WebSocket + SDK
-├── Tích hợp vào ERP/HRM hiện có
-├── Webhook events (HĐ hết hạn, luật mới)
+├── Tch hp vo ERP/HRM hin c
+├── Webhook events (H ht hn, lut mi)
 ├── Embeddable chat widget
 ├── Mobile SDK (iOS/Android)
 └── Zapier / n8n integration
@@ -195,11 +195,11 @@ REST API + WebSocket + SDK
 │                                                                 │
 │  ┌─────────────────────────────────────────────────────────┐     │
 │  │              INTENT ROUTER                               │     │
-│  │  "Soạn hợp đồng lao động" → DRAFT agent                │     │
-│  │  "Review file này" → REVIEW agent                       │     │
-│  │  "Thai sản bao lâu?" → CONSULT agent                   │     │
-│  │  "Tạo 500 HĐLĐ từ Excel" → BATCH agent                 │     │
-│  │  "Công ty tôi cần tuân thủ gì?" → COMPLY agent         │     │
+│  │  "Son hp ng lao ng" → DRAFT agent                │     │
+│  │  "Review file ny" → REVIEW agent                       │     │
+│  │  "Thai sn bao lu?" → CONSULT agent                   │     │
+│  │  "To 500 HL t Excel" → BATCH agent                 │     │
+│  │  "Cng ty ti cn tun th g?" → COMPLY agent         │     │
 │  └─────────────────────────────────────────────────────────┘     │
 │                                                                 │
 │  ┌────────────────── AGENT POOL ──────────────────────────┐     │
@@ -256,8 +256,8 @@ REST API + WebSocket + SDK
 │  │  │  Tenants    │  │  Law DB      │  │  pgvector        │  │   │
 │  │  │  (companies │  │  (636+ docs) │  │  (embeddings)    │  │   │
 │  │  │  users,     │  │              │  │                  │  │   │
-│  │  │  docs, HĐ)  │  │  Luật, NĐ,  │  │  law_chunks      │  │   │
-│  │  │             │  │  TT, QĐ     │  │  company_chunks  │  │   │
+│  │  │  docs, H)  │  │  Lut, N,  │  │  law_chunks      │  │   │
+│  │  │             │  │  TT, Q     │  │  company_chunks  │  │   │
 │  │  │  RLS        │  │              │  │  template_chunks │  │   │
 │  │  │  isolated   │  │  PUBLIC READ │  │                  │  │   │
 │  │  └─────────────┘  └──────────────┘  └──────────────────┘  │   │
@@ -303,7 +303,7 @@ REST API + WebSocket + SDK
 │  │  │  └── signatures                             │          │   │
 │  │  │                                             │          │   │
 │  │  │  Required by law: [term, salary, insurance] │          │   │
-│  │  │  Legal refs: [Điều 21-24 BLLĐ 2019]        │          │   │
+│  │  │  Legal refs: [iu 21-24 BLL 2019]        │          │   │
 │  │  │  Compliance rules: [max 36 months, ...]     │          │   │
 │  │  └─────────────────────────────────────────────┘          │   │
 │  └───────────────────────────────────────────────────────────┘   │
@@ -315,8 +315,8 @@ REST API + WebSocket + SDK
 │  │  ┌─────────────────────────────────┐                      │   │
 │  │  │ Interactive Q&A or API params:  │                      │   │
 │  │  │ - company_name: "HRVN"          │                      │   │
-│  │  │ - employee_name: "Nguyễn Văn A" │                      │   │
-│  │  │ - position: "Công nhân sản xuất"│                      │   │
+│  │  │ - employee_name: "Nguyn Vn A" │                      │   │
+│  │  │ - position: "Cng nhn sn xut"│                      │   │
 │  │  │ - salary: 6500000               │                      │   │
 │  │  │ - term_months: 12               │                      │   │
 │  │  └─────────────────────────────────┘                      │   │
@@ -375,16 +375,16 @@ REST API + WebSocket + SDK
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                  BATCH PROCESSING ENGINE                         │
-│          "Tạo 500 HĐLĐ trong 10 phút"                          │
+│          "To 500 HL trong 10 pht"                          │
 │                                                                 │
 │  ┌───────────────────────────────────────────────────────────┐   │
 │  │  Input: Excel/CSV + Template                              │   │
 │  │                                                           │   │
 │  │  Excel columns mapping:                                   │   │
 │  │  ┌──────────────────────────────────────────────────┐     │   │
-│  │  │ Họ tên    │ Ngày sinh │ CCCD        │ Vị trí    │     │   │
-│  │  │ Nguyễn A  │ 01/01/90  │ 079190xxx  │ CN sản xuất│     │   │
-│  │  │ Trần B    │ 15/03/95  │ 052195xxx  │ QC         │     │   │
+│  │  │ H tn    │ Date of Birth │ CCCD        │ V tr    │     │   │
+│  │  │ Nguyn A  │ 01/01/90  │ 079190xxx  │ CN sn xut│     │   │
+│  │  │ Trn B    │ 15/03/95  │ 052195xxx  │ QC         │     │   │
 │  │  │ ...       │ ...       │ ...        │ ...        │     │   │
 │  │  │ (500 rows)│           │            │            │     │   │
 │  │  └──────────────────────────────────────────────────┘     │   │
@@ -425,98 +425,98 @@ REST API + WebSocket + SDK
 ```
 Template Categories:
 │
-├── 📁 Hợp đồng (Contracts)
-│   ├── hop_dong_lao_dong (HĐLĐ xác định/không xác định thời hạn)
-│   ├── hop_dong_thu_viec (HĐ thử việc)
-│   ├── hop_dong_dich_vu (HĐ dịch vụ)
-│   ├── hop_dong_mua_ban (HĐ mua bán hàng hóa)
-│   ├── hop_dong_thue (HĐ thuê mặt bằng/thiết bị)
-│   ├── hop_dong_hop_tac (HĐ hợp tác kinh doanh)
-│   ├── hop_dong_dai_ly (HĐ đại lý/phân phối)
-│   ├── hop_dong_vay (HĐ vay vốn)
-│   ├── hop_dong_gia_cong (HĐ gia công)
-│   └── hop_dong_nhuong_quyen (HĐ nhượng quyền)
+├── 📁 Hp ng (Contracts)
+│   ├── hop_dong_lao_dong (HL xc regulation/khng xc regulation time hn)
+│   ├── hop_dong_thu_viec (H th vic)
+│   ├── hop_dong_dich_vu (H dch v)
+│   ├── hop_dong_mua_ban (H mua bn hng ha)
+│   ├── hop_dong_thue (H thu mt bng/thit b)
+│   ├── hop_dong_hop_tac (H hp tc kinh doanh)
+│   ├── hop_dong_dai_ly (H i l/phn phi)
+│   ├── hop_dong_vay (H vay vn)
+│   ├── hop_dong_gia_cong (H gia cng)
+│   └── hop_dong_nhuong_ruleen (H nhng rulen)
 │
-├── 📁 Phụ lục (Appendices)
-│   ├── phu_luc_gia_han (Gia hạn HĐ)
-│   ├── phu_luc_sua_doi (Sửa đổi điều khoản)
-│   ├── phu_luc_bo_sung (Bổ sung điều khoản)
-│   ├── phu_luc_thanh_ly (Thanh lý HĐ)
-│   └── phu_luc_cham_dut (Chấm dứt HĐ)
+├── 📁 Ph lc (Appendices)
+│   ├── phu_luc_gia_han (Gia hn H)
+│   ├── phu_luc_sua_doi (Sa i iu khon)
+│   ├── phu_luc_bo_sung (B sung iu khon)
+│   ├── phu_luc_thanh_ly (Thanh l H)
+│   └── phu_luc_cham_dut (Chm dt H)
 │
-├── 📁 Quyết định (Decisions)
-│   ├── quyet_dinh_tuyen_dung (Tuyển dụng)
-│   ├── quyet_dinh_bo_nhiem (Bổ nhiệm)
-│   ├── quyet_dinh_tang_luong (Tăng lương)
-│   ├── quyet_dinh_ky_luat (Kỷ luật)
-│   ├── quyet_dinh_sa_thai (Sa thải)
-│   ├── quyet_dinh_nghi_viec (Cho nghỉ việc)
-│   ├── quyet_dinh_thuyen_chuyen (Thuyên chuyển)
-│   └── quyet_dinh_cu_di_cong_tac (Cử đi công tác)
+├── 📁 Quyt regulation (Decisions)
+│   ├── ruleet_dinh_tuyen_dung (Tuyn dng)
+│   ├── ruleet_dinh_bo_nhiem (B nhim)
+│   ├── ruleet_dinh_tang_luong (Tng lng)
+│   ├── ruleet_dinh_ky_luat (K lut)
+│   ├── ruleet_dinh_sa_thai (Sa thi)
+│   ├── ruleet_dinh_nghi_viec (Cho ngh vic)
+│   ├── ruleet_dinh_thuyen_chuyen (Thuyn chuyn)
+│   └── ruleet_dinh_cu_di_cong_tac (C i cng tc)
 │
-├── 📁 Nội quy & Quy chế (Policies)
-│   ├── noi_quy_lao_dong (Nội quy lao động)
-│   ├── quy_che_luong (Quy chế lương thưởng)
-│   ├── quy_che_tai_chinh (Quy chế tài chính)
-│   ├── quy_trinh_tuyen_dung (Quy trình tuyển dụng)
-│   ├── quy_trinh_dao_tao (Quy trình đào tạo)
-│   └── thoa_uoc_lao_dong (Thỏa ước LĐTT)
+├── 📁 Ni rule & Quy ch (Policies)
+│   ├── noi_rule_lao_dong (Ni rule lao ng)
+│   ├── rule_che_luong (Quy ch lng thng)
+│   ├── rule_che_tai_chinh (Quy ch ti chnh)
+│   ├── rule_trinh_tuyen_dung (Quy trnh tuyn dng)
+│   ├── rule_trinh_dao_tao (Quy trnh o to)
+│   └── thoa_uoc_lao_dong (Tha c LTT)
 │
-├── 📁 Công văn & Đơn từ (Correspondence)
-│   ├── cong_van (Công văn)
-│   ├── giay_uy_quyen (Giấy ủy quyền)
-│   ├── don_xin_nghi (Đơn xin nghỉ phép)
-│   ├── don_khieu_nai (Đơn khiếu nại)
-│   ├── thu_moi (Thư mời)
-│   └── thong_bao (Thông báo)
+├── 📁 Cng vn & n t (Correspondence)
+│   ├── cong_van (Cng vn)
+│   ├── giay_uy_ruleen (Giy y rulen)
+│   ├── don_xin_nghi (n xin ngh php)
+│   ├── don_khieu_nai (n khiu ni)
+│   ├── thu_moi (Th mi)
+│   └── thong_bao (Thng bo)
 │
-├── 📁 Biên bản (Minutes)
-│   ├── bien_ban_hop (Biên bản họp)
-│   ├── bien_ban_giao_nhan (Biên bản giao nhận)
-│   ├── bien_ban_vi_pham (Biên bản vi phạm)
-│   ├── bien_ban_kiem_tra (Biên bản kiểm tra)
-│   └── nghi_quyet (Nghị quyết)
+├── 📁 Bin bn (Minutes)
+│   ├── bien_ban_hop (Bin bn hp)
+│   ├── bien_ban_giao_nhan (Bin bn giao nhn)
+│   ├── bien_ban_vi_pham (Bin bn vi phm)
+│   ├── bien_ban_kiem_tra (Bin bn kim tra)
+│   └── nghi_ruleet (Ngh rulet)
 │
-└── 📁 Báo cáo (Reports)
-    ├── bao_cao_bhxh (Báo cáo BHXH)
-    ├── bao_cao_thue_tncn (Báo cáo thuế TNCN)
-    ├── bao_cao_lao_dong (Báo cáo lao động)
-    └── bao_cao_pccc (Báo cáo PCCC)
+└── 📁 Bo co (Reports)
+    ├── bao_cao_bhxh (Bo co BHXH)
+    ├── bao_cao_thue_tncn (Bo co thu TNCN)
+    ├── bao_cao_lao_dong (Bo co lao ng)
+    └── bao_cao_pccc (Bo co PCCC)
 
 Template Schema (JSON):
 {
   "id": "hop_dong_lao_dong",
-  "name": "Hợp đồng Lao động",
+  "name": "Hp ng Lao ng",
   "category": "contracts",
   "version": "2.0",
-  "legal_basis": ["Điều 13-24, BLLĐ 2019", "NĐ 145/2020/NĐ-CP"],
+  "legal_basis": ["iu 13-24, BLL 2019", "N 145/2020/N-CP"],
   "variables": [
-    {"key": "company_name", "label": "Tên công ty", "type": "text", "required": true},
-    {"key": "company_address", "label": "Địa chỉ", "type": "text", "required": true},
-    {"key": "company_tax_code", "label": "Mã số thuế", "type": "text", "required": true},
-    {"key": "representative", "label": "Người đại diện", "type": "text", "required": true},
-    {"key": "representative_title", "label": "Chức vụ", "type": "text", "required": true},
-    {"key": "employee_name", "label": "Họ tên NLĐ", "type": "text", "required": true},
-    {"key": "employee_dob", "label": "Ngày sinh", "type": "date", "required": true},
-    {"key": "employee_cccd", "label": "Số CCCD", "type": "text", "required": true},
-    {"key": "employee_address", "label": "Địa chỉ NLĐ", "type": "text", "required": true},
-    {"key": "position", "label": "Vị trí", "type": "text", "required": true},
-    {"key": "department", "label": "Bộ phận", "type": "text"},
-    {"key": "work_location", "label": "Địa điểm làm việc", "type": "text", "required": true},
-    {"key": "contract_type", "label": "Loại HĐ", "type": "enum", "options": ["definite", "indefinite", "seasonal"], "required": true},
-    {"key": "term_months", "label": "Thời hạn (tháng)", "type": "number", "max": 36, "condition": "contract_type == 'definite'"},
-    {"key": "start_date", "label": "Ngày bắt đầu", "type": "date", "required": true},
-    {"key": "base_salary", "label": "Lương cơ bản", "type": "currency", "required": true, "min": "minimum_wage"},
-    {"key": "allowances", "label": "Phụ cấp", "type": "json"},
-    {"key": "working_hours", "label": "Giờ làm/tuần", "type": "number", "max": 48, "default": 48},
-    {"key": "probation_days", "label": "Thử việc (ngày)", "type": "number", "max": 180}
+    {"key": "company_name", "label": "Company Name", "type": "text", "required": true},
+    {"key": "company_address", "label": "a ch", "type": "text", "required": true},
+    {"key": "company_tax_code", "label": "Tax Code", "type": "text", "required": true},
+    {"key": "representative", "label": "Ngi i din", "type": "text", "required": true},
+    {"key": "representative_title", "label": "Position", "type": "text", "required": true},
+    {"key": "employee_name", "label": "H tn NL", "type": "text", "required": true},
+    {"key": "employee_dob", "label": "Date of Birth", "type": "date", "required": true},
+    {"key": "employee_cccd", "label": "S CCCD", "type": "text", "required": true},
+    {"key": "employee_address", "label": "a ch NL", "type": "text", "required": true},
+    {"key": "position", "label": "V tr", "type": "text", "required": true},
+    {"key": "department", "label": "B phn", "type": "text"},
+    {"key": "work_location", "label": "a im lm vic", "type": "text", "required": true},
+    {"key": "contract_type", "label": "Loi H", "type": "enum", "options": ["definite", "indefinite", "seasonal"], "required": true},
+    {"key": "term_months", "label": "Thi hn (thng)", "type": "number", "max": 36, "condition": "contract_type == 'definite'"},
+    {"key": "start_date", "label": "Ngy bt u", "type": "date", "required": true},
+    {"key": "base_salary", "label": "Base Salary", "type": "currency", "required": true, "min": "minimum_wage"},
+    {"key": "allowances", "label": "Allowances", "type": "json"},
+    {"key": "working_hours", "label": "Gi lm/tun", "type": "number", "max": 48, "default": 48},
+    {"key": "probation_days", "label": "Th vic (day)", "type": "number", "max": 180}
   ],
   "sections": [...],
   "compliance_rules": [
-    {"rule": "term_months <= 36", "message": "HĐLĐ xác định thời hạn tối đa 36 tháng (Điều 22)"},
-    {"rule": "base_salary >= minimum_wage", "message": "Lương không được thấp hơn mức tối thiểu vùng"},
-    {"rule": "working_hours <= 48", "message": "Không quá 48 giờ/tuần (Điều 105)"},
-    {"rule": "probation_days <= 180", "message": "Thử việc tối đa 180 ngày cho vị trí quản lý (Điều 25)"}
+    {"rule": "term_months <= 36", "message": "HL xc regulation time hn max maximum 36 thng (iu 22)"},
+    {"rule": "base_salary >= minimum_wage", "message": "Lng khng c thp hn level max thiu vng"},
+    {"rule": "working_hours <= 48", "message": "Khng qu 48 gi/tun (iu 105)"},
+    {"rule": "probation_days <= 180", "message": "Th vic max maximum 180 day cho v tr qun l (iu 25)"}
   ]
 }
 ```
@@ -528,52 +528,52 @@ Template Schema (JSON):
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                    COMPLIANCE ENGINE                             │
-│         "Công ty bạn đang tuân thủ pháp luật chưa?"             │
+│         "Cng ty bn maximumng tun th php lut cha?"             │
 │                                                                 │
 │  ┌───────────────────────────────────────────────────────────┐   │
 │  │  Company Profile:                                         │   │
-│  │  - Ngành: Sản xuất                                        │   │
-│  │  - Quy mô: 500 NLĐ                                       │   │
-│  │  - Địa bàn: Bình Dương                                    │   │
-│  │  - Hoạt động: Gia công điện tử                            │   │
+│  │  - Ngnh: Sn xut                                        │   │
+│  │  - Quy m: 500 NL                                       │   │
+│  │  - a bn: Bnh Dng                                    │   │
+│  │  - Hot ng: Gia cng in t                            │   │
 │  └──────────────────────┬────────────────────────────────────┘   │
 │                         │                                       │
 │                         ▼                                       │
 │  ┌───────────────────────────────────────────────────────────┐   │
 │  │  Auto-Generate Compliance Checklist:                      │   │
 │  │                                                           │   │
-│  │  📋 Lao động                                             │   │
-│  │  ├── ✅ HĐLĐ cho tất cả NLĐ                              │   │
-│  │  ├── ✅ Nội quy lao động đăng ký Sở LĐTBXH               │   │
-│  │  ├── ⚠️ Thỏa ước LĐTT (>10 NLĐ → bắt buộc)             │   │
-│  │  ├── ✅ Báo cáo lao động 6 tháng/năm                     │   │
-│  │  └── ❌ Quy chế dân chủ cơ sở                            │   │
+│  │  📋 Lao ng                                             │   │
+│  │  ├── ✅ HL cho tt c NL                              │   │
+│  │  ├── ✅ Ni rule lao ng ng k S LTBXH               │   │
+│  │  ├── ⚠️ Tha c LTT (>10 NL → bt buc)             │   │
+│  │  ├── ✅ Bo co lao ng 6 thng/nm                     │   │
+│  │  └── ❌ Quy ch dn ch c s                            │   │
 │  │                                                           │   │
 │  │  📋 BHXH/BHYT/BHTN                                       │   │
-│  │  ├── ✅ Đóng BHXH cho NLĐ có HĐLĐ ≥ 1 tháng             │   │
-│  │  ├── ⚠️ Khai báo tăng/giảm LĐ đúng hạn                  │   │
-│  │  └── ✅ Báo cáo BHXH định kỳ                             │   │
+│  │  ├── ✅ ng BHXH cho NL c HL ≥ 1 thng             │   │
+│  │  ├── ⚠️ Khai bo tng/gim L ng hn                  │   │
+│  │  └── ✅ Bo co BHXH regulation k                             │   │
 │  │                                                           │   │
-│  │  📋 An toàn lao động                                     │   │
-│  │  ├── ✅ Huấn luyện ATVSLĐ                                │   │
-│  │  ├── ❌ Khám sức khỏe định kỳ (Điều 21 Luật ATVSLĐ)      │   │
-│  │  ├── ⚠️ Khai báo tai nạn LĐ                              │   │
-│  │  └── ✅ Đánh giá nguy cơ rủi ro                           │   │
+│  │  📋 An ton lao ng                                     │   │
+│  │  ├── ✅ Hun luyn ATVSL                                │   │
+│  │  ├── ❌ Khm sc khe regulation k (iu 21 Lut ATVSL)      │   │
+│  │  ├── ⚠️ Khai bo tai nn L                              │   │
+│  │  └── ✅ nh gi nguy c ri ro                           │   │
 │  │                                                           │   │
 │  │  📋 PCCC                                                 │   │
-│  │  ├── ✅ Giấy chứng nhận PCCC                              │   │
-│  │  ├── ⚠️ Kiểm tra hệ thống PCCC định kỳ                   │   │
-│  │  └── ✅ Tập huấn PCCC hàng năm                            │   │
+│  │  ├── ✅ Giy chng nhn PCCC                              │   │
+│  │  ├── ⚠️ Kim tra h thng PCCC regulation k                   │   │
+│  │  └── ✅ Tp hun PCCC hng nm                            │   │
 │  │                                                           │   │
-│  │  📋 Thuế                                                 │   │
-│  │  ├── ✅ Khai thuế GTGT hàng tháng/quý                    │   │
-│  │  ├── ✅ Quyết toán thuế TNDN                             │   │
-│  │  └── ✅ Quyết toán thuế TNCN cho NLĐ                     │   │
+│  │  📋 Thu                                                 │   │
+│  │  ├── ✅ Khai thu GTGT hng thng/qu                    │   │
+│  │  ├── ✅ Quyt ton thu TNDN                             │   │
+│  │  └── ✅ Quyt ton thu TNCN cho NL                     │   │
 │  │                                                           │   │
-│  │  📋 Môi trường                                           │   │
-│  │  ├── ⚠️ Giấy phép xả thải (sản xuất)                    │   │
-│  │  ├── ✅ Đánh giá tác động môi trường                      │   │
-│  │  └── ❌ Báo cáo BVMT định kỳ                             │   │
+│  │  📋 Mi trng                                           │   │
+│  │  ├── ⚠️ Giy php x thi (sn xut)                    │   │
+│  │  ├── ✅ nh gi tc ng mi trng                      │   │
+│  │  └── ❌ Bo co BVMT regulation k                             │   │
 │  │                                                           │   │
 │  │  Score: 72/100 | Issues: 3 critical, 5 warnings           │   │
 │  └───────────────────────────────────────────────────────────┘   │
@@ -581,11 +581,11 @@ Template Schema (JSON):
 │  ┌───────────────────────────────────────────────────────────┐   │
 │  │  Deadline Calendar:                                       │   │
 │  │                                                           │   │
-│  │  📅 15/03 — Nộp báo cáo BHXH tháng 2                     │   │
-│  │  📅 20/03 — Khai thuế GTGT tháng 2                       │   │
-│  │  📅 30/03 — Quyết toán thuế TNDN 2025                    │   │
-│  │  📅 15/04 — Báo cáo lao động Q1                          │   │
-│  │  📅 30/06 — Khám sức khỏe định kỳ                        │   │
+│  │  📅 15/03 — Np bo co BHXH thng 2                     │   │
+│  │  📅 20/03 — Khai thu GTGT thng 2                       │   │
+│  │  📅 30/03 — Quyt ton thu TNDN 2025                    │   │
+│  │  📅 15/04 — Bo co lao ng Q1                          │   │
+│  │  📅 30/06 — Khm sc khe regulation k                        │   │
 │  └───────────────────────────────────────────────────────────┘   │
 └─────────────────────────────────────────────────────────────────┘
 ```
@@ -610,7 +610,7 @@ Template Schema (JSON):
 │                              ▼             ▼                    │
 │                         ┌────────┐    ┌────────┐               │
 │                         │Amend   │    │Renew   │               │
-│                         │(Phụ lục)│    │(Gia hạn)│               │
+│                         │(Ph lc)│    │(Gia hn)│               │
 │                         └────────┘    └────────┘               │
 │                                                                 │
 │  Tracking Dashboard:                                            │
@@ -627,31 +627,31 @@ Template Schema (JSON):
 ## 9. Pricing Model (Updated)
 
 ### Pricing Philosophy: 
-> **Rẻ hơn 90% so với thuê luật sư, nhưng đắt hơn chatbot thuần túy**
-> Vì chúng ta **TẠO ra giá trị** (văn bản), không chỉ trả lời câu hỏi
+> **R hn 90% so vi thu lut s, nhng t hn chatbot thun ty**
+> V chng ta **TO ra gi tr** (vn bn), khng ch tr li cu hi
 
-| Plan | Giá/tháng | Bao gồm | Target |
+| Plan | Gi/thng | Bao gm | Target |
 |---|---|---|---|
-| **Starter** | 2.000.000đ | 20 docs + 100 Q&A + 5 reviews | SME < 20 NLĐ |
-| **Business** | 5.000.000đ | 100 docs + 500 Q&A + 20 reviews + compliance | SME 20-100 NLĐ |
-| **Enterprise** | 15.000.000đ | Unlimited docs + Q&A + batch + API + SLA | DN 100+ NLĐ |
-| **Custom** | Thỏa thuận | White-label, dedicated, training | Tập đoàn |
+| **Starter** | 2.000.000 | 20 docs + 100 Q&A + 5 reviews | SME < 20 NL |
+| **Business** | 5.000.000 | 100 docs + 500 Q&A + 20 reviews + compliance | SME 20-100 NL |
+| **Enterprise** | 15.000.000 | Unlimited docs + Q&A + batch + API + SLA | DN 100+ NL |
+| **Custom** | Tha thun | White-label, dedicated, training | Tp on |
 
 ### Add-ons:
-- Batch processing (500+ docs): 500.000đ/batch
-- Custom template: 2.000.000đ/template
-- Compliance audit: 3.000.000đ/lần
-- API integration support: 5.000.000đ setup
+- Batch processing (500+ docs): 500.000/batch
+- Custom template: 2.000.000/template
+- Compliance audit: 3.000.000/ln
+- API integration support: 5.000.000 setup
 
-### So sánh chi phí thực tế:
-| Hạng mục | Truyền thống | Legal AI Platform |
+### Actual Cost Comparison:
+| Hng mc | Truyn thng | Legal AI Platform |
 |---|---|---|
-| Soạn 1 HĐLĐ | 500K-2tr (luật sư) | ~10K (AI) |
-| Review 1 HĐ | 2-5tr | ~50K |
-| Nội quy LĐ | 5-15tr | ~200K |
-| Thuê legal staff | 15-25tr/tháng | 5tr/tháng (Business plan) |
-| Tư vấn 1 câu | 200-500K | ~10K |
-| 500 HĐLĐ batch | 250tr+ (luật sư) | 500K |
+| Son 1 HL | 500K-2tr (lut s) | ~10K (AI) |
+| Review 1 H | 2-5tr | ~50K |
+| Ni rule L | 5-15tr | ~200K |
+| Hire Legal Staff | 15-25tr/thng | 5tr/thng (Business plan) |
+| Consult 1 question | 200-500K | ~10K |
+| 500 HL batch | 250tr+ (lut s) | 500K |
 
 ---
 
@@ -671,7 +671,7 @@ Template Schema (JSON):
 ```
 ├── Template schema system
 ├── Document generation pipeline
-├── 10 core templates (HĐLĐ, QĐ, Nội quy...)
+├── 10 core templates (HL, Q, Ni rule...)
 ├── DOCX/PDF export (python-docx, weasyprint)
 ├── Contract review agent (REVIEW module)
 ├── DRAFT module API endpoints

@@ -1,6 +1,6 @@
 # Legal AI Agent — Project Plan
 
-## Product Name: **LegalAI.vn** (tạm)
+## Product Name: **LegalAI.in** (temporary)
 
 ## MVP Scope (8-10 weeks)
 
@@ -13,12 +13,12 @@
 - [ ] Basic project structure + CI/CD
 
 ### Sprint 2: Law Data Pipeline (Week 3-4)
-- [ ] Crawl Bộ luật Lao động 2019 from thuvienphapluat.vn
+- [ ] Crawl Indian Labour Law 2019 from indiankanoon.org
 - [ ] Law parser — extract articles, clauses, points
 - [ ] Chunking strategy implementation
 - [ ] Embedding pipeline (BGE-M3 or OpenAI)
 - [ ] Load into Supabase pgvector
-- [ ] Crawl 5 key supporting Nghị định / Thông tư
+- [ ] Crawl 5 key supporting Acts / Rules
 
 ### Sprint 3: RAG + Legal Q&A Agent (Week 5-6)
 - [ ] Hybrid search implementation (semantic + keyword)
@@ -29,36 +29,23 @@
 - [ ] API endpoint: POST /v1/legal/ask
 
 ### Sprint 4: Contract Review Agent (Week 7-8)
-- [ ] Document upload + storage (Supabase Storage)
-- [ ] PDF/DOCX text extraction
-- [ ] Contract type classification
-- [ ] Clause extraction + risk analysis
-- [ ] Review report generation
+- [ ] Pydantic schema for Contract Review
+- [ ] Extraction of entities (Parties, Clauses, Dates)
+- [ ] Risk scoring logic based on templates
+- [ ] NLP logic for compliance check
 - [ ] API endpoint: POST /v1/contracts/review
 
-### Sprint 5: Polish + Launch (Week 9-10)
-- [ ] Usage tracking + billing foundation
-- [ ] Rate limiting
-- [ ] Error handling + logging
-- [ ] API documentation (OpenAPI/Swagger)
-- [ ] Simple web dashboard (Next.js)
-- [ ] Deploy to production
-- [ ] Beta test with HRVN
+### Sprint 5: Frontend & Polishing (Week 9-10)
+- [ ] Simple Dashboard for API Key management
+- [ ] Demo Chat UI for testing
+- [ ] Rate limiting (Redis/Supabase)
+- [ ] Billing logging structure
+- [ ] MVP Launch
 
-## Post-MVP
-- Compliance audit agent
-- Document drafter agent
-- WebSocket realtime chat
-- Embedding server (self-hosted BGE-M3)
-- Mobile SDK
-- More law domains (tax, real estate, IP)
+## Milestones
 
-## Tech Stack
-- **Backend:** Python 3.11+, FastAPI, Celery
-- **Database:** Supabase (Postgres + pgvector + Auth + Storage)
-- **LLM:** Claude 3.5 Sonnet (Anthropic API)
-- **Embedding:** OpenAI text-embedding-3-small (MVP) → BGE-M3 (scale)
-- **OCR:** Surya (Vietnamese support)
-- **Queue:** Redis
-- **Frontend:** Next.js 14+ (dashboard)
-- **Deploy:** Docker + Hetzner VPS
+- **M1:** API auth and infrastructure ready.
+- **M2:** Database populated with basic Indian Labour laws.
+- **M3:** Legal Q&A agent answers basic legal queries with citations.
+- **M4:** Contract Review agent correctly identifies risks in standard Employment Contracts.
+- **M5:** MVP deployed and testable by early adopters.

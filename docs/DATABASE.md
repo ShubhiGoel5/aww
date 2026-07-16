@@ -48,7 +48,7 @@ CREATE TABLE companies (
   -- Metadata
   industry TEXT,  -- manufacturing, retail, tech, etc.
   employee_count INT,
-  tax_code TEXT,  -- Mã số thuế
+  tax_code TEXT,  -- M number thu
   
   created_at TIMESTAMPTZ DEFAULT now(),
   updated_at TIMESTAMPTZ DEFAULT now()
@@ -84,17 +84,17 @@ CREATE INDEX idx_api_keys_company ON api_keys(company_id);
 CREATE INDEX idx_api_keys_prefix ON api_keys(key_prefix);
 
 -- ============================================
--- 2. VIETNAMESE LAW DATABASE (SHARED)
+-- 2. INDIAN LAW DATABASE (SHARED)
 -- ============================================
 
 CREATE TYPE law_type AS ENUM (
   'hien_phap',    -- Constitution
-  'bo_luat',      -- Code (Bộ luật)
-  'luat',         -- Law (Luật)
-  'nghi_dinh',    -- Decree (Nghị định)
-  'thong_tu',     -- Circular (Thông tư)
-  'quyet_dinh',   -- Decision (Quyết định)
-  'nghi_quyet',   -- Resolution (Nghị quyết)
+  'bo_luat',      -- Code (Code)
+  'luat',         -- Law (Lut)
+  'nghi_dinh',    -- Decree (Decree)
+  'thong_tu',     -- Circular (Circular)
+  'ruleet_dinh',   -- Decision (Decision)
+  'nghi_ruleet',   -- Resolution (Ngh rulet)
   'cong_van',     -- Official dispatch
   'other'
 );
@@ -124,7 +124,7 @@ CREATE TABLE law_documents (
   law_type law_type NOT NULL,
   
   -- Authority
-  issuer TEXT NOT NULL,  -- "Quốc hội", "Chính phủ", "Bộ LĐTBXH"
+  issuer TEXT NOT NULL,  -- "Quc hi", "Chnh ph", "B LTBXH"
   signer TEXT,  -- Person who signed
   
   -- Dates
@@ -145,7 +145,7 @@ CREATE TABLE law_documents (
   
   -- Source
   source_url TEXT,
-  source_site TEXT,  -- 'thuvienphapluat', 'luatvietnam'
+  source_site TEXT,  -- 'thuvienphapluat', 'luatindia'
   
   -- Metadata
   article_count INT,
@@ -161,11 +161,11 @@ CREATE TABLE law_chunks (
   law_id UUID NOT NULL REFERENCES law_documents(id) ON DELETE CASCADE,
   
   -- Structure
-  chapter TEXT,       -- "Chương III"
-  section TEXT,       -- "Mục 2"
-  article TEXT,       -- "Điều 41"
-  clause TEXT,        -- "Khoản 2"
-  point TEXT,         -- "Điểm a"
+  chapter TEXT,       -- "Chapter III"
+  section TEXT,       -- "Section 2"
+  article TEXT,       -- "iu 41"
+  clause TEXT,        -- "Clause 2"
+  point TEXT,         -- "im a"
   
   -- Content
   title TEXT,         -- Article title if any
@@ -193,7 +193,7 @@ CREATE TABLE law_chunks (
 CREATE TABLE law_relations (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   source_law_id UUID REFERENCES law_documents(id),
-  source_article TEXT,  -- "Điều 41"
+  source_article TEXT,  -- "iu 41"
   target_law_id UUID REFERENCES law_documents(id),
   target_article TEXT,
   relation_type TEXT,  -- 'references', 'amends', 'replaces', 'guides'
@@ -271,9 +271,9 @@ CREATE TYPE doc_type AS ENUM (
   'hop_dong_lao_dong',    -- Labor contract
   'hop_dong_thuong_mai',  -- Commercial contract
   'hop_dong_dich_vu',     -- Service contract
-  'noi_quy',              -- Internal rules
-  'quy_che',              -- Regulations
-  'quyet_dinh',           -- Decision
+  'noi_rule',              -- Internal rules
+  'rule_che',              -- Regulations
+  'ruleet_dinh',           -- Decision
   'other'
 );
 
