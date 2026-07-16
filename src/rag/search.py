@@ -1,4 +1,4 @@
-"""RAG search engine — hybrid semantic + keyword search over Vietnamese law."""
+"""RAG search engine — hybrid semantic + keyword search over Indian law."""
 
 from dataclasses import dataclass
 from typing import Optional

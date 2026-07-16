@@ -64,9 +64,9 @@ def generate_inline_diff(original: str, edited: str) -> Dict:
     # Generate summary
     summary = []
     if additions > 0:
-        summary.append(f"+{additions} dòng thêm")
+        summary.append(f"+{additions} lines added")
     if deletions > 0:
-        summary.append(f"-{deletions} dòng xóa")
+        summary.append(f"-{deletions} lines deleted")
     
     summary_text = ", ".join(summary) if summary else "No changes"
     

@@ -12,7 +12,7 @@ This Employment Agreement ("Agreement") is made and entered into on the Date men
 
 - **Company Name:** {{company_name}}
 - **CIN / PAN / GSTIN:** {{employer_id}}
-  <!-- Note: Use CIN (Corporate Identification Number) for incorporated companies, PAN or GSTIN for partnerships/proprietorships. The variable {{employer_id}} replaces the earlier {{tax_code}} which was a Vietnamese-era tax code field and does not map to any single Indian identifier. Populate with the correct identifier type for the employing entity. -->
+  <!-- Note: Use CIN (Corporate Identification Number) for incorporated companies, PAN or GSTIN for partnerships/proprietorships. The variable {{employer_id}} replaces the earlier {{tax_code}} which was a Indiaese-era tax code field and does not map to any single Indian identifier. Populate with the correct identifier type for the employing entity. -->
 - **Registered Address:** {{company_address}}
 - **Represented by:** {{representative_name}} - Title: {{representative_position}}
 

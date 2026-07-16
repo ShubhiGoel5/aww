@@ -1,7 +1,7 @@
 {
   "app": {
     "name": "Legal AI Agent",
-    "tagline": "AI Legal Assistant for Vietnamese Businesses"
+    "tagline": "AI Legal Assistant for Indian Businesses"
   },
   "api": {
     "error": {
@@ -34,14 +34,14 @@
       "pending_review": "Pending Review"
     },
     "type": {
-      "hop_dong_lao_dong": "Employment Contract",
-      "hop_dong_dich_vu": "Service Contract",
-      "hop_dong_mua_ban": "Sales Contract",
-      "hop_dong_thue": "Lease Agreement",
-      "hop_dong_hop_tac": "Business Cooperation Contract (BCC)",
+      "employment_agreement": "Employment Agreement",
+      "service_agreement": "Service Agreement",
+      "sale_purchase_agreement": "Sale & Purchase Agreement",
+      "lease_agreement": "Lease Agreement",
+      "business_cooperation": "Business Cooperation Agreement",
       "nda": "Non-Disclosure Agreement",
-      "hop_dong_vay": "Loan Agreement",
-      "hop_dong_dai_ly": "Agency Agreement",
+      "loan_agreement": "Loan Agreement",
+      "agency_agreement": "Agency Agreement",
       "other": "Other"
     },
     "review": {
@@ -60,25 +60,30 @@
   },
   "legal": {
     "domain": {
-      "lao_dong": "Labor Law",
-      "doanh_nghiep": "Corporate Law",
-      "dan_su": "Civil Law",
-      "thue": "Tax Law",
-      "dat_dai": "Land Law",
-      "hinh_su": "Criminal Law",
-      "hanh_chinh": "Administrative Law",
-      "thuong_mai": "Commercial Law"
+      "labour": "Labour Law",
+      "corporate": "Corporate Law",
+      "civil": "Civil Law",
+      "tax": "Tax Law",
+      "property": "Property Law",
+      "criminal": "Criminal Law",
+      "administrative": "Administrative Law",
+      "commercial": "Commercial Law",
+      "constitutional": "Constitutional Law",
+      "consumer": "Consumer Law",
+      "it_cyber": "IT & Cyber Law"
     },
     "source": {
-      "bo_luat": "Code",
-      "luat": "Law",
-      "nghi_dinh": "Decree",
-      "thong_tu": "Circular",
-      "quyet_dinh": "Decision"
+      "act": "Act",
+      "code": "Code",
+      "ordinance": "Ordinance",
+      "notification": "Notification",
+      "circular": "Circular",
+      "judgment": "Judgment",
+      "rules": "Rules"
     }
   },
   "agent": {
-    "system_prompt_en": "You are Legal AI Agent, an AI legal assistant specializing in Vietnamese law.\n\nYour capabilities:\n- Provide legal advice based on Vietnamese legal documents database\n- Review contracts and identify legal risks\n- Draft legal documents upon request\n- Answer questions about labor, corporate, tax, civil, land, and administrative law\n\nPrinciples:\n1. Cite specific articles and clauses from legal texts\n2. Use clear, easy-to-understand language\n3. Warn about risks when necessary\n4. Recommend consulting a lawyer for complex issues\n5. Always follow current Vietnamese law\n\nNote: You do NOT replace a lawyer. For specific cases with disputes, recommend seeking direct legal counsel."
+    "system_prompt_en": "You are Legal AI Agent, an AI legal assistant specializing in Indian law.\n\nYour capabilities:\n- Provide legal advice based on Indian legal documents database (Acts, Codes, Rules, Judgments)\n- Review contracts and identify legal risks under Indian law\n- Draft legal documents upon request\n- Answer questions about labour, corporate, tax, civil, property, criminal, constitutional, consumer, and IT/cyber law\n\nPrinciples:\n1. Cite specific sections and clauses from Indian Acts and legal texts\n2. Use clear, easy-to-understand language\n3. Warn about risks when necessary\n4. Recommend consulting a qualified advocate for complex issues\n5. Always follow current Indian law (Central and relevant State legislation)\n\nNote: You do NOT replace a lawyer. For specific cases with disputes, recommend seeking direct legal counsel from a qualified advocate."
   },
   "pricing": {
     "tier": {

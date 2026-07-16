@@ -2,12 +2,12 @@
   "tiers": [
     {
       "id": "free",
-      "name": "Miễn phí",
+      "name": "Free",
       "name_en": "Free",
       "price_usd": 0,
-      "price_vnd": 0,
+      "price_inr": 0,
       "billing": "monthly",
-      "description": "Dùng thử miễn phí với tính năng cơ bản",
+      "description": "Free trial with basic features",
       "description_en": "Free trial with basic features",
       "features": {
         "queries_per_day": 10,
@@ -28,17 +28,17 @@
         "storage_gb": 1,
         "team_members": 1
       },
-      "recommended_for": "Cá nhân, freelancer, doanh nghiệp nhỏ muốn dùng thử",
+      "recommended_for": "Individuals, freelancers, small businesses trying out",
       "recommended_for_en": "Individuals, freelancers, small businesses trying out"
     },
     {
       "id": "starter",
-      "name": "Khởi nghiệp",
+      "name": "Starter",
       "name_en": "Starter",
       "price_usd": 29,
-      "price_vnd": 725000,
+      "price_inr": 2400,
       "billing": "monthly",
-      "description": "Giải pháp cho startup và doanh nghiệp nhỏ",
+      "description": "Solution for startups and small businesses",
       "description_en": "Solution for startups and small businesses",
       "features": {
         "queries_per_day": 100,
@@ -61,17 +61,17 @@
         "storage_gb": 10,
         "team_members": 3
       },
-      "recommended_for": "Startup, SME có 5-20 nhân viên",
-      "recommended_for_en": "Startups, SMEs with 5-20 employees"
+      "recommended_for": "Startups, SMEs with 5–20 employees",
+      "recommended_for_en": "Startups, SMEs with 5–20 employees"
     },
     {
       "id": "professional",
-      "name": "Chuyên nghiệp",
+      "name": "Professional",
       "name_en": "Professional",
       "price_usd": 99,
-      "price_vnd": 2475000,
+      "price_inr": 8200,
       "billing": "monthly",
-      "description": "Giải pháp toàn diện cho doanh nghiệp vừa",
+      "description": "Comprehensive solution for medium-sized businesses",
       "description_en": "Comprehensive solution for medium-sized businesses",
       "features": {
         "queries_per_day": 500,
@@ -98,17 +98,17 @@
         "team_members": 10,
         "api_calls_per_month": 10000
       },
-      "recommended_for": "Doanh nghiệp vừa 20-200 nhân viên, cần tích hợp API",
-      "recommended_for_en": "Medium businesses 20-200 employees, API integration needed"
+      "recommended_for": "Medium businesses with 20–200 employees, API integration needed",
+      "recommended_for_en": "Medium businesses with 20–200 employees, API integration needed"
     },
     {
       "id": "enterprise",
-      "name": "Doanh nghiệp",
+      "name": "Enterprise",
       "name_en": "Enterprise",
       "price_usd": 499,
-      "price_vnd": 12475000,
+      "price_inr": 41500,
       "billing": "monthly",
-      "description": "Giải pháp cao cấp cho doanh nghiệp lớn",
+      "description": "Premium solution for large enterprises",
       "description_en": "Premium solution for large enterprises",
       "features": {
         "queries_per_day": "unlimited",
@@ -140,103 +140,103 @@
         "team_members": "unlimited",
         "api_calls_per_month": "unlimited"
       },
-      "recommended_for": "Doanh nghiệp lớn >200 nhân viên, yêu cầu SLA và hỗ trợ riêng",
-      "recommended_for_en": "Large enterprises >200 employees, SLA and dedicated support required",
+      "recommended_for": "Large enterprises with 200+ employees requiring SLA and dedicated support",
+      "recommended_for_en": "Large enterprises with 200+ employees requiring SLA and dedicated support",
       "sla_uptime": "99.9%",
       "support_response_time": "4 hours"
     }
   ],
   "features_comparison": {
     "queries_per_day": {
-      "name": "Số câu hỏi/ngày",
+      "name": "Queries per day",
       "name_en": "Queries per day",
-      "description": "Số lượng câu hỏi AI có thể xử lý mỗi ngày",
+      "description": "Number of AI queries the system can process per day",
       "description_en": "Number of AI queries processable per day"
     },
     "contracts": {
-      "name": "Số hợp đồng quản lý",
+      "name": "Contracts managed",
       "name_en": "Contracts managed",
-      "description": "Số hợp đồng có thể upload và quản lý",
+      "description": "Number of contracts you can upload and manage",
       "description_en": "Number of contracts uploadable and manageable"
     },
     "documents": {
-      "name": "Tài liệu lưu trữ",
+      "name": "Documents stored",
       "name_en": "Documents stored",
-      "description": "Số tài liệu pháp lý có thể lưu trữ",
+      "description": "Number of legal documents you can store",
       "description_en": "Number of legal documents storable"
     },
     "contract_review": {
-      "name": "Rà soát hợp đồng AI",
+      "name": "AI Contract Review",
       "name_en": "AI Contract Review",
-      "description": "Phân tích và rà soát hợp đồng bằng AI",
+      "description": "AI-powered contract analysis and review",
       "description_en": "AI-powered contract analysis and review"
     },
     "templates": {
-      "name": "Mẫu văn bản",
+      "name": "Document Templates",
       "name_en": "Document Templates",
-      "description": "Truy cập kho mẫu văn bản pháp lý chuẩn",
-      "description_en": "Access to standard legal document templates"
+      "description": "Access to standard Indian legal document templates",
+      "description_en": "Access to standard Indian legal document templates"
     },
     "api_access": {
-      "name": "Truy cập API",
+      "name": "API Access",
       "name_en": "API Access",
-      "description": "Tích hợp API vào hệ thống của bạn",
+      "description": "Integrate the API into your own system",
       "description_en": "Integrate API into your system"
     },
     "custom_llm": {
-      "name": "Tùy chỉnh LLM",
+      "name": "Custom LLM",
       "name_en": "Custom LLM",
-      "description": "Tùy chỉnh mô hình AI phù hợp với ngành nghề",
+      "description": "Customise the AI model for your industry",
       "description_en": "Customize AI model for your industry"
     },
     "sla": {
-      "name": "Cam kết SLA",
+      "name": "SLA Guarantee",
       "name_en": "SLA Guarantee",
-      "description": "Cam kết thời gian hoạt động 99.9%",
+      "description": "99.9% uptime guarantee",
       "description_en": "99.9% uptime guarantee"
     },
     "dedicated_support": {
-      "name": "Hỗ trợ riêng",
+      "name": "Dedicated Support",
       "name_en": "Dedicated Support",
-      "description": "Đội ngũ hỗ trợ chuyên biệt",
+      "description": "Dedicated support team assigned to your account",
       "description_en": "Dedicated support team"
     }
   },
   "addons": [
     {
       "id": "extra_queries",
-      "name": "Thêm 10,000 câu hỏi/tháng",
+      "name": "Extra 10,000 queries/month",
       "name_en": "Extra 10,000 queries/month",
       "price_usd": 20,
-      "price_vnd": 500000
+      "price_inr": 1650
     },
     {
       "id": "extra_storage",
-      "name": "Thêm 100GB lưu trữ",
+      "name": "Extra 100GB storage",
       "name_en": "Extra 100GB storage",
       "price_usd": 10,
-      "price_vnd": 250000
+      "price_inr": 830
     },
     {
       "id": "priority_support",
-      "name": "Hỗ trợ ưu tiên 24/7",
+      "name": "Priority 24/7 support",
       "name_en": "Priority 24/7 support",
       "price_usd": 50,
-      "price_vnd": 1250000
+      "price_inr": 4150
     },
     {
       "id": "legal_consultation",
-      "name": "Tư vấn pháp lý trực tiếp (5h/tháng)",
+      "name": "Direct legal consultation (5h/month)",
       "name_en": "Direct legal consultation (5h/month)",
       "price_usd": 200,
-      "price_vnd": 5000000
+      "price_inr": 16600
     }
   ],
   "currency_conversion": {
-    "usd_to_vnd": 25000,
-    "note": "Tỷ giá tham khảo, có thể thay đổi theo thời gian"
+    "usd_to_inr": 83,
+    "note": "Reference exchange rate, subject to change"
   },
-  "payment_methods": ["credit_card", "bank_transfer", "momo", "zalopay", "vnpay"],
+  "payment_methods": ["credit_card", "debit_card", "upi", "bank_transfer", "netbanking"],
   "trial": {
     "duration_days": 14,
     "no_credit_card": true,
@@ -245,46 +245,46 @@
   "discounts": {
     "annual_billing": {
       "discount_percentage": 20,
-      "description": "Giảm 20% khi thanh toán theo năm",
+      "description": "20% off for annual billing",
       "description_en": "20% off for annual billing"
     },
     "startup": {
       "discount_percentage": 30,
-      "description": "Giảm 30% cho startup <2 năm tuổi (cần xác minh)",
+      "description": "30% off for startups under 2 years old (verification required)",
       "description_en": "30% off for startups <2 years old (verification required)",
       "eligibility": "Startup registered <2 years, <20 employees"
     },
     "ngo": {
       "discount_percentage": 50,
-      "description": "Giảm 50% cho tổ chức phi lợi nhuận",
+      "description": "50% off for non-profit organisations",
       "description_en": "50% off for non-profit organizations",
       "eligibility": "Registered non-profit organization"
     }
   },
   "faq": [
     {
-      "question": "Có thể thay đổi gói dịch vụ giữa chừng không?",
+      "question": "Can I change plans mid-month?",
       "question_en": "Can I change plans mid-month?",
-      "answer": "Có, bạn có thể nâng cấp hoặc hạ cấp bất cứ lúc nào. Phí sẽ được tính theo tỷ lệ (pro-rated).",
+      "answer": "Yes, you can upgrade or downgrade anytime. Fees will be pro-rated.",
       "answer_en": "Yes, you can upgrade or downgrade anytime. Fees will be pro-rated."
     },
     {
-      "question": "Dữ liệu của tôi có được bảo mật không?",
+      "question": "Is my data secure?",
       "question_en": "Is my data secure?",
-      "answer": "Tất cả dữ liệu được mã hóa AES-256, lưu trữ trên server tại Ấn Độ. Tuân thủ Đạo luật Bảo vệ Dữ liệu Cá nhân Kỹ thuật số 2023 (DPDP).",
+      "answer": "All data is encrypted with AES-256 and stored on servers in India. Compliant with the Digital Personal Data Protection Act, 2023 (DPDP Act).",
       "answer_en": "All data is encrypted with AES-256, stored on servers in India. Compliant with Digital Personal Data Protection Act, 2023 (DPDP)."
     },
     {
-      "question": "Legal AI Agent có thay thế luật sư không?",
+      "question": "Does Legal AI Agent replace a lawyer?",
       "question_en": "Does Legal AI Agent replace a lawyer?",
-      "answer": "Không. Legal AI Agent là công cụ hỗ trợ, giúp bạn tiết kiệm thời gian và chi phí. Đối với vụ việc phức tạp, vẫn cần tham vấn luật sư.",
+      "answer": "No. Legal AI Agent is a support tool to save time and costs. Complex cases still require consultation with a qualified advocate.",
       "answer_en": "No. Legal AI Agent is a support tool to save time and costs. Complex cases still require lawyer consultation."
     },
     {
-      "question": "Có hỗ trợ tiếng Anh không?",
-      "question_en": "Is English supported?",
-      "answer": "Có, giao diện hỗ trợ tiếng Việt và tiếng Anh. Tuy nhiên, nội dung pháp luật chủ yếu là tiếng Việt vì áp dụng cho pháp luật Việt Nam.",
-      "answer_en": "Yes, the interface supports Vietnamese and English. However, legal content is primarily in Vietnamese as it applies to Vietnamese law."
+      "question": "Is Hindi supported?",
+      "question_en": "Is Hindi supported?",
+      "answer": "The interface supports English. Hindi support is coming soon. Legal content covers Indian Central and State legislation.",
+      "answer_en": "The interface supports English. Hindi support is coming soon. Legal content covers Indian Central and State legislation."
     }
   ]
 }

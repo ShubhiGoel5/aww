@@ -73,7 +73,7 @@ class LegalAnswerResponse(BaseModel):
     confidence: float = Field(ge=0, le=1)
     citations: list[Citation] = []
     related_topics: list[str] = []
-    disclaimer: str = "Nội dung tư vấn mang tính tham khảo. Vui lòng tham khảo ý kiến luật sư cho trường hợp cụ thể."
+    disclaimer: str = "This advice is for reference purposes only. Please consult a qualified advocate for specific legal matters."
     usage: dict = {}
 
 

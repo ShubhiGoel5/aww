@@ -144,10 +144,10 @@ def create_docx_from_text(text: str, output_path: str, title: str = "") -> str:
             doc.add_paragraph()
             continue
         
-        # Detect headings (ALL CAPS or starts with ĐIỀU/CHƯƠNG)
+        # Detect headings (ALL CAPS or starts with ARTICLE/CHAPTER)
         if line.isupper() and len(line) > 5:
             doc.add_heading(line, level=1)
-        elif line.startswith(('ĐIỀU', 'Điều', 'CHƯƠNG', 'Chương', 'MỤC', 'Mục')):
+        elif line.startswith(('ARTICLE', 'Article', 'CHAPTER', 'Chapter', 'SECTION', 'Section')):
             doc.add_heading(line, level=2)
         elif line.startswith('**') and line.endswith('**'):
             # Bold text
