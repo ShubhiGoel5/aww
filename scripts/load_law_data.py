@@ -1,6 +1,6 @@
 import os
 """
-Load Vietnamese legal documents into Supabase
+Load Indian legal documents into Supabase
 - Parse law metadata from content
 - Chunk documents for RAG
 - Store in law_documents + law_chunks tables
@@ -56,8 +56,8 @@ def extract_metadata(content: str) -> Dict:
     """Extract law number, issuer, dates from content"""
     meta = {"law_number": "", "issuer": "", "issued_date": None, "effective_date": None}
     
-    # Try to find law number (Số hiệu)
-    m = re.search(r'(?:Số hiệu|Số)[:\s]*([^\n]+)', content[:2000])
+    # Try to find law number (S hiu)
+    m = re.search(r'(?:S hiu|S)[:\s]*([^\n]+)', content[:2000])
     if m:
         meta["law_number"] = m.group(1).strip()
     
@@ -68,17 +68,17 @@ def extract_metadata(content: str) -> Dict:
             meta["law_number"] = m.group(1)
     
     # Issuer
-    if "QUỐC HỘI" in content[:500]:
-        meta["issuer"] = "Quốc hội"
-    elif "CHÍNH PHỦ" in content[:500]:
-        meta["issuer"] = "Chính phủ"
-    elif "THỦ TƯỚNG" in content[:500]:
-        meta["issuer"] = "Thủ tướng Chính phủ"
+    if "QUC HI" in content[:500]:
+        meta["issuer"] = "Quc hi"
+    elif "CHNH PH" in content[:500]:
+        meta["issuer"] = "Government"
+    elif "TH TNG" in content[:500]:
+        meta["issuer"] = "Th tng Government"
     else:
-        meta["issuer"] = "Chưa xác định"
+        meta["issuer"] = "Undefined"
     
     # Effective date
-    m = re.search(r'(?:Ngày hiệu lực|có hiệu lực)[:\s]*(\d{4}-\d{2}-\d{2}|\d{2}/\d{2}/\d{4})', content[:3000])
+    m = re.search(r'(?:Ngy hiu lc|c hiu lc)[:\s]*(\d{4}-\d{2}-\d{2}|\d{2}/\d{2}/\d{4})', content[:3000])
     if m:
         date_str = m.group(1)
         if "-" in date_str:
@@ -105,7 +105,7 @@ def chunk_document(content: str, chunk_size: int = 1500, overlap: int = 200) -> 
             article_text = content[start:end].strip()
             
             # Extract article number
-            art_match = re.match(r'(?:Điều|ĐIỀU)\s+(\d+[a-z]?)', article_text)
+            art_match = re.match(r'(?:iu|IU)\s+(\d+[a-z]?)', article_text)
             article_num = art_match.group(1) if art_match else str(i+1)
             
             # If article is too long, sub-chunk it
@@ -113,14 +113,14 @@ def chunk_document(content: str, chunk_size: int = 1500, overlap: int = 200) -> 
                 sub_chunks = simple_chunk(article_text, chunk_size, overlap)
                 for j, sc in enumerate(sub_chunks):
                     chunks.append({
-                        "article": f"Điều {article_num}",
-                        "clause": f"phần {j+1}" if len(sub_chunks) > 1 else None,
+                        "article": f"iu {article_num}",
+                        "clause": f"part {j+1}" if len(sub_chunks) > 1 else None,
                         "content": sc,
                         "title": match.group(1).strip()[:200]
                     })
             else:
                 chunks.append({
-                    "article": f"Điều {article_num}",
+                    "article": f"iu {article_num}",
                     "clause": None,
                     "content": article_text,
                     "title": match.group(1).strip()[:200]
@@ -133,7 +133,7 @@ def chunk_document(content: str, chunk_size: int = 1500, overlap: int = 200) -> 
                 "article": None,
                 "clause": None,
                 "content": sc,
-                "title": f"Phần {i+1}"
+                "title": f"Part {i+1}"
             })
     
     return chunks
@@ -193,7 +193,7 @@ def main():
             """, (
                 doc_id, title, law_number, doc_type, meta["issuer"],
                 meta["effective_date"], domains, content,
-                len(re.findall(r'(?:Điều|ĐIỀU)\s+\d+', content)),
+                len(re.findall(r'(?:iu|IU)\s+\d+', content)),
                 len(content.split())
             ))
         except Exception as e:
