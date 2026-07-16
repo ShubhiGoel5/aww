@@ -21,7 +21,7 @@ async def require_superadmin(current_user: Dict = Depends(get_current_user)):
     if current_user.get("role") != "superadmin":
         raise HTTPException(
             status_code=403, 
-            detail="Quyền truy cập bị từ chối. Chỉ dành cho Super Admin."
+            detail="Access denied. Super Admin only."
         )
     return current_user
 
@@ -593,7 +593,7 @@ async def update_platform_settings(
         
         conn.commit()
         
-        return {"message": "Cài đặt đã được cập nhật", "updated_by": admin["email"]}
+        return {"message": "Settings updated successfully", "updated_by": admin["email"]}
 
 # ============================================
 # AUDIT LOGS
@@ -757,6 +757,6 @@ async def cleanup_deleted(admin: Dict = Depends(require_superadmin)):
             deleted = cur.rowcount
             conn.commit()
             
-            return {"cleaned": deleted, "message": f"Đã xóa {deleted} hợp đồng"}
+            return {"cleaned": deleted, "message": f"Deleted {deleted} contract(s)"}
         except Exception as e:
             return {"error": str(e)}

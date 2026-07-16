@@ -1,6 +1,6 @@
 """
 Legal AI Agent API
-- Full-text search Vietnamese law database
+- Full-text search Indian law database
 - Groq LLM for AI processing
 - Multi-tenant API key authentication
 - User authentication and management
@@ -68,7 +68,7 @@ from ..services.llm_provider import LLMProviderManager
 
 app = FastAPI(
     title="Legal AI Agent API",
-    description="AI-powered Vietnamese Legal Assistant - Tư vấn pháp luật, soạn thảo văn bản, rà soát hợp đồng",
+    description="AI-powered Indian Legal Assistant — Contract Review, Legal Research & Document Drafting",
     version="2.0.0"
 )
 
@@ -327,22 +327,22 @@ class FileContext(BaseModel):
     file_type: str
 
 class LegalQuery(BaseModel):
-    question: str = Field(..., min_length=1, max_length=5000, description="Câu hỏi pháp luật")
-    domains: Optional[List[str]] = Field(None, description="Lĩnh vực: lao_dong, doanh_nghiep, dan_su, thue, dat_dai...")
-    max_sources: int = Field(10, ge=1, le=30, description="Số nguồn tham chiếu tối đa")
+    question: str = Field(..., min_length=1, max_length=5000, description="Legal question")
+    domains: Optional[List[str]] = Field(None, description="Domain: labour, corporate, civil, tax, property, criminal, constitutional...")
+    max_sources: int = Field(10, ge=1, le=30, description="Max reference sources")
     stream: bool = Field(False, description="Stream response")
     session_id: Optional[str] = Field(None, description="Chat session ID for multi-turn conversation")
     file_context: Optional[FileContext] = Field(None, description="File content uploaded in chat")
 
 class ContractReview(BaseModel):
-    contract_text: str = Field(..., min_length=50, max_length=100000, description="Nội dung hợp đồng cần rà soát")
-    contract_type: Optional[str] = Field(None, description="Loại hợp đồng: hop_dong_lao_dong, hop_dong_thuong_mai...")
-    focus_areas: Optional[List[str]] = Field(None, description="Các điểm cần chú ý đặc biệt")
+    contract_text: str = Field(..., min_length=50, max_length=100000, description="Contract text to review")
+    contract_type: Optional[str] = Field(None, description="Contract type: employment_agreement, service_agreement, sale_purchase_agreement...")
+    focus_areas: Optional[List[str]] = Field(None, description="Specific areas to focus on")
 
 class DocumentDraft(BaseModel):
-    doc_type: str = Field(..., description="Loại văn bản: hop_dong_lao_dong, quyet_dinh, cong_van, noi_quy...")
-    variables: dict = Field(..., description="Thông tin cần điền vào văn bản")
-    instructions: Optional[str] = Field(None, description="Yêu cầu bổ sung")
+    doc_type: str = Field(..., description="Document type: employment_agreement, resolution, official_letter, standing_orders...")
+    variables: dict = Field(..., description="Information to fill into the document")
+    instructions: Optional[str] = Field(None, description="Additional instructions")
 
 class LegalResponse(BaseModel):
     answer: str
@@ -419,7 +419,7 @@ def fetch_company_context(company_id: str, question: str, limit: int = 5) -> str
             if any(kw in text.lower() for kw in question_lower.split() if len(kw) > 2):
                 excerpt = text[:1500]
                 context_parts.append(
-                    f"📄 TÀI LIỆU CÔNG TY: {doc['name']} (Loại: {doc.get('doc_type', 'N/A')})\n{excerpt}"
+                    f"📄 COMPANY DOCUMENT: {doc['name']} (Type: {doc.get('doc_type', 'N/A')})\n{excerpt}"
                 )
 
         # Search company contracts
@@ -443,11 +443,10 @@ def fetch_company_context(company_id: str, question: str, limit: int = 5) -> str
                 if contract.get("parties"):
                     try:
                         parties = json.loads(contract["parties"]) if isinstance(contract["parties"], str) else contract["parties"]
-                        parties_str = f" | Các bên: {', '.join(str(p) for p in parties)}"
+                        parties_str = f" | Parties: {', '.join(str(p) for p in parties)}"
                     except:
                         pass
                 context_parts.append(
-                    f"📋 HỢP ĐỒNG: {contract['name']} (Loại: {contract.get('contract_type', 'N/A')}{parties_str})\n{excerpt}"
                     f"📋 CONTRACT: {contract['name']} (Type: {contract.get('contract_type', 'N/A')}{parties_str})\n{excerpt}"
                 )
 
@@ -525,7 +524,7 @@ def detect_domain(question: str) -> Optional[List[str]]:
     return detected if detected else None
 
 def search_laws(query: str, domains: Optional[List[str]] = None, limit: int = 10) -> List[dict]:
-    """Search Vietnamese law database"""
+    """Search Indian law database"""
     with get_db() as conn:
         cur = conn.cursor(cursor_factory=RealDictCursor)
         
@@ -603,46 +602,9 @@ def multi_query_search(question: str, domains: Optional[List[str]] = None, limit
             phrase_results.extend([dict(r) for r in cur.fetchall()])
         
         # If we have a restored query that's different, search with restored phrases too
-        if restored_query.lower() != original_query.lower():
-            restored_keywords = extract_search_query(restored_query)
-            restored_words = [w for w in restored_keywords.split() if len(w) > 1]
-            common_prefixes = {"thời", "gian", "quy", "định", "mức", "tối", "đa", "số", "ngày"}
-            restored_key_words = [w for w in restored_words if w not in common_prefixes]
-            if not restored_key_words:
-                restored_key_words = restored_words
-            
-            restored_phrases = []
-            if len(restored_key_words) >= 2:
-                restored_phrases.append(" ".join(restored_key_words[:3]))
-                restored_phrases.append(" ".join(restored_key_words[:2]))
-            elif restored_key_words:
-                restored_phrases.append(restored_key_words[0])
-            
-            for phrase in restored_phrases[:2]:
-                domain_filter = ""
-                params = [f"%{phrase}%"]
-                if domains:
-                    domain_filter = "AND lc.domains && %s::legal_domain[]"
-                    params.append("{" + ",".join(domains) + "}")
-                
-                cur.execute(f"""
-                    SELECT lc.id as chunk_id, lc.law_id, ld.title as law_title, 
-                           ld.law_number, lc.article, lc.title as chunk_title,
-                           lc.content, lc.domains, 1.2::float as rank
-                    FROM law_chunks lc
-                    JOIN law_documents ld ON ld.id = lc.law_id
-                    WHERE lc.content ILIKE %s {domain_filter}
-                    ORDER BY 
-                        CASE WHEN ld.title LIKE 'Constitution%%' OR ld.title LIKE 'Code%%' THEN 0
-                             WHEN ld.title LIKE 'Act %%' THEN 1
-                             WHEN ld.title LIKE 'Rules %%' OR ld.title LIKE 'Regulations %%' THEN 2
-                             ELSE 3 END,
-                        length(lc.content) DESC
-                    LIMIT {limit}
-                """, params)
-                phrase_results.extend([dict(r) for r in cur.fetchall()])
+        # Removed redundant translation logic check
     
-    # Phase 1.5: Synonym expansion search (e.g., "tndn" → "thu nhập doanh nghiệp")
+    # Phase 1.5: Synonym expansion search
     synonyms = expand_synonyms(keywords)
     for syn_term in synonyms[:2]:
         sp = syn_term  # Use the expanded term directly as search phrase
@@ -801,7 +763,7 @@ async def chat_upload_file(file: UploadFile = File(...), company: dict = Depends
 
     content = await file.read()
     if len(content) > 10 * 1024 * 1024:  # 10MB
-        raise HTTPException(status_code=400, detail="File quá lớn. Tối đa 10MB.")
+        raise HTTPException(status_code=400, detail="File too large. Max 10MB.")
 
     company_id = str(company["company_id"])
     
@@ -1102,7 +1064,7 @@ async def edit_docx_endpoint(doc_id: str, edits: dict = Body(...), company: dict
 
 @app.post("/v1/legal/ask", response_model=LegalResponse)
 async def legal_ask(query: LegalQuery, company: dict = Depends(verify_api_key)):
-    """Tư vấn pháp luật - Legal Q&A (Agent-based with tool use)"""
+    """Legal Q&A — Agent-based with tool use"""
     check_rate_limit(str(company["company_id"]))
     
     # Load chat history for multi-turn conversation
@@ -1130,12 +1092,12 @@ async def legal_ask(query: LegalQuery, company: dict = Depends(verify_api_key)):
     # Augment question with file context if provided
     actual_question = query.question
     if query.file_context:
-        actual_question = f"""[Người dùng đã upload file: {query.file_context.filename}]
+        actual_question = f"""[User uploaded file: {query.file_context.filename}]
 
-NỘI DUNG FILE:
+FILE CONTENT:
 {query.file_context.content[:30000]}
 
-CÂU HỎI: {query.question}"""
+QUESTION: {query.question}"""
 
     # Run the agent
     result = await legal_agent.run_agent(
@@ -1224,7 +1186,7 @@ CÂU HỎI: {query.question}"""
 
 @app.post("/v1/legal/ask-stream")
 async def legal_ask_stream(query: LegalQuery, company: dict = Depends(verify_api_key)):
-    """Tư vấn pháp luật với streaming SSE - Agent-based with tool status events"""
+    """Legal Q&A with SSE streaming — Agent-based with tool status events"""
     check_rate_limit(str(company["company_id"]))
 
     # Load chat history
@@ -1271,12 +1233,12 @@ async def legal_ask_stream(query: LegalQuery, company: dict = Depends(verify_api
     # Augment question with file context if provided
     actual_question = query.question
     if query.file_context:
-        actual_question = f"""[Người dùng đã upload file: {query.file_context.filename}]
+        actual_question = f"""[User uploaded file: {query.file_context.filename}]
 
-NỘI DUNG FILE:
+FILE CONTENT:
 {query.file_context.content[:30000]}
 
-CÂU HỎI: {query.question}"""
+QUESTION: {query.question}"""
 
     company_id_str = str(company["company_id"])
 
@@ -1394,7 +1356,7 @@ async def search_detailed(
     limit: int = Query(20, ge=1, le=50),
     company: dict = Depends(verify_api_key)
 ):
-    """Tìm kiếm luật chi tiết - Detailed Law Search with categorization and highlighting"""
+    """Detailed Law Search with categorization and highlighting"""
     import time as _time
 
     start_time = _time.time()
@@ -1512,16 +1474,16 @@ async def search_detailed(
 
 @app.post("/v1/legal/review")
 async def contract_review(review: ContractReview, company: dict = Depends(verify_api_key)):
-    """Rà soát hợp đồng - Contract Review"""
+    """Contract Review — AI-powered risk analysis under Indian law"""
     check_rate_limit(str(company["company_id"]))
     
     # Search relevant laws based on contract type
     search_terms = {
-        "hop_dong_lao_dong": "hợp đồng lao động quyền nghĩa vụ",
-        "hop_dong_thuong_mai": "hợp đồng thương mại mua bán",
-        "hop_dong_dich_vu": "hợp đồng dịch vụ thuê khoán",
+        "employment_agreement": "employment contract duties obligations Indian labour law",
+        "service_agreement": "service agreement scope payment terms",
+        "sale_purchase_agreement": "sale purchase agreement goods delivery title",
     }
-    search_query = search_terms.get(review.contract_type, "hợp đồng điều khoản")
+    search_query = search_terms.get(review.contract_type, "contract clauses obligations Indian law")
     sources = cached_search(search_query, None, 15)
     
     context = "\n\n".join([
@@ -1584,7 +1546,7 @@ Please review the contract above and return the result in JSON format."""
 
 @app.post("/v1/legal/draft")
 async def document_draft(draft: DocumentDraft, company: dict = Depends(verify_api_key)):
-    """Soạn thảo văn bản - Document Drafting"""
+    """Document Drafting — AI-powered document generation"""
     check_rate_limit(str(company["company_id"]))
     
     # Search for templates and relevant laws
@@ -1641,7 +1603,7 @@ Please draft a complete document."""
 
 @app.get("/v1/legal/search")
 async def search(q: str, domains: Optional[str] = None, limit: int = 10, company: dict = Depends(verify_api_key)):
-    """Tìm kiếm luật - Law Search"""
+    """Law Search"""
     domain_list = domains.split(",") if domains else None
     results = cached_search(q, domain_list, min(limit, 30))
     
@@ -1819,7 +1781,7 @@ def _add_formatted_text(paragraph, text: str):
             run.font.name = 'Times New Roman'
             run.font.size = Pt(13)
         elif part.startswith('[') and ']' in part:
-            # Placeholder like [TÊN CÔNG TY] - highlight it
+            # Placeholder like [COMPANY NAME] - highlight it
             run = paragraph.add_run(part)
             run.bold = True
             run.font.name = 'Times New Roman'
@@ -1848,7 +1810,7 @@ def _add_formatted_text(paragraph, text: str):
 # ============================================
 
 class ContractCompareRequest(BaseModel):
-    contract_ids: List[str] = Field(..., min_length=2, description="Danh sách ID hợp đồng cần so sánh (tối thiểu 2)")
+    contract_ids: List[str] = Field(..., min_length=2, description="List of contract IDs to compare (at least 2)")
 
 @app.post("/v1/contracts/compare")
 async def compare_contracts(req: ContractCompareRequest, company: dict = Depends(verify_api_key)):
@@ -1856,9 +1818,9 @@ async def compare_contracts(req: ContractCompareRequest, company: dict = Depends
     check_rate_limit(str(company["company_id"]))
 
     if len(req.contract_ids) < 2:
-        raise HTTPException(status_code=400, detail="Cần ít nhất 2 hợp đồng để so sánh")
+        raise HTTPException(status_code=400, detail="At least 2 contracts are required for comparison")
     if len(req.contract_ids) > 5:
-        raise HTTPException(status_code=400, detail="Tối đa 5 hợp đồng")
+        raise HTTPException(status_code=400, detail="Maximum 5 contracts")
 
     contracts_data = []
     with get_db() as conn:
@@ -2128,7 +2090,7 @@ async def delete_annotation(doc_id: str, annotation_id: str, company: dict = Dep
         if cur.rowcount == 0:
             raise HTTPException(status_code=404, detail="Annotation does not exist")
         conn.commit()
-    return {"message": "Đã xóa annotation"}
+    return {"message": "Annotation deleted"}
 
 
 # ============================================
@@ -2160,8 +2122,8 @@ async def get_notifications(company: dict = Depends(verify_api_key)):
             notifications.append({
                 "type": "expiring_contract",
                 "severity": "warning" if days > 7 else "critical",
-                "title": f"HĐ sắp hết hạn: {c['name']}",
-                "detail": f"Còn {days} ngày",
+                "title": f"Contract expiring: {c['name']}",
+                "detail": f"{days} days remaining",
                 "action": {"type": "view_contract", "id": str(c['id'])}
             })
 
@@ -2178,8 +2140,8 @@ async def get_notifications(company: dict = Depends(verify_api_key)):
             notifications.append({
                 "type": "overdue_contract",
                 "severity": "critical",
-                "title": f"HĐ đã hết hạn: {c['name']}",
-                "detail": f"Hết hạn {c['end_date']}",
+                "title": f"Contract expired: {c['name']}",
+                "detail": f"Expired on {c['end_date']}",
                 "action": {"type": "view_contract", "id": str(c['id'])}
             })
 
@@ -2214,27 +2176,27 @@ async def generate_contract_report(contract_id: str, company: dict = Depends(ver
         raise
     except Exception as e:
         print(f"DB error in contract report: {e}")
-        raise HTTPException(500, "Lỗi truy vấn database")
+        raise HTTPException(500, "Database query error")
 
     # Run AI analysis
     try:
         analysis = await legal_agent.run_agent(
-            question=f"Phân tích chi tiết và rà soát toàn diện hợp đồng: {contract['name']}. Đánh giá rủi ro, điều khoản quan trọng, vấn đề cần lưu ý, và đề xuất cụ thể.",
+            question=f"Provide a detailed analysis and comprehensive review of this contract: {contract['name']}. Assess risks, key clauses, points requiring attention, and specific recommendations under Indian law.",
             company_id=company_id
         )
     except Exception as e:
         print(f"AI analysis error: {e}")
-        raise HTTPException(502, "Lỗi phân tích AI")
+        raise HTTPException(502, "AI analysis error")
 
     # Generate Word document
     doc = DocxDocument()
 
     # Title
-    title = doc.add_heading('BÁO CÁO RÀ SOÁT HỢP ĐỒNG', level=0)
+    title = doc.add_heading('CONTRACT REVIEW REPORT', level=0)
     title.alignment = WD_ALIGN_PARAGRAPH.CENTER
 
     # Contract info table
-    doc.add_heading('I. Thông tin hợp đồng', level=1)
+    doc.add_heading('I. Contract Information', level=1)
     table = doc.add_table(rows=5, cols=2)
     try:
         table.style = 'Light Grid Accent 1'
@@ -2251,18 +2213,18 @@ async def generate_contract_report(contract_id: str, company: dict = Depends(ver
     parties_str = ', '.join(str(p) for p in (parties_raw or ['N/A']))
 
     cells = [
-        ('Tên hợp đồng', str(contract.get('name', 'N/A'))),
-        ('Các bên', parties_str),
-        ('Ngày bắt đầu', str(contract.get('start_date', 'N/A'))),
-        ('Ngày kết thúc', str(contract.get('end_date', 'N/A'))),
-        ('Loại hợp đồng', str(contract.get('contract_type', 'N/A'))),
+        ('Contract Name', str(contract.get('name', 'N/A'))),
+        ('Parties', parties_str),
+        ('Start Date', str(contract.get('start_date', 'N/A'))),
+        ('End Date', str(contract.get('end_date', 'N/A'))),
+        ('Contract Type', str(contract.get('contract_type', 'N/A'))),
     ]
     for i, (label, value) in enumerate(cells):
         table.rows[i].cells[0].text = label
         table.rows[i].cells[1].text = value
 
     # AI Analysis
-    doc.add_heading('II. Kết quả rà soát AI', level=1)
+    doc.add_heading('II. AI Review Results', level=1)
     answer = analysis.get('answer', '')
     for line in answer.split('\n'):
         line = line.strip()
@@ -2287,7 +2249,7 @@ async def generate_contract_report(contract_id: str, company: dict = Depends(ver
     # Citations
     citations = analysis.get('citations', [])
     if citations:
-        doc.add_heading('III. Căn cứ pháp lý', level=1)
+        doc.add_heading('III. Legal Basis', level=1)
         for c in citations[:10]:
             p = doc.add_paragraph(style='List Bullet')
             run = p.add_run(f"{c.get('source', '')} ({c.get('law_number', '')})")
@@ -2299,7 +2261,7 @@ async def generate_contract_report(contract_id: str, company: dict = Depends(ver
     doc.add_paragraph()
     disclaimer = doc.add_paragraph()
     disclaimer.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    run = disclaimer.add_run('⚠️ Đây là báo cáo phân tích tự động bằng AI. Vui lòng tham vấn luật sư trực tiếp cho vụ việc cụ thể.')
+    run = disclaimer.add_run('⚠️ This is an AI-generated report. Please consult a qualified legal professional for specific advice.')
     run.italic = True
     run.font.size = Pt(9)
 
@@ -2309,7 +2271,7 @@ async def generate_contract_report(contract_id: str, company: dict = Depends(ver
     buffer.seek(0)
 
     safe_name = str(contract.get('name', 'contract'))[:30].replace(' ', '_')
-    filename = f"Bao_cao_ra_soat_{safe_name}.docx"
+    filename = f"Contract_Review_Report_{safe_name}.docx"
 
     # Audit log for report export
     log_audit(company_id, str(company.get("user_id")) if company.get("user_id") else None, "export", "report", contract_id)
@@ -2344,7 +2306,7 @@ async def contract_risk_overview(company: dict = Depends(verify_api_key)):
             contracts = cur.fetchall()
     except Exception as e:
         print(f"DB error in risk overview: {e}")
-        raise HTTPException(500, "Lỗi truy vấn database")
+        raise HTTPException(500, "Database query error")
 
     overview = {
         "total": len(contracts),
@@ -2365,7 +2327,7 @@ async def contract_risk_overview(company: dict = Depends(verify_api_key)):
         overview["by_status"][s] = overview["by_status"].get(s, 0) + 1
 
         # Type count
-        t = c.get('contract_type', 'Khác') or 'Khác'
+        t = c.get('contract_type', 'Other') or 'Other'
         overview["by_type"][t] = overview["by_type"].get(t, 0) + 1
 
         # Parse parties
@@ -2392,7 +2354,7 @@ async def contract_risk_overview(company: dict = Depends(verify_api_key)):
                         "type": "expired",
                         "severity": "critical",
                         "contract": contract_info,
-                        "message": f"Đã hết hạn {abs(days_left)} ngày"
+                        "message": f"Expired {abs(days_left)} days ago"
                     })
                 elif days_left <= 30:
                     overview["expiring_soon"].append({**contract_info, "days_left": days_left})
@@ -2400,7 +2362,7 @@ async def contract_risk_overview(company: dict = Depends(verify_api_key)):
                         "type": "expiring",
                         "severity": "warning" if days_left > 7 else "critical",
                         "contract": contract_info,
-                        "message": f"Còn {days_left} ngày"
+                        "message": f"{days_left} days remaining"
                     })
             except Exception:
                 pass
@@ -2473,7 +2435,7 @@ async def search_chat_history(
                     })
     except Exception as e:
         print(f"Search chat error: {e}")
-        raise HTTPException(500, "Lỗi tìm kiếm")
+        raise HTTPException(500, "Search error")
 
     return {
         "query": q,
@@ -2499,9 +2461,9 @@ async def compare_contracts_detailed(req: ContractCompareRequest, company: dict 
     check_rate_limit(str(company["company_id"]))
 
     if len(req.contract_ids) < 2:
-        raise HTTPException(status_code=400, detail="Cần ít nhất 2 hợp đồng để so sánh")
+        raise HTTPException(status_code=400, detail="At least 2 contracts are required for comparison")
     if len(req.contract_ids) > 5:
-        raise HTTPException(status_code=400, detail="Tối đa 5 hợp đồng")
+        raise HTTPException(status_code=400, detail="Maximum 5 contracts")
 
     contracts_data = []
     with get_db() as conn:
@@ -2640,7 +2602,7 @@ async def ai_fill_template(
         raise
     except Exception as e:
         print(f"DB error in template fill: {e}")
-        raise HTTPException(500, "Lỗi truy vấn database")
+        raise HTTPException(500, "Database query error")
 
     # Get template content - handle different column names
     template_content = template.get('template_content') or template.get('content') or ''
@@ -2757,7 +2719,7 @@ async def get_analytics(
 
     except Exception as e:
         print(f"Analytics error: {e}")
-        raise HTTPException(500, "Lỗi truy vấn analytics")
+        raise HTTPException(500, "Analytics error")
 
     return {
         "period_days": days,
@@ -2898,7 +2860,7 @@ async def upload_contract_version(
             elif file_ext.lower() == '.txt':
                 text_content = content.decode('utf-8', errors='ignore')
         except Exception as e:
-            text_content = f"[Lỗi đọc file: {str(e)}]"
+            text_content = f"[File reading error: {str(e)}]"
 
         # Update contract with new version info
         metadata = contract.get("metadata") or {}
@@ -3091,8 +3053,8 @@ async def get_ai_insights(company: dict = Depends(verify_api_key)):
                     "type": "expiring_contracts",
                     "severity": "warning",
                     "icon": "⏰",
-                    "title": f"{expiring} hợp đồng sắp hết hạn trong 60 ngày",
-                    "description": "Nên rà soát và chuẩn bị gia hạn hoặc ký mới.",
+                    "title": f"{expiring} contract(s) expiring within 60 days",
+                    "description": "Review and prepare for renewal or fresh execution.",
                     "action": {"type": "open_risk_dashboard"}
                 })
         except Exception:
@@ -3110,8 +3072,8 @@ async def get_ai_insights(company: dict = Depends(verify_api_key)):
                     "type": "unreviewed",
                     "severity": "info",
                     "icon": "📋",
-                    "title": f"{unreviewed} hợp đồng chưa được rà soát AI",
-                    "description": "Rà soát bằng AI để phát hiện rủi ro sớm.",
+                    "title": f"{unreviewed} contract(s) not yet reviewed by AI",
+                    "description": "Run AI review to detect risks early.",
                     "action": {"type": "open_contracts"}
                 })
         except Exception:
@@ -3138,8 +3100,8 @@ async def get_ai_insights(company: dict = Depends(verify_api_key)):
                     "type": "usage_increase",
                     "severity": "success",
                     "icon": "📈",
-                    "title": "Sử dụng tăng mạnh tuần này",
-                    "description": f"Tuần này: {recent_usage} câu hỏi (tuần trước: {prev_usage})",
+                    "title": "Usage increased significantly this week",
+                    "description": f"This week: {recent_usage} queries (last week: {prev_usage})",
                     "action": {"type": "open_analytics"}
                 })
         except Exception:
@@ -3154,8 +3116,8 @@ async def get_ai_insights(company: dict = Depends(verify_api_key)):
                     "type": "incomplete_profile",
                     "severity": "info",
                     "icon": "🏢",
-                    "title": "Hồ sơ công ty chưa đầy đủ",
-                    "description": "Cập nhật mã số thuế và địa chỉ để AI tư vấn chính xác hơn.",
+                    "title": "Incomplete company profile",
+                    "description": "Update your company's GST/CIN and address so AI advice is more accurate.",
                     "action": {"type": "open_settings"}
                 })
         except Exception:
@@ -3225,16 +3187,16 @@ async def export_chat(session_id: str, company: dict = Depends(verify_api_key)):
         raise HTTPException(404, "Conversation not found")
 
     # Build markdown
-    md = f"# Cuộc hội thoại - AI Legal Agent\n"
-    md += f"**Ngày:** {messages[0]['created_at'].strftime('%d/%m/%Y') if messages[0].get('created_at') and hasattr(messages[0]['created_at'], 'strftime') else 'N/A'}\n"
-    md += f"**Số lượt hỏi:** {len(messages)}\n\n---\n\n"
+    md = f"# Conversation - AI Legal Agent\n"
+    md += f"**Date:** {messages[0]['created_at'].strftime('%d/%m/%Y') if messages[0].get('created_at') and hasattr(messages[0]['created_at'], 'strftime') else 'N/A'}\n"
+    md += f"**Message count:** {len(messages)}\n\n---\n\n"
 
     for msg in messages:
         time_str = msg['created_at'].strftime('%H:%M') if msg.get('created_at') and hasattr(msg['created_at'], 'strftime') else ''
-        md += f"## 👤 Người dùng ({time_str})\n{msg.get('question', '')}\n\n"
+        md += f"## 👤 User ({time_str})\n{msg.get('question', '')}\n\n"
         md += f"## ⚖️ AI Legal Agent\n{msg.get('answer', '')}\n\n"
         if msg.get('citations_count', 0) and msg['citations_count'] > 0:
-            md += f"*({msg['citations_count']} nguồn trích dẫn)*\n\n"
+            md += f"*({msg['citations_count']} citations)*\n\n"
         md += "---\n\n"
 
     return StreamingResponse(
@@ -3393,7 +3355,7 @@ async def batch_upload_contracts(
         try:
             content = await file.read()
             if len(content) > 10 * 1024 * 1024:
-                results.append({"filename": file.filename, "status": "error", "error": "File quá lớn (>10MB)"})
+                results.append({"filename": file.filename, "status": "error", "error": "File too large (>10MB)"})
                 continue
 
             # Extract text
@@ -3411,7 +3373,7 @@ async def batch_upload_contracts(
                 elif file_ext == '.txt':
                     text_content = content.decode('utf-8', errors='ignore')
             except Exception as e:
-                text_content = f"[Lỗi đọc: {e}]"
+                text_content = f"[Read error: {e}]"
 
             # Save file
             file_id = str(uuid.uuid4())
@@ -3500,7 +3462,7 @@ async def contract_calendar(
                         "date": str(c["start_date"]),
                         "type": "start",
                         "color": "#34d399",
-                        "title": f"📗 Bắt đầu: {c['name']}",
+                        "title": f"📗 Started: {c['name']}",
                         "contract_id": str(c["id"])
                     })
                 if c.get("end_date") and c["end_date"].year == year and c["end_date"].month == month:
@@ -3510,7 +3472,7 @@ async def contract_calendar(
                         "date": str(c["end_date"]),
                         "type": "end",
                         "color": color,
-                        "title": f"📕 Kết thúc: {c['name']}",
+                        "title": f"📕 Ends: {c['name']}",
                         "contract_id": str(c["id"]),
                         "days_left": days_left
                     })
@@ -3636,8 +3598,8 @@ async def contract_version_diff(
     lines2 = text2.split('\n')
     
     differ = difflib.unified_diff(lines2, lines1, lineterm='', 
-                                   fromfile=contract2.get("name", "Phiên bản cũ"),
-                                   tofile=contract1.get("name", "Phiên bản mới"))
+                                   fromfile=contract2.get("name", "Previous Version"),
+                                   tofile=contract1.get("name", "Current Version"))
     diff_text = '\n'.join(differ)
     
     # Also compute similarity ratio
@@ -3678,22 +3640,22 @@ async def get_contract_suggestions(contract_id: str, company: dict = Depends(ver
     
     # Check for common missing clauses
     clause_checks = [
-        {"name": "Confidentiality", "keywords": ["bảo mật", "confidential", "bí mật", "non-disclosure"], "importance": "high",
+        {"name": "Confidentiality", "keywords": ["confidential", "confidential", "secret", "non-disclosure"], "importance": "high",
          "suggestion": "Should add a confidentiality clause to protect business data."},
-        {"name": "Penalty", "keywords": ["phạt", "vi phạm", "chế tài", "penalty"], "importance": "high",
+        {"name": "Penalty", "keywords": ["penalty", "breach", "sanction", "penalty"], "importance": "high",
          "suggestion": "Need to specify exact penalties for breach of contract (subject to the Indian Contract Act, 1872)."},
-        {"name": "Force Majeure", "keywords": ["bất khả kháng", "force majeure"], "importance": "medium",
+        {"name": "Force Majeure", "keywords": ["force majeure", "force majeure"], "importance": "medium",
          "suggestion": "Should have a force majeure clause to handle events beyond control."},
-        {"name": "Dispute Resolution", "keywords": ["tranh chấp", "trọng tài", "tòa án", "dispute", "arbitration", "court"], "importance": "high",
+        {"name": "Dispute Resolution", "keywords": ["dispute", "arbitration", "court", "dispute", "arbitration", "court"], "importance": "high",
          "suggestion": "Need to specify the dispute resolution body (court or arbitration)."},
-        {"name": "Damages", "keywords": ["bồi thường", "thiệt hại", "damages", "compensation"], "importance": "medium",
+        {"name": "Damages", "keywords": ["damages", "loss", "damages", "compensation"], "importance": "medium",
          "suggestion": "Should clearly specify the scope and limits of damages."},
-        {"name": "Điều khoản chấm dứt", "keywords": ["chấm dứt", "hủy bỏ", "kết thúc hợp đồng"], "importance": "high",
-         "suggestion": "Cần quy định điều kiện và thủ tục chấm dứt hợp đồng trước hạn."},
-        {"name": "Bảo hành", "keywords": ["bảo hành", "warranty"], "importance": "low",
-         "suggestion": "Xem xét thêm điều khoản bảo hành cho sản phẩm/dịch vụ."},
-        {"name": "Sở hữu trí tuệ", "keywords": ["sở hữu trí tuệ", "bản quyền", "intellectual property"], "importance": "medium",
-         "suggestion": "Nên quy định quyền sở hữu trí tuệ đối với sản phẩm/tài liệu phát sinh."},
+        {"name": "Termination Clause", "keywords": ["termination", "cancellation", "end of contract", "exit clause"], "importance": "high",
+         "suggestion": "Define the conditions and procedure for early termination of the contract."},
+        {"name": "Warranty", "keywords": ["warranty", "guarantee"], "importance": "low",
+         "suggestion": "Consider adding a warranty clause for products/services."},
+        {"name": "Intellectual Property", "keywords": ["intellectual property", "copyright", "trademark", "patent"], "importance": "medium",
+         "suggestion": "Specify IP ownership of deliverables/documents created under the contract."},
     ]
     
     for check in clause_checks:
@@ -3708,24 +3670,24 @@ async def get_contract_suggestions(contract_id: str, company: dict = Depends(ver
             })
     
     # Check for vague terms
-    vague_terms = ["hợp lý", "phù hợp", "kịp thời", "nhanh chóng", "sớm nhất"]
-    found_vague = [t for t in vague_terms if t in content]
+    vague_terms = ["reasonable", "appropriate", "timely", "as soon as possible", "promptly", "soon"]
+    found_vague = [t for t in vague_terms if t in content.lower()]
     if found_vague:
         suggestions.append({
             "type": "vague_terms",
             "importance": "medium",
-            "suggestion": f"Hợp đồng có các thuật ngữ mơ hồ: {', '.join(found_vague)}. Nên thay bằng con số/thời hạn cụ thể.",
+            "suggestion": f"Contract contains vague terms: {', '.join(found_vague)}. Replace with specific figures/deadlines.",
             "terms": found_vague
         })
     
     # Check for missing dates/amounts
     import re
-    has_amount = bool(re.search(r'\d+[.,]\d+.*?(VNĐ|đồng|USD|vnđ)', content))
+    has_amount = bool(re.search(r'\d+[.,]\d+.*?(INR|Rs\.?|₹|rupees?)', content, re.IGNORECASE))
     if not has_amount:
         suggestions.append({
             "type": "missing_amount",
             "importance": "high",
-            "suggestion": "Specific contract value not found. Amount and currency must be specified."
+            "suggestion": "Specific contract value not found. Amount and currency (INR/₹) must be specified."
         })
     
     # Sort by importance
@@ -3779,15 +3741,15 @@ async def bulk_analyze_contracts(
             
             # Check missing essential clauses
             essential = {
-                "phạt vi phạm": ["phạt", "vi phạm"],
-                "chấm dứt": ["chấm dứt", "hủy bỏ"],
-                "tranh chấp": ["tranh chấp", "tòa án", "trọng tài"],
-                "bảo mật": ["bảo mật", "confidential"],
+                "penalty breach": ["penalty", "breach"],
+                "termination": ["termination", "cancellation"],
+                "dispute": ["dispute", "court", "arbitration"],
+                "confidential": ["confidential", "confidential"],
             }
             for clause, keywords in essential.items():
                 if not any(kw in content for kw in keywords):
                     risk_score += 15
-                    risks.append(f"Thiếu điều khoản {clause}")
+                    risks.append(f"Missing clause: {clause}")
             
             # Check dates
             from datetime import date
@@ -3795,10 +3757,10 @@ async def bulk_analyze_contracts(
                 days_left = (contract["end_date"] - date.today()).days
                 if days_left < 0:
                     risk_score += 30
-                    risks.append(f"Đã hết hạn {abs(days_left)} ngày")
+                    risks.append(f"Expired {abs(days_left)} days ago")
                 elif days_left <= 30:
                     risk_score += 20
-                    risks.append(f"Sắp hết hạn ({days_left} ngày)")
+                    risks.append(f"Expiring soon ({days_left} days)")
             
             risk_level = "low" if risk_score < 20 else "medium" if risk_score < 50 else "high"
             

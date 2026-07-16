@@ -260,7 +260,7 @@ async def analyze_uploaded_file(
     if not extracted_text or len(extracted_text.strip()) < 20:
         return {
             "success": False,
-            "message": "Cannot read file content. Vui lòng nhập thông tin thủ công.",
+            "message": "Cannot read file content. Please enter information manually.",
             "extracted_text": extracted_text,
             "metadata": {}
         }
@@ -719,7 +719,7 @@ async def review_contract_ai(
         if not text or len(text.strip()) < 50:
             raise HTTPException(
                 status_code=400,
-                detail="Hợp đồng chưa có nội dung để phân tích. Vui lòng upload file hợp đồng."
+                detail="Contract has no content to analyse. Please upload the contract file."
             )
         
         # Run contract review service
@@ -735,7 +735,7 @@ async def review_contract_ai(
         
         review_result = reviewer.review_contract(
             contract_text=text,
-            contract_name=contract.get("name", "Hợp đồng"),
+            contract_name=contract.get("name", "Contract"),
             contract_type=contract.get("contract_type"),
             parties=parties
         )

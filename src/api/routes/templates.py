@@ -28,105 +28,104 @@ class GenerateDocumentRequest(BaseModel):
 
 DEFAULT_TEMPLATES = [
     {
-        "template_id": "hop_dong_lao_dong",
-        "name": "Hợp đồng lao động",
-        "category": "hop_dong",
-        "description": "Standard employment contract per IR Code 2020",
+        "template_id": "employment_agreement",
+        "name": "Employment Agreement",
+        "category": "contract",
+        "description": "Standard employment contract per Industrial Relations Code, 2020",
         "variables": {
-            "company_name": {"label": "Tên công ty", "type": "text", "required": True},
-            "employee_name": {"label": "Tên nhân viên", "type": "text", "required": True},
-            "position": {"label": "Vị trí", "type": "text", "required": True},
-            "salary": {"label": "Mức lương", "type": "number", "required": True},
-            "start_date": {"label": "Ngày bắt đầu", "type": "date", "required": True},
-            "contract_type": {"label": "Contract Type", "type": "select", "options": ["Fixed term", "Indefinite term"], "required": True},
-            "duration_months": {"label": "Thời hạn (tháng)", "type": "number", "required": False},
+            "company_name": {"label": "Company Name", "type": "text", "required": True},
+            "employee_name": {"label": "Employee Name", "type": "text", "required": True},
+            "position": {"label": "Designation / Position", "type": "text", "required": True},
+            "salary": {"label": "CTC / Monthly Salary (INR)", "type": "number", "required": True},
+            "start_date": {"label": "Date of Joining", "type": "date", "required": True},
+            "contract_type": {"label": "Contract Type", "type": "select", "options": ["Fixed Term", "Permanent", "Probationary", "Contractual"], "required": True},
+            "duration_months": {"label": "Duration (months)", "type": "number", "required": False},
         }
     },
     {
-        "template_id": "hop_dong_dich_vu",
-        "name": "Hợp đồng dịch vụ",
-        "category": "hop_dong",
-        "description": "Mẫu hợp đồng cung cấp dịch vụ",
+        "template_id": "service_agreement",
+        "name": "Service Agreement",
+        "category": "contract",
+        "description": "Service agreement / professional services contract",
         "variables": {
-            "provider_name": {"label": "Bên cung cấp", "type": "text", "required": True},
-            "client_name": {"label": "Bên sử dụng", "type": "text", "required": True},
-            "service_description": {"label": "Mô tả dịch vụ", "type": "textarea", "required": True},
-            "fee": {"label": "Phí dịch vụ", "type": "number", "required": True},
-            "duration": {"label": "Thời hạn", "type": "text", "required": True},
+            "provider_name": {"label": "Service Provider", "type": "text", "required": True},
+            "client_name": {"label": "Client", "type": "text", "required": True},
+            "service_description": {"label": "Scope of Services", "type": "textarea", "required": True},
+            "fee": {"label": "Service Fee (INR)", "type": "number", "required": True},
+            "duration": {"label": "Duration / Term", "type": "text", "required": True},
         }
     },
     {
-        "template_id": "quyet_dinh",
-        "name": "Quyết định",
-        "category": "hanh_chinh",
-        "description": "Mẫu quyết định nội bộ công ty",
+        "template_id": "board_resolution",
+        "name": "Board Resolution",
+        "category": "corporate",
+        "description": "Company board resolution template",
         "variables": {
-            "company_name": {"label": "Tên công ty", "type": "text", "required": True},
-            "decision_number": {"label": "Số quyết định", "type": "text", "required": True},
-            "subject": {"label": "Nội dung quyết định", "type": "textarea", "required": True},
-            "effective_date": {"label": "Ngày hiệu lực", "type": "date", "required": True},
+            "company_name": {"label": "Company Name", "type": "text", "required": True},
+            "resolution_number": {"label": "Resolution Number", "type": "text", "required": True},
+            "subject": {"label": "Subject / Purpose", "type": "textarea", "required": True},
+            "effective_date": {"label": "Effective Date", "type": "date", "required": True},
         }
     },
     {
-        "template_id": "cong_van",
-        "name": "Công văn",
-        "category": "hanh_chinh",
-        "description": "Mẫu công văn gửi đi/nhận",
+        "template_id": "official_letter",
+        "name": "Official Letter",
+        "category": "administrative",
+        "description": "Formal business correspondence template",
         "variables": {
-            "sender": {"label": "Đơn vị gửi", "type": "text", "required": True},
-            "recipient": {"label": "Đơn vị nhận", "type": "text", "required": True},
-            "subject": {"label": "Trích yếu", "type": "text", "required": True},
-            "content": {"label": "Nội dung", "type": "textarea", "required": True},
+            "sender": {"label": "Sender / Organisation", "type": "text", "required": True},
+            "recipient": {"label": "Recipient", "type": "text", "required": True},
+            "subject": {"label": "Subject", "type": "text", "required": True},
+            "content": {"label": "Body / Content", "type": "textarea", "required": True},
         }
     },
     {
-        "template_id": "noi_quy",
-        "name": "Nội quy lao động",
-        "category": "noi_bo",
-        "description": "Internal labor regulations per IR Code 2020",
+        "template_id": "standing_orders",
+        "name": "Standing Orders / HR Policy",
+        "category": "hr",
+        "description": "Internal HR standing orders per Industrial Relations Code, 2020",
         "variables": {
-            "company_name": {"label": "Tên công ty", "type": "text", "required": True},
-            "working_hours": {"label": "Giờ làm việc", "type": "text", "required": True},
-            "leave_policy": {"label": "Chính sách nghỉ phép", "type": "textarea", "required": False},
+            "company_name": {"label": "Company Name", "type": "text", "required": True},
+            "working_hours": {"label": "Working Hours", "type": "text", "required": True},
+            "leave_policy": {"label": "Leave Policy", "type": "textarea", "required": False},
         }
     },
     {
-        "template_id": "bien_ban_hop",
-        "name": "Biên bản họp",
-        "category": "noi_bo",
-        "description": "Mẫu biên bản cuộc họp",
+        "template_id": "meeting_minutes",
+        "name": "Meeting Minutes",
+        "category": "corporate",
+        "description": "Minutes of meeting template",
         "variables": {
-            "meeting_title": {"label": "Tiêu đề cuộc họp", "type": "text", "required": True},
-            "date": {"label": "Ngày họp", "type": "date", "required": True},
-            "attendees": {"label": "Thành phần tham dự", "type": "textarea", "required": True},
-            "agenda": {"label": "Nội dung", "type": "textarea", "required": True},
+            "meeting_title": {"label": "Meeting Title", "type": "text", "required": True},
+            "date": {"label": "Date of Meeting", "type": "date", "required": True},
+            "attendees": {"label": "Attendees", "type": "textarea", "required": True},
+            "agenda": {"label": "Agenda / Minutes", "type": "textarea", "required": True},
         }
     },
     {
-        "template_id": "thong_bao",
-        "name": "Thông báo",
-        "category": "hanh_chinh",
-        "description": "Mẫu thông báo nội bộ/đối ngoại",
+        "template_id": "notice",
+        "name": "Notice",
+        "category": "administrative",
+        "description": "Internal / external notice template",
         "variables": {
-            "company_name": {"label": "Tên công ty", "type": "text", "required": True},
-            "subject": {"label": "Nội dung thông báo", "type": "textarea", "required": True},
-            "effective_date": {"label": "Ngày hiệu lực", "type": "date", "required": True},
+            "company_name": {"label": "Company Name", "type": "text", "required": True},
+            "subject": {"label": "Notice Subject", "type": "textarea", "required": True},
+            "effective_date": {"label": "Effective Date", "type": "date", "required": True},
         }
     },
     {
-        "template_id": "hop_dong_thue",
-        "name": "Hợp đồng thuê nhà",
-        "category": "hop_dong",
-        "description": "Mẫu hợp đồng thuê mặt bằng/nhà ở",
+        "template_id": "lease_agreement",
+        "name": "Lease / Rental Agreement",
+        "category": "contract",
+        "description": "Commercial or residential lease agreement",
         "variables": {
-            "landlord": {"label": "Bên cho thuê", "type": "text", "required": True},
-            "tenant": {"label": "Bên thuê", "type": "text", "required": True},
-            "address": {"label": "Địa chỉ", "type": "text", "required": True},
-            "rent": {"label": "Tiền thuê/tháng", "type": "number", "required": True},
-            "deposit": {"label": "Tiền đặt cọc", "type": "number", "required": True},
-            "duration": {"label": "Thời hạn thuê", "type": "text", "required": True},
+            "landlord": {"label": "Lessor / Landlord", "type": "text", "required": True},
+            "tenant": {"label": "Lessee / Tenant", "type": "text", "required": True},
+            "address": {"label": "Property Address", "type": "text", "required": True},
+            "rent": {"label": "Monthly Rent (INR)", "type": "number", "required": True},
+            "deposit": {"label": "Security Deposit (INR)", "type": "number", "required": True},
+            "duration": {"label": "Lease Term", "type": "text", "required": True},
         }
-    }
 ]
 
 # ============================================
@@ -271,7 +270,7 @@ async def generate_document(
         if var_config.get("required") and var_name not in request.variables:
             raise HTTPException(
                 status_code=400,
-                detail=f"Missing required variable: {var_config['label']}"
+                detail="Contract has no content to analyse. Please upload the contract file."
             )
     
     # Format variables for Claude prompt

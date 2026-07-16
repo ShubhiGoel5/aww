@@ -12,6 +12,6 @@ async def ask_legal_question(request: LegalQuestionRequest):
 
 @router.post("/search", response_model=LawSearchResponse)
 async def search_laws(request: LawSearchRequest):
-    """Search the Vietnamese law database."""
+    """Search the Indian law database."""
     # TODO: implement hybrid search
     raise HTTPException(status_code=501, detail="Coming soon")
