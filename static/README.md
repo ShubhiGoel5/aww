@@ -24,7 +24,7 @@
 - Chat history sidebar
 - New chat creation
 - Auto-scrolling messages
-- "Đang tra cứu..." loading state
+- "Searching..." loading state
 
 ### 🔍 Search
 - Full-text search across legal documents
@@ -41,11 +41,11 @@
 
 ### ✍️ Document Drafting
 - Multiple document types:
-  - Hợp đồng lao động
-  - Quyết định
-  - Công văn
-  - Nội quy
-  - Hợp đồng mua bán
+  - Employment Contract
+  - Decision
+  - Dispatch
+  - Internal rules
+  - Sale Contract
 - Dynamic form fields per doc type
 - Download generated documents
 
@@ -80,7 +80,7 @@
 - **Font:** system-ui, -apple-system
 - **Style:** Clean, modern, ChatGPT-inspired
 - **Responsive:** Mobile-friendly layout
-- **Vietnamese UI:** All labels in Vietnamese
+- **Indiaese UI:** All labels in Indiaese
 
 ## API Integration
 

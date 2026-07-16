@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Legal AI — Trợ lý pháp lý AI cho doanh nghiệp Việt Nam</title>
+    <title>Legal AI — Tr l php l AI cho doanh nghip n </title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -2826,7 +2826,7 @@
             <div class="auth-logo">
                 <div class="auth-logo-icon">⚖️</div>
                 <div class="auth-logo-text">Legal AI</div>
-                <div class="auth-logo-tagline">Trợ lý pháp lý AI cho doanh nghiệp Việt Nam</div>
+                <div class="auth-logo-tagline">Tr l php l AI cho doanh nghip n </div>
             </div>
             <form class="auth-form" onsubmit="handleLogin(event)">
                 <div class="form-group">
@@ -2834,13 +2834,13 @@
                     <input type="email" class="form-input" placeholder="your@company.com" required id="loginEmail">
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Mật khẩu</label>
+                    <label class="form-label">Mt khu</label>
                     <input type="password" class="form-input" placeholder="••••••••" required id="loginPassword">
                 </div>
-                <button type="submit" class="btn btn-primary">Đăng nhập</button>
+                <button type="submit" class="btn btn-primary">ng nhp</button>
             </form>
             <div class="auth-switch">
-                Chưa có tài khoản? <a href="#" onclick="showRegister(); return false;">Đăng ký ngay</a>
+                Cha c ti khon? <a href="#" onclick="showRegister(); return false;">ng k ngay</a>
             </div>
         </div>
     </div>
@@ -2851,29 +2851,29 @@
             <div class="auth-logo">
                 <div class="auth-logo-icon">⚖️</div>
                 <div class="auth-logo-text">Legal AI</div>
-                <div class="auth-logo-tagline">Tạo tài khoản cho doanh nghiệp</div>
+                <div class="auth-logo-tagline">To ti khon cho doanh nghip</div>
             </div>
             <form class="auth-form" onsubmit="handleRegister(event)">
                 <div class="form-group">
-                    <label class="form-label">Họ tên</label>
-                    <input type="text" class="form-input" placeholder="Nguyễn Văn A" required id="registerName">
+                    <label class="form-label">H tn</label>
+                    <input type="text" class="form-input" placeholder="Nguyn Vn A" required id="registerName">
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Tên công ty</label>
-                    <input type="text" class="form-input" placeholder="Công ty TNHH ABC" required id="registerCompany">
+                    <label class="form-label">Tn cng ty</label>
+                    <input type="text" class="form-input" placeholder="Cng ty TNHH ABC" required id="registerCompany">
                 </div>
                 <div class="form-group">
                     <label class="form-label">Email</label>
                     <input type="email" class="form-input" placeholder="your@company.com" required id="registerEmail">
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Mật khẩu</label>
+                    <label class="form-label">Mt khu</label>
                     <input type="password" class="form-input" placeholder="••••••••" required id="registerPassword">
                 </div>
-                <button type="submit" class="btn btn-primary">Đăng ký</button>
+                <button type="submit" class="btn btn-primary">ng k</button>
             </form>
             <div class="auth-switch">
-                Đã có tài khoản? <a href="#" onclick="showLogin(); return false;">Đăng nhập</a>
+                 c ti khon? <a href="#" onclick="showLogin(); return false;">ng nhp</a>
             </div>
         </div>
     </div>
@@ -2896,19 +2896,19 @@
             
             <div class="sidebar-section">
                 <button class="new-chat-btn" onclick="startNewChat()">
-                    ➕ Cuộc hội thoại mới
+                    ➕ Cuc hi thoi mi
                 </button>
             </div>
 
             <div class="sidebar-section" id="chatHistorySection">
                 <div class="section-label">
-                    Lịch sử
+                    Lch s
                     <button class="section-collapse-btn" onclick="toggleSection(this)">▼</button>
                 </div>
                 <div class="section-content">
                     <div class="chat-history-search">
                         <div class="search-box-small">
-                            <input type="text" placeholder="Tìm kiếm..." oninput="filterChatHistory(this.value)">
+                            <input type="text" placeholder="Tm kim..." oninput="filterChatHistory(this.value)">
                         </div>
                     </div>
                     <div id="chatHistoryContainer">
@@ -2919,26 +2919,26 @@
 
             <div class="sidebar-section">
                 <div class="section-label">
-                    Công cụ
+                    Cng c
                     <button class="section-collapse-btn" onclick="toggleSection(this)">▼</button>
                 </div>
                 <div class="section-content">
                     <div class="nav-item" onclick="showPage('templates')">
                         <span class="nav-item-icon">📋</span>
-                        <span>Mẫu văn bản</span>
+                        <span>Mu vn bn</span>
                     </div>
                     <div class="nav-item" onclick="showPage('contracts')">
                         <span class="nav-item-icon">📁</span>
-                        <span>Hợp đồng</span>
+                        <span>Hp ng</span>
                         <span class="nav-item-badge hidden" id="contractBadge">0</span>
                     </div>
                     <div class="nav-item" onclick="showPage('documents')">
                         <span class="nav-item-icon">📂</span>
-                        <span>Văn bản</span>
+                        <span>Vn bn</span>
                     </div>
                     <div class="nav-item" onclick="showPage('search')">
                         <span class="nav-item-icon">🔍</span>
-                        <span>Tra cứu</span>
+                        <span>Tra cu</span>
                     </div>
                     <div class="nav-item" onclick="showPage('api')">
                         <span class="nav-item-icon">🔑</span>
@@ -2952,7 +2952,7 @@
                     <div class="user-avatar" id="userAvatar">U</div>
                     <div class="user-info">
                         <div class="user-name" id="userName">User</div>
-                        <div class="user-company" id="userCompany">HRVN · Trial</div>
+                        <div class="user-company" id="userCompany">HRIndia · Trial</div>
                     </div>
                 </div>
             </div>
@@ -2967,14 +2967,14 @@
                         <div>
                             <div class="breadcrumbs">
                                 <div class="breadcrumb-item">
-                                    <a href="#" class="breadcrumb-link" onclick="showPage('chat'); return false;">Trang chủ</a>
+                                    <a href="#" class="breadcrumb-link" onclick="showPage('chat'); return false;">Trang ch</a>
                                 </div>
                                 <div class="breadcrumb-item">Chat</div>
                             </div>
-                            <div class="chat-title" id="chatHeaderTitle">Cuộc hội thoại mới</div>
+                            <div class="chat-title" id="chatHeaderTitle">Cuc hi thoi mi</div>
                         </div>
                         <div class="chat-actions">
-                            <button class="icon-btn" title="Cài đặt" onclick="showPage('settings')" data-tooltip="Settings">⚙️</button>
+                            <button class="icon-btn" title="Ci t" onclick="showPage('settings')" data-tooltip="Settings">⚙️</button>
                         </div>
                     </div>
 
@@ -2982,27 +2982,27 @@
                         <div class="chat-welcome" id="chatWelcome">
                             <div class="welcome-card">
                                 <div class="welcome-icon">⚖️</div>
-                                <div class="welcome-title">Xin chào! Tôi là trợ lý pháp lý AI.</div>
-                                <div class="welcome-text">Hỏi tôi bất kỳ câu hỏi nào về luật pháp Việt Nam, soạn thảo văn bản, hoặc rà soát hợp đồng.</div>
+                                <div class="welcome-title">Xin cho! Ti l tr l php l AI.</div>
+                                <div class="welcome-text">Hi ti bt k cu hi no v lut php n , son tho vn bn, hoc r sot hp ng.</div>
                             </div>
                             <div class="suggestion-chips">
-                                <div class="suggestion-chip" onclick="useSuggestion('Soạn hợp đồng lao động')">
-                                    📄 Soạn HĐLĐ
+                                <div class="suggestion-chip" onclick="useSuggestion('Son hp ng lao ng')">
+                                    📄 Son HL
                                 </div>
-                                <div class="suggestion-chip" onclick="useSuggestion('Rà soát hợp đồng')">
-                                    🔍 Rà soát hợp đồng
+                                <div class="suggestion-chip" onclick="useSuggestion('R sot hp ng')">
+                                    🔍 R sot hp ng
                                 </div>
-                                <div class="suggestion-chip" onclick="useSuggestion('Tra cứu luật lao động')">
-                                    📋 Tra cứu luật
+                                <div class="suggestion-chip" onclick="useSuggestion('Tra cu lut lao ng')">
+                                    📋 Tra cu lut
                                 </div>
-                                <div class="suggestion-chip" onclick="useSuggestion('Thời gian thử việc là bao lâu?')">
-                                    ❓ Thử việc
+                                <div class="suggestion-chip" onclick="useSuggestion('Thi gian th vic l bao lu?')">
+                                    ❓ Th vic
                                 </div>
-                                <div class="suggestion-chip" onclick="useSuggestion('Thuế TNDN là gì?')">
-                                    💰 Thuế TNDN
+                                <div class="suggestion-chip" onclick="useSuggestion('Thu TNDN l g?')">
+                                    💰 Thu TNDN
                                 </div>
-                                <div class="suggestion-chip" onclick="useSuggestion('Thành lập công ty cần gì?')">
-                                    🏢 Thành lập công ty
+                                <div class="suggestion-chip" onclick="useSuggestion('Thnh lp cng ty cn g?')">
+                                    🏢 Thnh lp cng ty
                                 </div>
                             </div>
                         </div>
@@ -3011,11 +3011,11 @@
                     <div class="chat-input-container">
                         <div class="chat-input-wrapper">
                             <div class="input-box">
-                                <div class="input-icon" onclick="document.getElementById('fileInput').click()" title="Đính kèm" data-tooltip="Attach file">📎</div>
+                                <div class="input-icon" onclick="document.getElementById('fileInput').click()" title="nh km" data-tooltip="Attach file">📎</div>
                                 <textarea 
                                     class="chat-input" 
                                     id="chatInput" 
-                                    placeholder="Hỏi bất kỳ câu hỏi pháp lý nào..."
+                                    placeholder="Hi bt k cu hi php l no..."
                                     rows="1"
                                     onkeydown="handleChatKeydown(event)"
                                     oninput="autoResize(this)"
@@ -3037,17 +3037,17 @@
                 <div class="page-header">
                     <div class="breadcrumbs">
                         <div class="breadcrumb-item">
-                            <a href="#" class="breadcrumb-link" onclick="showPage('chat'); return false;">Trang chủ</a>
+                            <a href="#" class="breadcrumb-link" onclick="showPage('chat'); return false;">Trang ch</a>
                         </div>
-                        <div class="breadcrumb-item">Mẫu văn bản</div>
+                        <div class="breadcrumb-item">Mu vn bn</div>
                     </div>
-                    <div class="page-title">Mẫu văn bản</div>
-                    <div class="page-description">Chọn mẫu văn bản để tạo tài liệu pháp lý chuyên nghiệp</div>
+                    <div class="page-title">Mu vn bn</div>
+                    <div class="page-description">Chn mu vn bn  to ti liu php l chuyn nghip</div>
                 </div>
                 <div class="page-content">
                     <div class="tab-nav">
-                        <div class="tab-item active" onclick="switchTemplateTab('templates', event)">Mẫu văn bản</div>
-                        <div class="tab-item" onclick="switchTemplateTab('generated', event)">Văn bản đã tạo</div>
+                        <div class="tab-item active" onclick="switchTemplateTab('templates', event)">Mu vn bn</div>
+                        <div class="tab-item" onclick="switchTemplateTab('generated', event)">Vn bn  to</div>
                     </div>
                     
                     <div id="templatesTab" class="tab-content active">
@@ -3060,7 +3060,7 @@
                     
                     <div id="generatedTab" class="tab-content">
                         <div id="generatedDocsList">
-                            <div class="loading-spinner">⚖️ Đang tải văn bản...</div>
+                            <div class="loading-spinner">⚖️ ang ti vn bn...</div>
                         </div>
                     </div>
                 </div>
@@ -3071,30 +3071,30 @@
                 <div class="page-header">
                     <div class="breadcrumbs">
                         <div class="breadcrumb-item">
-                            <a href="#" class="breadcrumb-link" onclick="showPage('chat'); return false;">Trang chủ</a>
+                            <a href="#" class="breadcrumb-link" onclick="showPage('chat'); return false;">Trang ch</a>
                         </div>
-                        <div class="breadcrumb-item">Hợp đồng</div>
+                        <div class="breadcrumb-item">Hp ng</div>
                     </div>
-                    <div class="page-title">Quản lý hợp đồng</div>
-                    <div class="page-description">Quản lý và theo dõi tất cả hợp đồng của công ty</div>
+                    <div class="page-title">Qun l hp ng</div>
+                    <div class="page-description">Qun l v theo di tt c hp ng ca cng ty</div>
                 </div>
                 <div class="page-content">
                     <div id="expiringAlert" class="hidden"></div>
                     <div class="page-actions">
                         <div style="display: flex; gap: 1rem; flex: 1;">
-                            <input type="text" class="search-input" placeholder="🔍 Tìm kiếm hợp đồng..." onkeyup="filterContracts(this.value)">
+                            <input type="text" class="search-input" placeholder="🔍 Tm kim hp ng..." onkeyup="filterContracts(this.value)">
                             <div class="contracts-view-toggle">
                                 <button class="view-toggle-btn active" onclick="toggleContractsView('cards', this)">📇 Cards</button>
                                 <button class="view-toggle-btn" onclick="toggleContractsView('table', this)">📋 Table</button>
                             </div>
                         </div>
-                        <button class="btn btn-primary" onclick="openUploadModal()">📤 Tải lên</button>
+                        <button class="btn btn-primary" onclick="openUploadModal()">📤 Ti ln</button>
                     </div>
                     <div class="filter-pills">
-                        <div class="filter-pill active" data-filter="all" onclick="filterByStatus('all', this)">Tất cả</div>
-                        <div class="filter-pill" data-filter="active" onclick="filterByStatus('active', this)">Hiệu lực</div>
-                        <div class="filter-pill" data-filter="pending" onclick="filterByStatus('pending', this)">Sắp hết hạn</div>
-                        <div class="filter-pill" data-filter="expired" onclick="filterByStatus('expired', this)">Hết hạn</div>
+                        <div class="filter-pill active" data-filter="all" onclick="filterByStatus('all', this)">Tt c</div>
+                        <div class="filter-pill" data-filter="active" onclick="filterByStatus('active', this)">Hiu lc</div>
+                        <div class="filter-pill" data-filter="pending" onclick="filterByStatus('pending', this)">Sp ht hn</div>
+                        <div class="filter-pill" data-filter="expired" onclick="filterByStatus('expired', this)">Ht hn</div>
                     </div>
                     
                     <!-- Cards View -->
@@ -3107,14 +3107,14 @@
                         <table>
                             <thead>
                                 <tr>
-                                    <th>Tên hợp đồng</th>
-                                    <th>Loại</th>
-                                    <th>Bên liên quan</th>
-                                    <th>Trạng thái</th>
-                                    <th>Ngày bắt đầu</th>
-                                    <th>Ngày kết thúc</th>
-                                    <th>Giá trị</th>
-                                    <th>Hành động</th>
+                                    <th>Tn hp ng</th>
+                                    <th>Loi</th>
+                                    <th>Bn lin quan</th>
+                                    <th>Trng thi</th>
+                                    <th>Ngy bt u</th>
+                                    <th>Ngy kt thc</th>
+                                    <th>Gi tr</th>
+                                    <th>Hnh ng</th>
                                 </tr>
                             </thead>
                             <tbody id="contractsTableBody">
@@ -3130,37 +3130,37 @@
                 <div class="page-header">
                     <div class="breadcrumbs">
                         <div class="breadcrumb-item">
-                            <a href="#" class="breadcrumb-link" onclick="showPage('chat'); return false;">Trang chủ</a>
+                            <a href="#" class="breadcrumb-link" onclick="showPage('chat'); return false;">Trang ch</a>
                         </div>
-                        <div class="breadcrumb-item">Văn bản</div>
+                        <div class="breadcrumb-item">Vn bn</div>
                     </div>
-                    <div class="page-title">📂 Quản lý văn bản</div>
-                    <div class="page-description">Quản lý tất cả văn bản pháp lý (PDF, DOCX, ảnh scan) với phân tích AI</div>
+                    <div class="page-title">📂 Qun l vn bn</div>
+                    <div class="page-description">Qun l tt c vn bn php l (PDF, DOCX, nh scan) vi phn tch AI</div>
                 </div>
                 <div class="page-content">
                     <div class="upload-zone" id="uploadZone" onclick="document.getElementById('documentUpload').click()">
                         <div style="font-size: 3rem; margin-bottom: 0.5rem;">📤</div>
-                        <div style="font-size: 1rem; font-weight: 500; margin-bottom: 0.25rem;">Kéo thả file hoặc bấm để upload</div>
-                        <div style="font-size: 0.875rem; color: var(--text-muted);">PDF, DOCX, TXT, JPG, PNG • Tối đa 10MB</div>
+                        <div style="font-size: 1rem; font-weight: 500; margin-bottom: 0.25rem;">Ko th file hoc bm  upload</div>
+                        <div style="font-size: 0.875rem; color: var(--text-muted);">PDF, DOCX, TXT, JPG, PNG • Ti a 10MB</div>
                         <input type="file" id="documentUpload" style="display: none" accept=".pdf,.docx,.doc,.txt,.jpg,.jpeg,.png" onchange="uploadDocument(event)">
                     </div>
 
                     <div class="page-actions" style="margin-top: 1.5rem;">
                         <div style="display: flex; gap: 0.5rem;">
-                            <button class="filter-pill active" onclick="filterDocuments('all', this)">Tất cả</button>
+                            <button class="filter-pill active" onclick="filterDocuments('all', this)">Tt c</button>
                             <button class="filter-pill" onclick="filterDocuments('pdf', this)">PDF</button>
                             <button class="filter-pill" onclick="filterDocuments('docx', this)">DOCX</button>
-                            <button class="filter-pill" onclick="filterDocuments('image', this)">Ảnh</button>
+                            <button class="filter-pill" onclick="filterDocuments('image', this)">nh</button>
                         </div>
                         <div style="display: flex; gap: 0.5rem; align-items: center;">
                             <select class="form-input" style="width: auto; padding: 0.5rem;" onchange="sortDocuments(this.value)">
-                                <option value="newest">Mới nhất</option>
-                                <option value="name">Tên</option>
-                                <option value="size">Kích thước</option>
+                                <option value="newest">Mi nht</option>
+                                <option value="name">Tn</option>
+                                <option value="size">Kch thc</option>
                             </select>
-                            <button class="btn btn-secondary" onclick="selectAllDocuments()" id="selectAllBtn">Chọn tất cả</button>
-                            <button class="btn btn-secondary hidden" onclick="batchDelete()" id="batchDeleteBtn">🗑️ Xóa đã chọn</button>
-                            <button class="btn btn-primary hidden" onclick="batchAnalyze()" id="batchAnalyzeBtn">🔍 Phân tích đã chọn</button>
+                            <button class="btn btn-secondary" onclick="selectAllDocuments()" id="selectAllBtn">Chn tt c</button>
+                            <button class="btn btn-secondary hidden" onclick="batchDelete()" id="batchDeleteBtn">🗑️ Xa  chn</button>
+                            <button class="btn btn-primary hidden" onclick="batchAnalyze()" id="batchAnalyzeBtn">🔍 Phn tch  chn</button>
                         </div>
                     </div>
 
@@ -3169,7 +3169,7 @@
                     </div>
 
                     <div id="documentsStats" style="margin-top: 1.5rem; padding: 1rem; background: var(--bg-secondary); border-radius: 8px; font-size: 0.875rem; color: var(--text-secondary);">
-                        📊 Tổng: <span id="totalDocs">0</span> văn bản | <span id="totalSize">0</span> MB
+                        📊 Tng: <span id="totalDocs">0</span> vn bn | <span id="totalSize">0</span> MB
                     </div>
                 </div>
             </div>
@@ -3181,19 +3181,19 @@
                         <input 
                             type="text" 
                             class="search-input-large" 
-                            placeholder="🔍 Tìm kiếm điều luật, nghị định, thông tư..." 
+                            placeholder="🔍 Tm kim iu lut, ngh nh, thng t..." 
                             id="searchInput"
                             onkeydown="if(event.key==='Enter') performSearch()"
                         >
                         <div class="domain-pills">
-                            <div class="domain-pill active" data-domain="" onclick="selectDomain('', this)">Tất cả</div>
-                            <div class="domain-pill" data-domain="lao_dong" onclick="selectDomain('lao_dong', this)">Lao động</div>
-                            <div class="domain-pill" data-domain="thue" onclick="selectDomain('thue', this)">Thuế</div>
-                            <div class="domain-pill" data-domain="doanh_nghiep" onclick="selectDomain('doanh_nghiep', this)">Doanh nghiệp</div>
-                            <div class="domain-pill" data-domain="dan_su" onclick="selectDomain('dan_su', this)">Dân sự</div>
-                            <div class="domain-pill" data-domain="hinh_su" onclick="selectDomain('hinh_su', this)">Hình sự</div>
-                            <div class="domain-pill" data-domain="dat_dai" onclick="selectDomain('dat_dai', this)">Đất đai</div>
-                            <div class="domain-pill" data-domain="hanh_chinh" onclick="selectDomain('hanh_chinh', this)">Hành chính</div>
+                            <div class="domain-pill active" data-domain="" onclick="selectDomain('', this)">Tt c</div>
+                            <div class="domain-pill" data-domain="lao_dong" onclick="selectDomain('lao_dong', this)">Lao ng</div>
+                            <div class="domain-pill" data-domain="thue" onclick="selectDomain('thue', this)">Thu</div>
+                            <div class="domain-pill" data-domain="doanh_nghiep" onclick="selectDomain('doanh_nghiep', this)">Doanh nghip</div>
+                            <div class="domain-pill" data-domain="dan_su" onclick="selectDomain('dan_su', this)">Dn s</div>
+                            <div class="domain-pill" data-domain="hinh_su" onclick="selectDomain('hinh_su', this)">Hnh s</div>
+                            <div class="domain-pill" data-domain="dat_dai" onclick="selectDomain('dat_dai', this)">t ai</div>
+                            <div class="domain-pill" data-domain="hanh_chinh" onclick="selectDomain('hanh_chinh', this)">Hnh chnh</div>
                         </div>
                     </div>
                 </div>
@@ -3207,24 +3207,24 @@
                 <div class="page-header">
                     <div class="breadcrumbs">
                         <div class="breadcrumb-item">
-                            <a href="#" class="breadcrumb-link" onclick="showPage('chat'); return false;">Trang chủ</a>
+                            <a href="#" class="breadcrumb-link" onclick="showPage('chat'); return false;">Trang ch</a>
                         </div>
                         <div class="breadcrumb-item">API</div>
                     </div>
-                    <div class="page-title">API & Tích hợp</div>
-                    <div class="page-description">Tích hợp Legal AI vào ứng dụng của bạn</div>
+                    <div class="page-title">API & Tch hp</div>
+                    <div class="page-description">Tch hp Legal AI vo ng dng ca bn</div>
                 </div>
                 <div class="page-content">
                     <div class="api-section">
                         <div class="api-section-title">API Keys</div>
                         <div class="api-keys-list" id="apiKeysList">
-                            <div style="color: var(--text-muted); font-size: 0.875rem;">Chưa có API key nào.</div>
+                            <div style="color: var(--text-muted); font-size: 0.875rem;">Cha c API key no.</div>
                         </div>
-                        <button class="btn btn-primary btn-small" onclick="createApiKey()">➕ Tạo API Key</button>
+                        <button class="btn btn-primary btn-small" onclick="createApiKey()">➕ To API Key</button>
                     </div>
 
                     <div class="api-section">
-                        <div class="api-section-title">Ví dụ sử dụng</div>
+                        <div class="api-section-title">V d s dng</div>
                         <div class="code-tabs">
                             <button class="code-tab active" onclick="showCodeTab('curl', this)">cURL</button>
                             <button class="code-tab" onclick="showCodeTab('python', this)">Python</button>
@@ -3236,7 +3236,7 @@
   -H "Authorization: Bearer YOUR_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
-    "question": "Thời hạn thử việc tối đa là bao nhiêu?"
+    "question": "Thi hn th vic ti a l bao nhiu?"
   }'</code></pre>
                         </div>
                         <div class="code-example hidden" id="codeExamplePython">
@@ -3251,7 +3251,7 @@ headers = {
 response = requests.post(
     "https://api.legalai.vn/v1/legal/ask",
     headers=headers,
-    json={"question": "Thời hạn thử việc tối đa?"}
+    json={"question": "Thi hn th vic ti a?"}
 )
 
 print(response.json())</code></pre>
@@ -3265,7 +3265,7 @@ print(response.json())</code></pre>
     'Content-Type': 'application/json'
   },
   body: JSON.stringify({
-    question: 'Thời hạn thử việc tối đa?'
+    question: 'Thi hn th vic ti a?'
   })
 });
 
@@ -3275,9 +3275,9 @@ console.log(data);</code></pre>
                     </div>
 
                     <div class="api-section">
-                        <div class="api-section-title">Thống kê sử dụng</div>
+                        <div class="api-section-title">Thng k s dng</div>
                         <div style="color: var(--text-secondary); font-size: 0.875rem;">
-                            Tháng này: <strong style="color: var(--text-primary);">0</strong> requests
+                            Thng ny: <strong style="color: var(--text-primary);">0</strong> requests
                         </div>
                     </div>
                 </div>
@@ -3288,20 +3288,20 @@ console.log(data);</code></pre>
                 <div class="page-header">
                     <div class="breadcrumbs">
                         <div class="breadcrumb-item">
-                            <a href="#" class="breadcrumb-link" onclick="showPage('chat'); return false;">Trang chủ</a>
+                            <a href="#" class="breadcrumb-link" onclick="showPage('chat'); return false;">Trang ch</a>
                         </div>
-                        <div class="breadcrumb-item">Cài đặt</div>
+                        <div class="breadcrumb-item">Ci t</div>
                     </div>
-                    <div class="page-title">Cài đặt</div>
-                    <div class="page-description">Quản lý thông tin tài khoản và cài đặt</div>
+                    <div class="page-title">Ci t</div>
+                    <div class="page-description">Qun l thng tin ti khon v ci t</div>
                 </div>
                 <div class="page-content">
                     <div class="settings-grid">
                         <div class="settings-card">
-                            <div class="settings-card-title">Thông tin cá nhân</div>
+                            <div class="settings-card-title">Thng tin c nhn</div>
                             <form class="settings-form" onsubmit="saveSettings(event)">
                                 <div class="form-group">
-                                    <label class="form-label">Họ tên</label>
+                                    <label class="form-label">H tn</label>
                                     <input type="text" class="form-input" id="settingsName">
                                 </div>
                                 <div class="form-group">
@@ -3309,16 +3309,16 @@ console.log(data);</code></pre>
                                     <input type="email" class="form-input" id="settingsEmail" disabled>
                                 </div>
                                 <div class="form-group">
-                                    <label class="form-label">Tên công ty</label>
+                                    <label class="form-label">Tn cng ty</label>
                                     <input type="text" class="form-input" id="settingsCompany">
                                 </div>
-                                <button type="submit" class="btn btn-primary btn-small">💾 Lưu thay đổi</button>
+                                <button type="submit" class="btn btn-primary btn-small">💾 Lu thay i</button>
                             </form>
                         </div>
 
                         <div class="settings-card">
-                            <div class="settings-card-title">Bảo mật</div>
-                            <button class="btn btn-secondary btn-small" onclick="logout()">🚪 Đăng xuất</button>
+                            <div class="settings-card-title">Bo mt</div>
+                            <button class="btn btn-secondary btn-small" onclick="logout()">🚪 ng xut</button>
                         </div>
                     </div>
                 </div>
@@ -3330,72 +3330,72 @@ console.log(data);</code></pre>
         <div id="uploadContractModal" class="modal-backdrop hidden" onclick="closeModalBackdrop(event, 'uploadContractModal')">
             <div class="modal" onclick="event.stopPropagation()">
                 <div class="modal-header">
-                    <div class="modal-title">Tải lên hợp đồng</div>
+                    <div class="modal-title">Ti ln hp ng</div>
                     <button class="modal-close" onclick="closeModal('uploadContractModal')">✕</button>
                 </div>
                 <form id="uploadContractForm" onsubmit="handleContractUpload(event)">
                     <div class="modal-body">
                         <div class="form-group">
-                            <label class="form-label">File hợp đồng (PDF, DOCX, hoặc ảnh)</label>
+                            <label class="form-label">File hp ng (PDF, DOCX, hoc nh)</label>
                             <div id="dropZone" class="drop-zone">
                                 <input type="file" id="contractFile" accept=".pdf,.docx,.doc,.png,.jpg,.jpeg,.txt" style="display:none" onchange="handleFileSelected(event)">
                                 <div id="dropZoneContent">
                                     <div style="font-size: 2rem; margin-bottom: 0.5rem;">📎</div>
-                                    <div>Kéo thả file vào đây hoặc <span style="color: var(--accent); cursor: pointer;" onclick="document.getElementById('contractFile').click()">chọn file</span></div>
-                                    <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.5rem;">AI sẽ tự động quét và điền thông tin</div>
+                                    <div>Ko th file vo y hoc <span style="color: var(--accent); cursor: pointer;" onclick="document.getElementById('contractFile').click()">chn file</span></div>
+                                    <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.5rem;">AI s t ng qut v in thng tin</div>
                                 </div>
                                 <div id="filePreview" class="hidden"></div>
                             </div>
                         </div>
                         <div id="aiAnalysisStatus" class="hidden" style="padding: 0.75rem 1rem; background: var(--accent-bg); border: 1px solid var(--accent); border-radius: 8px; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.75rem;">
                             <div class="spinner" style="width: 18px; height: 18px;"></div>
-                            <span style="color: var(--accent); font-size: 0.875rem;">🤖 AI đang phân tích hợp đồng...</span>
+                            <span style="color: var(--accent); font-size: 0.875rem;">🤖 AI ang phn tch hp ng...</span>
                         </div>
                         <div id="aiAnalysisDone" class="hidden" style="padding: 0.75rem 1rem; background: rgba(74, 222, 128, 0.1); border: 1px solid var(--success); border-radius: 8px; margin-bottom: 1rem;">
-                            <span style="color: var(--success); font-size: 0.875rem;">✅ AI đã tự động điền thông tin — kiểm tra và chỉnh sửa nếu cần</span>
+                            <span style="color: var(--success); font-size: 0.875rem;">✅ AI  t ng in thng tin — kim tra v chnh sa nu cn</span>
                         </div>
                         <div class="form-group">
-                            <label class="form-label required">Tên hợp đồng</label>
-                            <input type="text" class="form-input" id="contractTitle" required placeholder="AI sẽ tự động điền...">
+                            <label class="form-label required">Tn hp ng</label>
+                            <input type="text" class="form-input" id="contractTitle" required placeholder="AI s t ng in...">
                         </div>
                         <div class="form-group">
-                            <label class="form-label required">Loại hợp đồng</label>
+                            <label class="form-label required">Loi hp ng</label>
                             <select class="form-input" id="contractType" required>
-                                <option value="">Chọn loại hợp đồng</option>
-                                <option value="hop_dong_lao_dong">Hợp đồng lao động</option>
-                                <option value="hop_dong_dich_vu">Hợp đồng dịch vụ</option>
-                                <option value="hop_dong_thue">Hợp đồng thuê</option>
-                                <option value="hop_dong_mua_ban">Hợp đồng mua bán</option>
-                                <option value="hop_dong_hop_tac">Hợp đồng hợp tác</option>
-                                <option value="khac">Khác</option>
+                                <option value="">Chn loi hp ng</option>
+                                <option value="hop_dong_lao_dong">Hp ng lao ng</option>
+                                <option value="hop_dong_dich_vu">Hp ng dch v</option>
+                                <option value="hop_dong_thue">Hp ng thu</option>
+                                <option value="hop_dong_mua_ban">Hp ng mua bn</option>
+                                <option value="hop_dong_hop_tac">Hp ng hp tc</option>
+                                <option value="khac">Khc</option>
                             </select>
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Các bên tham gia</label>
-                            <input type="text" class="form-input" id="contractParties" placeholder="AI sẽ tự động điền...">
+                            <label class="form-label">Cc bn tham gia</label>
+                            <input type="text" class="form-input" id="contractParties" placeholder="AI s t ng in...">
                         </div>
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                             <div class="form-group">
-                                <label class="form-label">Ngày bắt đầu</label>
+                                <label class="form-label">Ngy bt u</label>
                                 <input type="date" class="form-input" id="contractStartDate">
                             </div>
                             <div class="form-group">
-                                <label class="form-label">Ngày kết thúc</label>
+                                <label class="form-label">Ngy kt thc</label>
                                 <input type="date" class="form-input" id="contractEndDate">
                             </div>
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Giá trị hợp đồng (VNĐ)</label>
+                            <label class="form-label">Gi tr hp ng (India)</label>
                             <input type="number" class="form-input" id="contractValue" placeholder="0">
                         </div>
                         <div id="aiSummary" class="hidden form-group">
-                            <label class="form-label">📝 Tóm tắt AI</label>
+                            <label class="form-label">📝 Tm tt AI</label>
                             <div style="padding: 0.75rem; background: var(--bg-tertiary); border-radius: 6px; font-size: 0.875rem; color: var(--text-secondary); line-height: 1.5;" id="aiSummaryText"></div>
                         </div>
                     </div>
                     <div class="modal-actions">
-                        <button type="button" class="btn btn-secondary" onclick="closeModal('uploadContractModal')">Hủy</button>
-                        <button type="submit" class="btn btn-primary" id="contractSubmitBtn">📤 Tải lên</button>
+                        <button type="button" class="btn btn-secondary" onclick="closeModal('uploadContractModal')">Hy</button>
+                        <button type="submit" class="btn btn-primary" id="contractSubmitBtn">📤 Ti ln</button>
                     </div>
                 </form>
             </div>
@@ -3405,7 +3405,7 @@ console.log(data);</code></pre>
         <div id="contractDetailModal" class="modal-backdrop hidden" onclick="closeModalBackdrop(event, 'contractDetailModal')">
             <div class="modal" onclick="event.stopPropagation()">
                 <div class="modal-header">
-                    <div class="modal-title" id="contractDetailTitle">Chi tiết hợp đồng</div>
+                    <div class="modal-title" id="contractDetailTitle">Chi tit hp ng</div>
                     <button class="modal-close" onclick="closeModal('contractDetailModal')">✕</button>
                 </div>
                 <div class="modal-body" id="contractDetailContent">
@@ -3418,7 +3418,7 @@ console.log(data);</code></pre>
         <div id="reviewResultModal" class="modal-backdrop hidden" onclick="closeModalBackdrop(event, 'reviewResultModal')">
             <div class="modal" onclick="event.stopPropagation()" style="max-width: 1200px;">
                 <div class="modal-header">
-                    <div class="modal-title">Kết quả rà soát AI</div>
+                    <div class="modal-title">Kt qu r sot AI</div>
                     <button class="modal-close" onclick="closeModal('reviewResultModal')">✕</button>
                 </div>
                 <div class="modal-body" id="reviewResultContent">
@@ -3452,9 +3452,9 @@ console.log(data);</code></pre>
         };
         
         const categoryNames = {
-            'hop_dong': 'Hợp đồng',
-            'hanh_chinh': 'Hành chính',
-            'noi_bo': 'Nội bộ'
+            'hop_dong': 'Hp ng',
+            'hanh_chinh': 'Hnh chnh',
+            'noi_bo': 'Ni b'
         };
 
         // ===== THEME TOGGLE =====
@@ -3465,7 +3465,7 @@ console.log(data);</code></pre>
             html.setAttribute('data-theme', newTheme);
             document.getElementById('themeIcon').textContent = newTheme === 'light' ? '☀️' : '🌙';
             localStorage.setItem('theme', newTheme);
-            showToast(`Đã chuyển sang ${newTheme === 'light' ? 'sáng' : 'tối'} mode`, 'success');
+            showToast(` chuyn sang ${newTheme === 'light' ? 'sng' : 'ti'} mode`, 'success');
         }
 
         // Load theme from localStorage

@@ -757,7 +757,7 @@
 
                     <div class="card">
                         <div class="card-header">
-                            <h2 class="card-title">Usage Trend (30 days)</h2>
+                            <h2 class="card-title">Usage Trend (30 daysss)</h2>
                         </div>
                         <div class="chart-container">
                             <canvas id="usageChart"></canvas>
@@ -1022,7 +1022,7 @@
                         </div>
                         <div class="modal-body flex gap-2">
                             <button class="btn btn-secondary" onclick="runCleanup()">
-                                🧹 Delete old data (>30 days)
+                                🧹 Delete old data (>30 daysss)
                             </button>
                         </div>
                     </div>
@@ -1449,7 +1449,7 @@
         }
 
         async function runCleanup() {
-            if (!confirm('Delete all soft-deleted contracts older than 30 days?')) return;
+            if (!confirm('Delete all soft-deleted contracts older than 30 daysss?')) return;
             try {
                 const result = await apiCall('/v1/platform/maintenance/cleanup', { method: 'POST' });
                 alert(result.message);

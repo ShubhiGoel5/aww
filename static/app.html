@@ -1823,9 +1823,9 @@
                         <div class="analytics-header">
                             <h2>📈 Usage Analytics</h2>
                             <select id="analyticsPeriod" onchange="refreshAnalytics()">
-                                <option value="7">7 days</option>
-                                <option value="30" selected>30 days</option>
-                                <option value="90">90 days</option>
+                                <option value="7">7 daysss</option>
+                                <option value="30" selected>30 daysss</option>
+                                <option value="90">90 daysss</option>
                             </select>
                         </div>
                         <div class="analytics-summary">
@@ -1972,7 +1972,7 @@
                     <div class="notification-panel hidden" id="notifPanel"></div>
                     <button onclick="exportCurrentChat()" title="Export chat">📥</button>
                     <button onclick="startNewChat()" title="New chat">➕</button>
-                    <button onclick="toggleChatPanel()" title="Ẩn chat">◀</button>
+                    <button onclick="toggleChatPanel()" title="Hide chat">◀</button>
                 </div>
             </div>
 
@@ -2874,7 +2874,7 @@ console.log(await resp.json());</code></pre>
                             </svg>
                             <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center;">
                                 <div id="riskScore" style="font-size: 2.5rem; font-weight: 800; line-height: 1;">0</div>
-                                <div id="riskLabel" style="font-size: 0.75rem; font-weight: 600; margin-top: 4px;">THẤP</div>
+                                <div id="riskLabel" style="font-size: 0.75rem; font-weight: 600; margin-top: 4px;">LOW</div>
                             </div>
                         </div>
                     </div>
@@ -3210,16 +3210,16 @@ console.log(await resp.json());</code></pre>
             let color, label;
             if (score <= 25) {
                 color = 'var(--success)';
-                label = 'THẤP';
+                label = 'LOW';
             } else if (score <= 50) {
                 color = 'var(--warning)';
-                label = 'TRUNG BÌNH';
+                label = 'MEDIUM';
             } else if (score <= 75) {
                 color = 'orange';
                 label = 'CAO';
             } else {
                 color = 'var(--danger)';
-                label = 'NGHIÊM TRỌNG';
+                label = 'CRITICAL';
             }
             
             // Animate
@@ -3414,7 +3414,7 @@ console.log(await resp.json());</code></pre>
                 document.getElementById('settingsEmail').value = currentUser.email || '';
                 document.getElementById('settingsCompany').value = company;
                 
-                // Update quota hiển thị
+                // Update quota display
                 const quotaEl = document.getElementById('settingsQuota');
                 if (quotaEl) {
                     quotaEl.textContent = `${used}/${total}`;
@@ -3446,7 +3446,7 @@ console.log(await resp.json());</code></pre>
             const groups = { today: [], yesterday: [], week: [], older: [] };
             chatSessions.forEach(session => {
                 const d = new Date(session.created_at);
-                const day = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+                const days = new Date(d.getFullYear(), d.getMonth(), d.getDate());
                 if (day.getTime() === today.getTime()) groups.today.push(session);
                 else if (day.getTime() === yesterday.getTime()) groups.yesterday.push(session);
                 else if (d >= sevenDaysAgo) groups.week.push(session);
@@ -3456,7 +3456,7 @@ console.log(await resp.json());</code></pre>
             const renderGroup = (label, items) => { if (!items.length) return ''; return `<div class="chat-history-group-label">${label}</div>` + items.map(s => renderChatHistoryItem(s)).join(''); };
             html += renderGroup('Today', groups.today);
             html += renderGroup('Yesterday', groups.yesterday);
-            html += renderGroup('Last 7 days', groups.week);
+            html += renderGroup('Last 7 daysss', groups.week);
             html += renderGroup('Older', groups.older);
             container.innerHTML = html;
         }
@@ -3807,7 +3807,7 @@ console.log(await resp.json());</code></pre>
         }
 
         function renderDocumentContent(text) {
-            // Normalize Unicode (fix decomposed Vietnamese diacritics)
+            // Normalize Unicode (NFC) for consistent text rendering
             if (text.normalize) text = text.normalize('NFC');
             // Format contract/legal document — paper-style display
             var html = escapeHtml(text);
@@ -3816,15 +3816,15 @@ console.log(await resp.json());</code></pre>
             // Remove leftover asterisks
             html = html.replace(/\*\*/g, '');
             // All-caps lines (titles) — must be before headings
-            html = html.replace(/^([A-ZÀ-ỸĐĂÂÊÔƠƯ\s,]{15,})$/gm, function(m) {
+            html = html.replace(/^([A-Z-\s,]{15,})$/gm, function(m) {
                 return '<h2 class="doc-title">' + m.trim() + '</h2>';
             });
-            // Headers: ĐIỀU/Điều/CHƯƠNG
-            html = html.replace(/^((?:ĐIỀU|Điều|CHƯƠNG|Chương|MỤC|Mục|PHẦN|Phần)\s*\d*[.:]?.*)$/gm, '<h3 class="doc-heading">$1</h3>');
+            // Headers: ARTICLE/Article/CHAPTER
+            html = html.replace(/^((?:ARTICLE|Article|CHAPTER|Chapter|SECTION|Section|PART|Part)\s*\d*[.:]?.*)$/gm, '<h3 class="doc-heading">$1</h3>');
             // Numbered items: 1.1, 1.2
             html = html.replace(/^(\d+\.\d+\.?\s)/gm, '<span class="doc-num">$1</span>');
             // Sub-items: a), b), c)
-            html = html.replace(/^(\s*[a-zđ]\)\s)/gm, '<span class="doc-sub-num">$1</span>');
+            html = html.replace(/^(\s*[a-z]\)\s)/gm, '<span class="doc-sub-num">$1</span>');
             // Dash bullets
             html = html.replace(/^(\s*[-–•]\s)/gm, '<span class="doc-bullet">•&nbsp;</span>');
             // Paragraphs
@@ -4055,7 +4055,7 @@ console.log(await resp.json());</code></pre>
 
         function getContractStatus(c) {
             if (!c.end_date) return 'active';
-            const days = Math.floor((new Date(c.end_date) - new Date()) / 86400000);
+            const dayss = Math.floor((new Date(c.end_date) - new Date()) / 86400000);
             if (days < 0) return 'expired';
             if (days <= 30) return 'pending';
             return 'active';
@@ -4570,12 +4570,12 @@ console.log(await resp.json());</code></pre>
                 if (item.timeline_status === 'overdue') { dotClass = 'overdue'; cardClass = ' overdue'; }
                 else if (item.timeline_status === 'expiring_soon') { dotClass = 'expiring-soon'; cardClass = ' expiring-soon'; }
 
-                var daysText = '';
+                var dayssText = '';
                 if (item.days_remaining !== null && item.days_remaining !== undefined) {
-                    if (item.days_remaining < 0) daysText = '<span style="color: var(--danger); font-weight: 600;">Overdue by ' + Math.abs(item.days_remaining) + ' days</span>';
-                    else if (item.days_remaining === 0) daysText = '<span style="color: var(--warning); font-weight: 600;">Expires today!</span>';
-                    else if (item.days_remaining <= 30) daysText = '<span style="color: var(--warning);">Remaining ' + item.days_remaining + ' days</span>';
-                    else daysText = 'Remaining ' + item.days_remaining + ' days';
+                    if (item.days_remaining < 0) dayssText = '<span style="color: var(--danger); font-weight: 600;">Overdue by ' + Math.abs(item.days_remaining) + ' dayss</span>';
+                    else if (item.days_remaining === 0) dayssText = '<span style="color: var(--warning); font-weight: 600;">Expires today!</span>';
+                    else if (item.days_remaining <= 30) dayssText = '<span style="color: var(--warning);">Remaining ' + item.days_remaining + ' dayss</span>';
+                    else dayssText = 'Remaining ' + item.days_remaining + ' dayss';
                 }
 
                 timelineItem.innerHTML = '<div class="timeline-dot ' + dotClass + '"></div>' +
@@ -4584,7 +4584,7 @@ console.log(await resp.json());</code></pre>
                     '<div class="timeline-name">' + escapeHtml(item.name || 'Contracts') + '</div>' +
                     '<div class="timeline-meta">' +
                     '<span>' + getContractTypeText(item.contract_type) + '</span>' +
-                    (daysText ? '<span>' + daysText + '</span>' : '') +
+                    (daysText ? '<span>' + dayssText + '</span>' : '') +
                     '<button class="btn btn-secondary btn-small" onclick="event.stopPropagation(); openContractTab(\'' + item.id + '\')">View</button>' +
                     '</div></div>';
                 container.appendChild(timelineItem);
@@ -4976,7 +4976,7 @@ console.log(await resp.json());</code></pre>
         
         function connectOAuth(provider) {
             // OAuth flow placeholder
-            showToast(`OAuth cho ${provider} chưa được triển khai. Please enter an API key thủ công.`, 'info');
+            showToast(`OAuth cho ${provider} cha was deployed. Please enter an API key manually.`, 'info');
             
             // In production, this would redirect to OAuth flow:
             // window.location.href = `/auth/oauth/${provider}`;
@@ -5390,18 +5390,18 @@ console.log(await resp.json());</code></pre>
             // Check expiring contracts
             allContracts.forEach(function(c) {
                 if (!c.end_date) return;
-                var days = Math.floor((new Date(c.end_date) - new Date()) / 86400000);
-                if (days >= 0 && days <= 30) {
+                var dayss = Math.floor((new Date(c.end_date) - new Date()) / 86400000);
+                if (days >= 0 && dayss <= 30) {
                     notifications.push({
                         icon: '⚠️',
-                        text: (c.name || c.title || 'Contract') + ' expiring soon (' + days + ' days)',
+                        text: (c.name || c.title || 'Contract') + ' expiring soon (' + dayss + ' dayss)',
                         action: function() { useSuggestion('Check contract ' + (c.name || c.title) + ' expiring soon'); }
                     });
                 }
                 if (days < 0) {
                     notifications.push({
                         icon: '🔴',
-                        text: (c.name || c.title || 'Contract') + ' expired ' + Math.abs(days) + ' days',
+                        text: (c.name || c.title || 'Contract') + ' expired ' + Math.abs(days) + ' dayss',
                         action: function() { useSuggestion('Contracts ' + (c.name || c.title) + ' has expired — what should I do?'); }
                     });
                 }
@@ -5782,13 +5782,13 @@ console.log(await resp.json());</code></pre>
                 byType[type] = (byType[type] || 0) + 1;
 
                 if (c.end_date) {
-                    var days = Math.floor((new Date(c.end_date) - new Date()) / 86400000);
+                    var dayss = Math.floor((new Date(c.end_date) - new Date()) / 86400000);
                     if (days < 0) {
                         expired++;
-                        riskItems.push({ severity: 'critical', name: c.name || c.title || 'Contract', message: 'Expired ' + Math.abs(days) + ' days', type: 'expired', id: c.id });
+                        riskItems.push({ severity: 'critical', name: c.name || c.title || 'Contract', message: 'Expired ' + Math.abs(days) + ' dayss', type: 'expired', id: c.id });
                     } else if (days <= 30) {
                         expiringSoon++;
-                        riskItems.push({ severity: 'warning', name: c.name || c.title || 'Contract', message: 'Remaining ' + days + ' days', type: 'expiring', id: c.id });
+                        riskItems.push({ severity: 'warning', name: c.name || c.title || 'Contract', message: 'Remaining ' + dayss + ' dayss', type: 'expiring', id: c.id });
                     }
                 }
             });
@@ -5844,9 +5844,9 @@ console.log(await resp.json());</code></pre>
         async function refreshAnalytics() {
             var token = localStorage.getItem('token');
             var periodEl = document.getElementById('analyticsPeriod');
-            var days = periodEl ? periodEl.value : 30;
+            var dayss = periodEl ? periodEl.value : 30;
             try {
-                var resp = await fetch('/v1/analytics?days=' + days, {
+                var resp = await fetch('/v1/analytics?days=' + dayss, {
                     headers: { 'Authorization': 'Bearer ' + token }
                 });
                 if (!resp.ok) {
@@ -6220,11 +6220,11 @@ console.log(await resp.json());</code></pre>
             }
             var expiring = allContracts.filter(function(c) {
                 if (!c.end_date) return false;
-                var days = Math.floor((new Date(c.end_date) - new Date()) / 86400000);
-                return days >= 0 && days <= 30;
+                var dayss = Math.floor((new Date(c.end_date) - new Date()) / 86400000);
+                return dayss >= 0 && dayss <= 30;
             });
             if (expiring.length > 0) {
-                insights.push({ icon: '⏰', title: expiring.length + ' contracts expiring soon', description: 'Within the next 30 days', severity: 'warning', actionType: 'open_contracts' });
+                insights.push({ icon: '⏰', title: expiring.length + ' contracts expiring soon', description: 'Within the next 30 daysss', severity: 'warning', actionType: 'open_contracts' });
             }
             if (allContracts.length === 0) {
                 insights.push({ icon: '📄', title: 'No contracts yet', description: 'Upload your first contract to get started', severity: 'info', actionType: 'open_contracts' });
@@ -6335,7 +6335,7 @@ console.log(await resp.json());</code></pre>
 
         function exportChatFromDOM() {
             var messages = document.querySelectorAll('#chatMessages .message');
-            if (messages.length === 0) { showToast('Chưa có messages', 'info'); return; }
+            if (messages.length === 0) { showToast('No messages', 'info'); return; }
             var md = '# Conversation - AI Legal Agent\n\nExported at: ' + new Date().toLocaleString('en-US') + '\n\n---\n\n';
             messages.forEach(function(msg) {
                 var isUser = msg.classList.contains('message-user');
@@ -6433,7 +6433,7 @@ console.log(await resp.json());</code></pre>
             } catch (e) {}
 
             var firstDay = new Date(calYear, calMonth, 1).getDay();
-            var daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+            var dayssInMonth = new Date(calYear, calMonth + 1, 0).getDate();
             var today = new Date();
 
             var html = '';
@@ -6442,12 +6442,12 @@ console.log(await resp.json());</code></pre>
                 html += '<div class="cal-day other-month">' + (prevMonthDays - i) + '</div>';
             }
 
-            for (var d = 1; d <= daysInMonth; d++) {
+            for (var d = 1; d <= dayssInMonth; d++) {
                 var dateStr = calYear + '-' + String(calMonth + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0');
                 var isToday = today.getFullYear() === calYear && today.getMonth() === calMonth && today.getDate() === d;
-                var dayEvents = events.filter(function(e) { return e.date === dateStr; });
-                var hasStart = dayEvents.some(function(e) { return e.type === 'start'; });
-                var hasEnd = dayEvents.some(function(e) { return e.type === 'end'; });
+                var daysEvents = events.filter(function(e) { return e.date === dateStr; });
+                var hasStart = daysEvents.some(function(e) { return e.type === 'start'; });
+                var hasEnd = daysEvents.some(function(e) { return e.type === 'end'; });
 
                 var classes = 'cal-day';
                 if (isToday) classes += ' today';
@@ -6455,11 +6455,11 @@ console.log(await resp.json());</code></pre>
                 else if (hasStart) classes += ' has-event has-start';
                 else if (hasEnd) classes += ' has-event has-end';
 
-                var titles = dayEvents.map(function(e) { return e.title; }).join(', ');
+                var titles = daysEvents.map(function(e) { return e.title; }).join(', ');
                 html += '<div class="' + classes + '" onclick="showDayEvents(\'' + dateStr + '\')" title="' + escapeHtml(titles) + '">' + d + '</div>';
             }
 
-            var totalCells = firstDay + daysInMonth;
+            var totalCells = firstDay + dayssInMonth;
             var remaining = 7 - (totalCells % 7);
             if (remaining < 7) {
                 for (var j = 1; j <= remaining; j++) {
@@ -6467,8 +6467,8 @@ console.log(await resp.json());</code></pre>
                 }
             }
 
-            var daysEl = document.getElementById('calendarDays');
-            if (daysEl) daysEl.innerHTML = html;
+            var dayssEl = document.getElementById('calendarDays');
+            if (daysEl) dayssEl.innerHTML = html;
 
             var eventsEl = document.getElementById('calendarEventsList');
             if (eventsEl) {
@@ -6477,18 +6477,18 @@ console.log(await resp.json());</code></pre>
                     var warnClass = e.type === 'end' && e.days_left <= 30 ? 'end-warning' : '';
                     var badge = '';
                     if (e.days_left !== undefined) {
-                        badge = '<div class="cal-event-badge">' + (e.days_left > 0 ? 'Remaining ' + e.days_left + ' days' : 'Đã hết hạn') + '</div>';
+                        badge = '<div class="cal-event-badge">' + (e.days_left > 0 ? 'Remaining ' + e.days_left + ' dayss' : 'Expired') + '</div>';
                     }
                     return '<div class="cal-event ' + e.type + ' ' + warnClass + '" onclick="openContractTab(\'' + e.contract_id + '\')">' +
                         '<div class="cal-event-date">' + e.date.slice(5) + '</div>' +
                         '<div class="cal-event-title">' + escapeHtml(e.title) + '</div>' +
                         badge + '</div>';
-                }).join('') || '<div style="text-align:center;padding:1.5rem;color:var(--text-muted)">None sự kiện this month này</div>';
+                }).join('') || '<div style="text-align:center;padding:1.5rem;color:var(--text-muted)">None events this month</div>';
             }
         }
 
         function showDayEvents(dateStr) {
-            // Scroll to events list for that day
+            // Scroll to events list for that days
             var eventsEl = document.getElementById('calendarEvents');
             if (eventsEl) eventsEl.scrollIntoView({ behavior: 'smooth' });
         }
@@ -6498,7 +6498,7 @@ console.log(await resp.json());</code></pre>
             var tabId = 'audit-log';
             var existing = openTabs.find(function(t) { return t.id === tabId; });
             if (!existing) {
-                openTabs.push({ id: tabId, title: 'Nhật ký', icon: '📋', type: 'audit-log' });
+                openTabs.push({ id: tabId, title: 'Audit log', icon: '📋', type: 'audit-log' });
             }
             renderTabs();
             switchTab(tabId);
@@ -6515,7 +6515,7 @@ console.log(await resp.json());</code></pre>
                 var resp = await fetch(url, { headers: { 'Authorization': 'Bearer ' + token } });
                 if (!resp.ok) {
                     var el = document.getElementById('auditTimeline');
-                    if (el) el.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--text-muted)">Chưa có hoạt động</div>';
+                    if (el) el.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--text-muted)">No activity</div>';
                     return;
                 }
                 var data = await resp.json();
@@ -6523,7 +6523,7 @@ console.log(await resp.json());</code></pre>
                 var actionLabels = {
                     login: '🔐 Login', upload: '📤 Upload', chat: '💬 Chat AI',
                     export: '📥 Export file', delete: '🗑️ Delete', view: '👁️ View',
-                    create: '✨ Tạo mới', update: '✏️ Update'
+                    create: '✨ Create new', update: '✏️ Update'
                 };
 
                 var el = document.getElementById('auditTimeline');
@@ -6536,11 +6536,11 @@ console.log(await resp.json());</code></pre>
                             '<div class="audit-action">' + (actionLabels[l.action] || l.action || '') + ' ' + (l.resource_type || '') + '</div>' +
                             '<div class="audit-time">' + (l.created_at ? new Date(l.created_at).toLocaleString('en-US') : '') + '</div>' +
                             '</div></div>';
-                    }).join('') || '<div style="text-align:center;padding:2rem;color:var(--text-muted)">Chưa có hoạt động</div>';
+                    }).join('') || '<div style="text-align:center;padding:2rem;color:var(--text-muted)">No activity</div>';
                 }
             } catch (e) {
                 var el = document.getElementById('auditTimeline');
-                if (el) el.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--text-muted)">Chưa có hoạt động</div>';
+                if (el) el.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--text-muted)">No activity</div>';
             }
         }
 
@@ -6621,10 +6621,10 @@ console.log(await resp.json());</code></pre>
                         });
                     }
                     renderBatchFiles();
-                    showToast('Upload xong: ' + (data.success || 0) + '/' + (data.total || batchFiles.length) + ' thành công', data.failed > 0 ? 'warning' : 'success');
+                    showToast('Upload xong: ' + (data.success || 0) + '/' + (data.total || batchFiles.length) + ' successful', data.failed > 0 ? 'warning' : 'success');
                     if (data.success > 0) { loadContracts(); }
                 } else {
-                    showToast('Lỗi upload', 'error');
+                    showToast('Upload error', 'error');
                     batchFiles.forEach(function(bf) { bf.status = 'error'; });
                     renderBatchFiles();
                 }
@@ -6661,7 +6661,7 @@ console.log(await resp.json());</code></pre>
                         '</div>' +
                         '<span style="font-size:0.7rem;color:var(--text-muted)">' + escapeHtml(r.type || '') + '</span>' +
                         '</div>';
-                }).join('') || '<div style="padding:1rem;text-align:center;color:var(--text-muted)">Không tìm thấy</div>';
+                }).join('') || '<div style="padding:1rem;text-align:center;color:var(--text-muted)">Not found</div>';
 
                 // Append to existing results
                 resultsEl.insertAdjacentHTML('beforeend', html);
@@ -6759,7 +6759,7 @@ console.log(await resp.json());</code></pre>
         </button>
         <button class="mobile-tab-item" onclick="switchMobileTab('more')">
             <span class="tab-icon">⋯</span>
-            <span>Thêm</span>
+            <span>Add</span>
         </button>
     </div>
 <script>

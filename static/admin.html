@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="en-IN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -2019,7 +2019,7 @@
                             <span class="text-xs">${c.used_quota || 0}/${c.monthly_quota || 0}</span>
                         </td>
                         <td><span class="badge ${isActive ? 'active' : 'inactive'}">${isActive ? 'Active' : 'Inactive'}</span></td>
-                        <td class="text-xs text-muted">${new Date(c.created_at).toLocaleDateString('vi-VN')}</td>
+                        <td class="text-xs text-muted">${new Date(c.created_at).toLocaleDateString('en-IN')}</td>
                         <td onclick="event.stopPropagation()">
                             <div class="flex gap-1">
                                 <button class="btn btn-ghost btn-xs" onclick="viewCompany('${c.id}')">Edit</button>
@@ -2427,7 +2427,7 @@
                 const code = log.status_code || 0;
                 return `
                     <tr>
-                        <td class="text-xs font-mono" style="white-space:nowrap;">${new Date(log.created_at).toLocaleString('vi-VN')}</td>
+                        <td class="text-xs font-mono" style="white-space:nowrap;">${new Date(log.created_at).toLocaleString('en-IN')}</td>
                         <td class="text-xs">${log.user_email || log.company_name || '—'}</td>
                         <td><code class="text-xs" style="color:var(--text-primary);">${log.endpoint || '—'}</code></td>
                         <td><span class="badge ${httpBadgeClass(code)}">${code || '—'}</span></td>
@@ -2654,7 +2654,7 @@
                             <button class="btn btn-ghost btn-xs" onclick="deleteAnnouncement('${a.id}')" style="color:var(--danger);">Delete</button>
                         </div>
                         <div class="announcement-meta">
-                            ${new Date(a.created_at).toLocaleString('vi-VN')} · Target: ${a.target} · By: ${a.author_name || 'Admin'}
+                            ${new Date(a.created_at).toLocaleString('en-IN')} · Target: ${a.target} · By: ${a.author_name || 'Admin'}
                         </div>
                         <div class="announcement-text">${a.content}</div>
                     </div>
