@@ -113,11 +113,7 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="User not found or inactive"
             )
-        
-        # Update last login
-        cur.execute("UPDATE users SET last_login_at = now() WHERE id = %s", (user_id,))
-        conn.commit()
-        
+
         return dict(user)
 
 async def get_current_active_user(current_user: Dict = Depends(get_current_user)) -> Dict:

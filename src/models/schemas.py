@@ -27,16 +27,16 @@ class AgentType(str, Enum):
 
 
 class LegalDomain(str, Enum):
-    lao_dong = "lao_dong"
-    doanh_nghiep = "doanh_nghiep"
-    dan_su = "dan_su"
-    thuong_mai = "thuong_mai"
-    thue = "thue"
-    dat_dai = "dat_dai"
-    dau_tu = "dau_tu"
-    bhxh = "bhxh"
-    atvs_ld = "atvs_ld"
-    so_huu_tri_tue = "so_huu_tri_tue"
+    labour = "labour"
+    corporate = "corporate"
+    civil = "civil"
+    commercial = "commercial"
+    tax = "tax"
+    property = "property"
+    investment = "investment"
+    constitutional = "constitutional"
+    criminal = "criminal"
+    it_cyber = "it_cyber"
     other = "other"
 
 
@@ -47,16 +47,7 @@ class RiskLevel(str, Enum):
     critical = "CRITICAL"
 
 
-# === Legal Q&A ===
-
-class LegalQuestionRequest(BaseModel):
-    question: str = Field(..., min_length=5, max_length=2000)
-    context: Optional[dict] = None
-    domains: Optional[list[LegalDomain]] = None
-    include_citations: bool = True
-    include_related: bool = True
-    language: str = "vi"
-
+# === Citations (used by contract review and agent responses) ===
 
 class Citation(BaseModel):
     law_title: str
@@ -66,15 +57,6 @@ class Citation(BaseModel):
     text: str
     effective_date: Optional[str] = None
     status: str = "active"
-
-
-class LegalAnswerResponse(BaseModel):
-    answer: str
-    confidence: float = Field(ge=0, le=1)
-    citations: list[Citation] = []
-    related_topics: list[str] = []
-    disclaimer: str = "This advice is for reference purposes only. Please consult a qualified advocate for specific legal matters."
-    usage: dict = {}
 
 
 # === Contract Review ===
@@ -102,49 +84,6 @@ class ContractReviewResponse(BaseModel):
     issues: list[ContractIssue] = []
     missing_clauses: list[str] = []
     compliance_status: dict = {}
-
-
-# === Law Search ===
-
-class LawSearchRequest(BaseModel):
-    query: str = Field(..., min_length=2, max_length=500)
-    domains: Optional[list[LegalDomain]] = None
-    law_type: Optional[str] = None
-    status: Optional[str] = "active"
-    limit: int = Field(default=10, ge=1, le=50)
-
-
-class LawChunkResult(BaseModel):
-    law_title: str
-    law_number: str
-    article: Optional[str] = None
-    clause: Optional[str] = None
-    content: str
-    relevance_score: float
-    status: str
-
-
-class LawSearchResponse(BaseModel):
-    results: list[LawChunkResult]
-    total: int
-    query: str
-
-
-# === Chat ===
-
-class ChatMessageRequest(BaseModel):
-    message: str = Field(..., min_length=1, max_length=5000)
-    session_id: Optional[UUID] = None  # create new if None
-    agent_type: AgentType = AgentType.qa
-
-
-class ChatMessageResponse(BaseModel):
-    session_id: UUID
-    message_id: UUID
-    role: str = "assistant"
-    content: str
-    citations: list[Citation] = []
-    confidence: Optional[float] = None
 
 
 # === Usage ===

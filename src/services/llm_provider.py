@@ -103,6 +103,44 @@ class GroqProvider:
         yield result
 
 
+class GeminiProvider(GroqProvider):
+    """Gemini cloud LLM provider using OpenAI-compatible endpoint."""
+    
+    def __init__(self, base_url: str = None, model: str = None, api_key: str = None):
+        from openai import OpenAI
+        self.base_url = base_url or os.getenv("GEMINI_BASE_URL", "https://generativelanguage.googleapis.com/v1beta/openai/")
+        self.model = model or os.getenv("GEMINI_MODEL", "gemini-2.0-flash")
+        self.api_key = api_key or os.getenv("GEMINI_API_KEY", "")
+        
+        if not self.api_key:
+            raise ValueError("GEMINI_API_KEY environment variable is required. Get a free key at https://aistudio.google.com/")
+        
+        self.client = OpenAI(api_key=self.api_key, base_url=self.base_url)
+
+
+class FallbackProvider:
+    """Tries Gemini first, falls back to Groq (Llama 3.1 8B) on failure."""
+    def __init__(self):
+        pass
+
+    async def chat(self, messages, system="", max_tokens=4096, tools=None):
+        try:
+            gemini = GeminiProvider()
+            logger.info(f"Attempting LLM call with Gemini ({gemini.model})...")
+            return await gemini.chat(messages, system, max_tokens, tools)
+        except Exception as e:
+            logger.warning(f"Gemini API failed or key missing ({e}). Falling back to Groq...")
+            # Fallback to Groq with Llama 3.1 8B
+            groq = GroqProvider(model="llama-3.1-8b-instant")
+            logger.info(f"Attempting LLM fallback with Groq ({groq.model})...")
+            return await groq.chat(messages, system, max_tokens, tools)
+
+    async def chat_stream(self, messages, system="", max_tokens=4096, tools=None):
+        result = await self.chat(messages, system, max_tokens, tools)
+        yield result
+
+
+
 # Keep backward compatibility alias
 OllamaProvider = GroqProvider
 
@@ -113,9 +151,9 @@ class LLMProviderManager:
     def __init__(self, db_connection=None):
         self.db = db_connection
     
-    def get_company_provider(self, company_id: str) -> GroqProvider:
-        """Always returns Groq provider."""
-        return GroqProvider()
+    def get_company_provider(self, company_id: str) -> FallbackProvider:
+        """Returns the robust fallback provider (Gemini -> Groq)."""
+        return FallbackProvider()
     
     @staticmethod
     def list_providers():
@@ -143,7 +181,7 @@ async def call_llm_simple(system_prompt: str, user_message: str, max_tokens: int
     Returns {"content": str, "input_tokens": int, "output_tokens": int, "model": str}
     Used by routes (contracts, documents, templates) that need a quick LLM call.
     """
-    provider = GroqProvider()
+    provider = FallbackProvider()
     
     messages = [{"role": "user", "content": user_message}]
     

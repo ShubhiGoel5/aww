@@ -29,13 +29,11 @@ def _content_type(filename: str) -> str:
 
 
 def _auth_headers() -> dict:
-    """Build auth headers — supports both JWT (eyJ...) and new sb_ key formats"""
-    headers = {"apikey": SUPABASE_SERVICE_KEY}
-    if SUPABASE_SERVICE_KEY.startswith("eyJ"):
-        headers["Authorization"] = f"Bearer {SUPABASE_SERVICE_KEY}"
-    else:
-        headers["Authorization"] = f"Bearer {SUPABASE_SERVICE_KEY}"
-    return headers
+    """Build auth headers for Supabase Storage requests."""
+    return {
+        "apikey": SUPABASE_SERVICE_KEY,
+        "Authorization": f"Bearer {SUPABASE_SERVICE_KEY}",
+    }
 
 
 async def upload_file(file_bytes: bytes, company_id: str, filename: str) -> dict:

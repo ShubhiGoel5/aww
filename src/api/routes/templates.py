@@ -126,6 +126,7 @@ DEFAULT_TEMPLATES = [
             "deposit": {"label": "Security Deposit (INR)", "type": "number", "required": True},
             "duration": {"label": "Lease Term", "type": "text", "required": True},
         }
+    }
 ]
 
 # ============================================

@@ -285,8 +285,10 @@ async def verify_api_key(
                         if user["used_quota"] >= user["monthly_quota"]:
                             raise HTTPException(status_code=429, detail="Monthly quota exceeded")
                         return {**dict(user), "permissions": ["read","ask","review","draft"], "rate_limit": 60}
-        except Exception:
-            pass
+        except HTTPException:
+            raise
+        except Exception as e:
+            print(f"Bearer token verification failed: {e}")
     
     if not x_api_key:
         raise HTTPException(status_code=401, detail="API key or Bearer token required")
@@ -377,8 +379,8 @@ async def call_llm(system_prompt: str, user_message: str, max_tokens: int = 4096
         usage = result.get("usage", {})
         return {
             "content": text,
-            "input_tokens": usage.get("input", 0),
-            "output_tokens": usage.get("output", 0),
+            "input_tokens": usage.get("input_tokens", 0),
+            "output_tokens": usage.get("output_tokens", 0),
             "model": result.get("model", provider.model)
         }
     except Exception as e:
@@ -607,8 +609,8 @@ def multi_query_search(question: str, domains: Optional[List[str]] = None, limit
     # Phase 1.5: Synonym expansion search
     synonyms = expand_synonyms(keywords)
     for syn_term in synonyms[:2]:
-        sp = syn_term  # Use the expanded term directly as search phrase
-        if True:
+        sp = syn_term
+        if sp:  # Only search if we have a non-empty term
             domain_filter = ""
             params = [f"%{sp}%"]
             if domains:
@@ -712,8 +714,6 @@ legal_agent.init_agent(
     get_db_fn=get_db,
     multi_query_search_fn=multi_query_search,
     search_laws_fn=search_laws,
-    detect_domain_fn=detect_domain,
-    fetch_company_context_fn=fetch_company_context,
     llm_provider_manager_fn=llm_manager
 )
 
@@ -1302,7 +1302,7 @@ QUESTION: {query.question}"""
                     cur.execute("""
                         INSERT INTO messages (session_id, company_id, role, content, tokens_used, model)
                         VALUES (%s, %s, 'user', %s, 0, '')
-                    """, (saved_session_id, company["company_id"], actual_question))
+                    """, (saved_session_id, company["company_id"], query.question))
 
                     cur.execute("""
                         INSERT INTO messages (session_id, company_id, role, content, citations, confidence, tokens_used, model)
@@ -1624,9 +1624,13 @@ async def search(q: str, domains: Optional[str] = None, limit: int = 10, company
 # ============================================
 
 @app.post("/admin/company", include_in_schema=False)
-async def create_company(name: str, slug: str, plan: str = "trial"):
-    """Create a new company (admin only)"""
+async def create_company(name: str, slug: str, plan: str = "trial", company: dict = Depends(verify_api_key)):
+    """Create a new company (superadmin only)"""
     import secrets
+
+    # Only superadmin can create companies via this endpoint
+    if company.get("role") not in ("superadmin", "owner"):
+        raise HTTPException(status_code=403, detail="Forbidden: superadmin access required")
     
     with get_db() as conn:
         cur = conn.cursor(cursor_factory=RealDictCursor)
@@ -1665,7 +1669,7 @@ class ExportRequest(BaseModel):
     filename: Optional[str] = "legal-document"
 
 @app.post("/v1/legal/export-docx")
-async def export_docx(req: ExportRequest):
+async def export_docx(req: ExportRequest, company: dict = Depends(verify_api_key)):
     """Convert markdown content to a professional .docx file"""
     import io
     import re

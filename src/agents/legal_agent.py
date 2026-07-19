@@ -19,21 +19,17 @@ from .context_builder import build_user_context, init_context
 _get_db = None
 _multi_query_search = None
 _search_laws = None
-_detect_domain = None
-_fetch_company_context = None
 _llm_provider_manager = None
 
 # LLM calls are routed through GroqProvider (no direct API URL needed)
 
 
-def init_agent(get_db_fn, multi_query_search_fn, search_laws_fn, detect_domain_fn, fetch_company_context_fn, llm_provider_manager_fn=None):
+def init_agent(get_db_fn, multi_query_search_fn, search_laws_fn, llm_provider_manager_fn=None):
     """Initialize agent with shared functions from main.py"""
-    global _get_db, _multi_query_search, _search_laws, _detect_domain, _fetch_company_context, _llm_provider_manager
+    global _get_db, _multi_query_search, _search_laws, _llm_provider_manager
     _get_db = get_db_fn
     _multi_query_search = multi_query_search_fn
     _search_laws = search_laws_fn
-    _detect_domain = detect_domain_fn
-    _fetch_company_context = fetch_company_context_fn
     _llm_provider_manager = llm_provider_manager_fn
     # Initialize company memory and context builder with same DB function
     init_memory(get_db_fn)
@@ -1603,7 +1599,7 @@ async def _tool_review_contract_ai(tool_input: dict, company_id: str) -> dict:
     if parties and isinstance(parties, str):
         try:
             parties = json.loads(parties)
-        except:
+        except (json.JSONDecodeError, TypeError):
             parties = None
     
     # Run contract review
@@ -1850,7 +1846,6 @@ async def _tool_edit_and_diff_document(tool_input: dict, company_id: str) -> dic
         return {"error": "Document has no content"}
     
     # Generate edited version using AI
-    # For now, we'll use a simple approach: use the LLM to generate the edited version
     if _llm_provider_manager:
         try:
             # Build edit prompt
@@ -1868,15 +1863,15 @@ EDIT REQUIREMENTS:
 
 Please return the ENTIRE edited document (not just the edits). Keep the original formatting, only modify what is necessary."""
 
-            # Call LLM
-            from src.services.llm_provider import GroqProvider
+            # Call LLM via shared provider manager
+            from ..services.llm_provider import GroqProvider
             provider = GroqProvider()
-            
+
             result = await provider.chat(
                 messages=[{"role": "user", "content": edit_prompt}],
                 max_tokens=8192
             )
-            
+
             edited_text = ""
             for block in result.get("content", []):
                 if block.get("type") == "text":
@@ -1934,8 +1929,8 @@ async def run_agent(
         memory_context = await get_company_memory(company_id)
         if memory_context:
             system_prompt = system_prompt + "\n\n" + memory_context
-    except Exception:
-        pass
+    except Exception as e:
+        print(f"[agent] Error loading context/memory for company {company_id}: {e}")
 
     # Fast path — skip tool loop for simple greetings/acknowledgments
     if is_simple_question(question):
@@ -2032,95 +2027,6 @@ TOOL_STATUS_LABELS = {
 }
 
 
-async def run_agent_stream(
-    question: str,
-    company_id: str,
-    user_id: Optional[str] = None,
-    session_id: Optional[str] = None,
-    chat_history: Optional[list] = None
-) -> AsyncGenerator[str, None]:
-    """
-    Streaming agent loop. Yields SSE events:
-    - {"type": "tool_status", "tool": "search_law", "status": "running", "label": "🔍 Searching law..."}
-    - {"type": "tool_status", "tool": "search_law", "status": "done"}
-    - {"type": "citations", "citations": [...]}
-    - {"type": "delta", "text": "chunk"}
-    - {"type": "done", "session_id": "...", "citations": [...]}
-    - {"type": "error", "message": "..."}
-    """
-    messages = []
-    if chat_history:
-        for msg in chat_history:
-            messages.append({"role": msg["role"], "content": msg["content"]})
-    messages.append({"role": "user", "content": question})
-
-    all_citations = []
-    max_iterations = 25
-    full_response_text = []
-
-    for iteration in range(max_iterations):
-        # For non-final iterations, use non-streaming to get tool calls
-        # For final iteration (text response), use streaming
-        response = await _call_llm_with_tools(messages, TOOLS, company_id=company_id)
-        content_blocks = response.get("content", [])
-        stop_reason = response.get("stop_reason", "")
-
-        tool_uses = [b for b in content_blocks if b.get("type") == "tool_use"]
-
-        if not tool_uses:
-            # Final text response — now re-call with streaming for the text
-            # Actually, we already have the text from non-streaming call
-            text_parts = [b.get("text", "") for b in content_blocks if b.get("type") == "text"]
-            final_text = "".join(text_parts)
-
-            # Send citations first
-            if all_citations:
-                yield f"data: {json.dumps({'type': 'citations', 'citations': all_citations}, ensure_ascii=False)}\n\n"
-
-            # Stream the text in chunks for smooth UX
-            chunk_size = 20
-            for i in range(0, len(final_text), chunk_size):
-                chunk = final_text[i:i+chunk_size]
-                yield f"data: {json.dumps({'type': 'delta', 'text': chunk}, ensure_ascii=False)}\n\n"
-                full_response_text.append(chunk)
-
-            # Done
-            yield f"data: {json.dumps({'type': 'done', 'session_id': session_id, 'citations': all_citations}, ensure_ascii=False)}\n\n"
-            return
-
-        # Tool calls needed — execute them
-        messages.append({"role": "assistant", "content": content_blocks})
-
-        tool_results = []
-        for tool_use in tool_uses:
-            tool_name = tool_use.get("name", "")
-            tool_input = tool_use.get("input", {})
-            tool_id = tool_use.get("id", "")
-
-            # Notify frontend
-            label = TOOL_STATUS_LABELS.get(tool_name, f"🔧 Processing {tool_name}...")
-            yield f"data: {json.dumps({'type': 'tool_status', 'tool': tool_name, 'status': 'running', 'label': label}, ensure_ascii=False)}\n\n"
-
-            try:
-                result = await execute_tool(tool_name, tool_input, company_id)
-            except Exception as e:
-                result = {"error": str(e)}
-
-            if tool_name == "search_law" and "citations" in result:
-                all_citations.extend(result["citations"])
-
-            yield f"data: {json.dumps({'type': 'tool_status', 'tool': tool_name, 'status': 'done'}, ensure_ascii=False)}\n\n"
-
-            tool_results.append({
-                "type": "tool_result",
-                "tool_use_id": tool_id,
-                "content": json.dumps(result, ensure_ascii=False, default=str)[:12000]
-            })
-
-        messages.append({"role": "user", "content": tool_results})
-
-    # Max iterations
-    yield f"data: {json.dumps({'type': 'error', 'message': 'Too many processing steps. Please try again with a more specific question.'}, ensure_ascii=False)}\n\n"
 
 
 async def run_agent_stream_final_text(
@@ -2229,8 +2135,7 @@ async def run_agent_stream_final_text(
             # Use the text from the non-streaming response directly (avoid double API call)
             text_parts = [b.get("text", "") for b in content_blocks if b.get("type") == "text"]
             final_text = "".join(text_parts)
-            print(f"[DEBUG] content_blocks count: {len(content_blocks)}, types: {[b.get('type') for b in content_blocks]}, text_len: {len(final_text)}, first100: {final_text[:100]}")
-            
+
             # Stream it in small chunks for smooth UX
             chunk_size = 15
             for ci in range(0, len(final_text), chunk_size):

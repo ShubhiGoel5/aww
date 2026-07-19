@@ -18,7 +18,7 @@ def load_translations():
     global _translations
     
     for lang_file in I18N_DIR.glob("*.json"):
-        lang_code = lang_file.stem  # vi, en
+        lang_code = lang_file.stem  # e.g. en, hi
         try:
             with open(lang_file, "r", encoding="utf-8") as f:
                 _translations[lang_code] = json.load(f)
