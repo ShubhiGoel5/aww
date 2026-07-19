@@ -26,7 +26,7 @@ from security_utils import (
 router = APIRouter(prefix="/v1/contracts", tags=["contracts"])
 
 # File upload config
-UPLOAD_DIR = Path("/tmp/legal-ai-agent-uploads/contracts")
+UPLOAD_DIR = Path("uploads/contracts")
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
 

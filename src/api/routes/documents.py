@@ -31,7 +31,7 @@ from security_utils import (
 router = APIRouter(prefix="/v1/documents", tags=["Documents"])
 
 # Configuration
-UPLOAD_DIR = Path(os.getenv("UPLOAD_DIR", "/tmp/legal-ai-agent-uploads"))
+UPLOAD_DIR = Path(os.getenv("UPLOAD_DIR", "uploads"))
 UPLOAD_DIR.mkdir(exist_ok=True, parents=True)
 
 # ============================================
