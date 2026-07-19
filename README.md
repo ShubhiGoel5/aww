@@ -1,23 +1,15 @@
 # ⚖️ AI Legal Agent
 
 <p align="center">
-  <a href="https://github.com/Paparusi/legal-ai-agent/stargazers"><img src="https://img.shields.io/github/stars/Paparusi/legal-ai-agent?style=social" alt="Stars"></a>
-  <a href="https://github.com/Paparusi/legal-ai-agent/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-green.svg" alt="License"></a>
-  <a href="https://github.com/Paparusi/legal-ai-agent/actions/workflows/ci.yml"><img src="https://github.com/Paparusi/legal-ai-agent/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
   <a href="https://www.python.org/downloads/"><img src="https://img.shields.io/badge/python-3.10+-blue.svg" alt="Python"></a>
 </p>
 
 🇮🇳 [Hindi](README_HI.md) | 🇺🇸 English
 
-> **Created by [L Minh Hiu](https://github.com/Paparusi)** — Trader turned Builder 🇮🇳
-
 **AI-powered legal assistant for Indiaese businesses**
 
 An AI platform for legal research, contract review, and legal document drafting — all in a VSCode-style interface.
 
-![Stars](https://img.shields.io/github/stars/Paparusi/legal-ai-agent?style=flat-square)
-![Forks](https://img.shields.io/github/forks/Paparusi/legal-ai-agent?style=flat-square)
-![License](https://img.shields.io/github/license/Paparusi/legal-ai-agent?style=flat-square)
 ![Python](https://img.shields.io/badge/Python-3.10+-blue?style=flat-square)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-green?style=flat-square)
 ![Claude](https://img.shields.io/badge/AI-Claude%20Sonnet-purple?style=flat-square)
@@ -313,8 +305,7 @@ POST /crawler/crawl
 ### 1. Clone & Install
 
 ```bash
-git clone https://github.com/Paparusi/legal-ai-agent.git
-cd legal-ai-agent
+# Clone your repository and change to the directory
 pip install -r requirements.txt
 ```
 
@@ -343,75 +334,6 @@ uvicorn src.api.main:app --host 0.0.0.0 --port 8080
 ```
 
 Open http://localhost:8080/static/app.html
-
-### 🐳 Docker (Recommended)
-
-```bash
-# 1. Clone
-git clone https://github.com/Paparusi/legal-ai-agent.git
-cd legal-ai-agent
-
-# 2. Configure
-cp .env.example .env
-nano .env  # Add your ANTHROPIC_API_KEY
-
-# 3. Start (PostgreSQL + App)
-docker compose up -d
-
-# 4. Open
-# http://localhost:8080/static/app.html
-```
-
-This starts PostgreSQL 15 (with pgvector) and the FastAPI app automatically.
-
-**⚠️ Note:** The database schema is created automatically on first startup, but **law documents are empty by default**. To populate the legal database:
-
-```bash
-# Option 1: Crawl Indiaese legal websites (recommended)
-docker compose exec app python scripts/crawl_thuvien.py
-
-# Option 2: Load from backup (if you have one)
-docker compose exec app python scripts/load_law_data.py
-```
-
-Without legal data, the AI can still review/draft contracts, but legal search won't work.
-
-#### 🖥️ Self-hosted (NAS / Xpenology / Synology)
-
-Works on any Docker-capable device — NAS, Raspberry Pi, VPS, or local server.
-
-```bash
-# SSH into your NAS/server
-git clone https://github.com/Paparusi/legal-ai-agent.git
-cd legal-ai-agent
-cp .env.example .env
-
-# Edit .env — only ANTHROPIC_API_KEY is required
-nano .env
-
-# Start
-docker compose up -d
-
-# Access from any device on your network:
-# http://NAS_IP:8080/static/app.html
-```
-
-**System requirements:**
-- Docker + Docker Compose
-- 512MB RAM minimum (1GB recommended)
-- 1GB disk space
-- Any CPU (x86_64 or ARM64)
-
-**Ports:** `8080` (web UI), `5432` (PostgreSQL, optional external access)
-
-**Persistent data:** PostgreSQL data is stored in a Docker volume (`pgdata`). Your data survives container restarts and updates.
-
-**Update to latest version:**
-```bash
-git pull
-docker compose build
-docker compose up -d
-```
 
 ## 📁 Project Structure
 
@@ -634,39 +556,4 @@ MIT — free to use, including commercially.
 
 This is an assistive tool and **does not replace** professional legal advice. Always consult a qualified lawyer for important legal decisions.
 
----
 
-## 💖 Sponsors
-
-Love this project? **[Become a sponsor!](https://github.com/sponsors/Paparusi)** 🙏
-
-Your support helps maintain and expand this **open-source Indiaese legal AI** platform. By sponsoring, you're supporting:
-
-- 🇮🇳 **Indiaese open-source** development
-- ⚖️ **Democratized legal tech** for small businesses
-- 📚 **Free legal AI tools** for everyone
-- 🚀 **New features** and improvements
-
-### 💰 Sponsor Tiers
-
-| Tier | Monthly | Benefits |
-|------|---------|----------|
-| ☕ **Coffee** | $5 | Your name in sponsors list |
-| 🥉 **Bronze** | $25 | Logo in README + priority issue response (24h) |
-| 🥈 **Silver** | $100 | Direct support channel + feature request priority |
-| 🥇 **Gold** | $500 | Prominent logo + custom features + quarterly calls |
-| 🏢 **Enterprise** | Custom | SLA, white-label, custom development, private hosting |
-
-**[👉 View all tiers & sponsor now](https://github.com/sponsors/Paparusi)**
-
-_For Enterprise inquiries: [GitHub Issues](https://github.com/Paparusi/legal-ai-agent/issues) or [@gau_trader on Telegram](https://t.me/gau_trader)_
-
-### 🌟 Current Sponsors
-
-_No sponsors yet — **be the first!** Your logo could be here. 🚀_
-
-See [.github/SPONSORS.md](.github/SPONSORS.md) for full details.
-
----
-
-Made with ❤️ by [L Minh Hiu](https://github.com/Paparusi) 🇮🇳
