@@ -4247,8 +4247,19 @@ console.log(await resp.json());</code></pre>
             try {
                 const token = localStorage.getItem('token');
                 const response = await fetch('/v1/contracts', { method: 'POST', headers: { 'Authorization': `Bearer ${token}` }, body: formData });
-                if (response.ok) { closeModal('uploadContractModal'); showToast('Uploaded!', 'success'); loadContracts(); }
-                else showToast('Upload failed', 'error');
+                if (response.ok) { 
+                    closeModal('uploadContractModal'); 
+                    showToast('Uploaded!', 'success'); 
+                    loadContracts(); 
+                } else {
+                    const err = await response.json().catch(() => ({}));
+                    let errMsg = 'Upload failed';
+                    if (err.detail) {
+                        if (typeof err.detail === 'string') errMsg = err.detail;
+                        else if (Array.isArray(err.detail)) errMsg = err.detail.map(d => d.msg).join(', ');
+                    }
+                    showToast(errMsg, 'error');
+                }
             } catch (e) { showToast('Error', 'error'); }
         }
 
