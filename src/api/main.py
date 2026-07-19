@@ -3394,10 +3394,10 @@ async def batch_upload_contracts(
                 cur = conn.cursor(cursor_factory=RealDictCursor)
                 contract_id = str(uuid.uuid4())
                 cur.execute("""
-                    INSERT INTO contracts (id, company_id, name, content, file_id, original_filename, status, created_at, updated_at)
-                    VALUES (%s, %s, %s, %s, %s, %s, 'uploaded', NOW(), NOW())
+                    INSERT INTO contracts (id, company_id, name, content, file_path, file_type, extracted_text, status, created_at, updated_at)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, 'uploaded', NOW(), NOW())
                     RETURNING id
-                """, (contract_id, company_id, name, text_content[:50000], file_id, file.filename))
+                """, (contract_id, company_id, name, text_content[:50000], file_path, file_ext, text_content))
                 conn.commit()
 
             # Audit log for each upload

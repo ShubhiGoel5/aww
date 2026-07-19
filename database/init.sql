@@ -484,8 +484,8 @@ CREATE INDEX IF NOT EXISTS idx_usage_logs_created_at ON usage_logs(created_at);
 -- Insert default document templates (if not exists)
 INSERT INTO document_templates (template_id, name, category, description, variables, sections)
 VALUES 
-    ('hop-dong-lao-dong-01', 'Hợp đồng lao động cơ bản', 'hop_dong_lao_dong', 'Mẫu hợp đồng lao động theo Bộ luật Lao động 2019', '[]'::jsonb, '[]'::jsonb),
-    ('noi-quy-lao-dong-01', 'Nội quy lao động mẫu', 'noi_quy', 'Nội quy lao động cho doanh nghiệp', '[]'::jsonb, '[]'::jsonb)
+    ('employment-contract-01', 'Standard Employment Contract', 'employment_agreement', 'Standard employment agreement template', '[]'::jsonb, '[]'::jsonb),
+    ('nda-01', 'Non-Disclosure Agreement', 'nda', 'Standard non-disclosure agreement for businesses', '[]'::jsonb, '[]'::jsonb)
 ON CONFLICT DO NOTHING;
 
 -- Insert default platform settings
