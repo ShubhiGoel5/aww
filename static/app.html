@@ -4937,7 +4937,7 @@ console.log(await resp.json());</code></pre>
                     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                     body: JSON.stringify({ provider, api_key: apiKey, model })
                 });
-                const data = await res.json();
+                const data = await res.json().catch(() => ({}));
                 if (res.ok && data.success) {
                     localStorage.setItem('llmConfig', JSON.stringify({ provider, model, updatedAt: new Date().toISOString() }));
                     statusEl.innerHTML = '<span style="color: var(--success);">✅ Saved & connected successfully</span>';

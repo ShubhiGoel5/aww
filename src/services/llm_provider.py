@@ -255,21 +255,19 @@ class OpenAIProvider(LLMProvider):
 
 
 class GeminiProvider(LLMProvider):
-    """Google Gemini provider using OpenAI-compatible endpoint or direct HTTP."""
+    """Google Gemini provider using Google Generative Language REST API."""
     
     MODELS = [
-        {"id": "gemini-1.5-flash", "name": "Gemini 1.5 Flash", "context": 1000000},
-        {"id": "gemini-1.5-pro", "name": "Gemini 1.5 Pro", "context": 1000000},
         {"id": "gemini-2.0-flash", "name": "Gemini 2.0 Flash", "context": 1000000},
-        {"id": "gemini-2.5-flash", "name": "Gemini 2.5 Flash", "context": 1000000},
-        {"id": "gemini-2.5-pro", "name": "Gemini 2.5 Pro", "context": 1000000},
+        {"id": "gemini-1.5-flash-latest", "name": "Gemini 1.5 Flash (Latest)", "context": 1000000},
+        {"id": "gemini-1.5-pro-latest", "name": "Gemini 1.5 Pro (Latest)", "context": 1000000},
     ]
     
-    def __init__(self, api_key: str, model: str = "gemini-1.5-flash"):
+    def __init__(self, api_key: str, model: str = "gemini-2.0-flash"):
         if not api_key:
             raise ValueError("Gemini API key is required. Please configure in Settings → AI Provider.")
         self.api_key = api_key
-        self.model = model
+        self.model = model if model not in ("gemini-1.5-flash", "gemini-1.5-pro") else f"{model}-latest"
         self.base_url = "https://generativelanguage.googleapis.com/v1beta"
     
     async def chat(self, messages, system="", max_tokens=4096, tools=None):
@@ -387,9 +385,10 @@ class GroqProvider(LLMProvider):
         {"id": "llama-3.1-8b-instant", "name": "Llama 3.1 8B", "context": 131072},
     ]
     
-    def __init__(self, api_key: str, model: str = "llama-3.3-70b-versatile"):
+    def __init__(self, api_key: str = None, model: str = "llama-3.3-70b-versatile"):
         from openai import OpenAI
-        self.client = OpenAI(api_key=api_key, base_url="https://api.groq.com/openai/v1")
+        key = api_key or os.getenv("GROQ_API_KEY", "")
+        self.client = OpenAI(api_key=key, base_url="https://api.groq.com/openai/v1")
         self.model = model
         
     async def chat(self, messages, system="", max_tokens=4096, tools=None):
@@ -433,7 +432,7 @@ class FallbackProvider(LLMProvider):
     """Fallback mechanism: Gemini -> Groq env keys."""
     
     def __init__(self):
-        self.gemini_key = os.getenv("GEMINI_API_KEY") or os.getenv("SUPABASE_ANON_KEY")
+        self.gemini_key = os.getenv("GEMINI_API_KEY")
         self.groq_key = os.getenv("GROQ_API_KEY")
         
     def _get_active_provider(self) -> LLMProvider:
@@ -442,7 +441,7 @@ class FallbackProvider(LLMProvider):
         elif self.groq_key:
             return GroqProvider(api_key=self.groq_key)
         else:
-            raise ValueError("No LLM API keys configured. Please go to Settings → AI Provider to enter an API key.")
+            raise ValueError("No LLM API key configured. Please enter your API key in Settings → AI Provider.")
             
     async def chat(self, messages, system="", max_tokens=4096, tools=None):
         p = self._get_active_provider()
@@ -493,7 +492,7 @@ PROVIDERS = {
         "name": "Google Gemini",
         "class": GeminiProvider,
         "auth_methods": ["api_key", "oauth"],
-        "default_model": "gemini-1.5-flash",
+        "default_model": "gemini-2.0-flash",
         "website": "https://aistudio.google.com",
         "oauth": {
             "enabled": True,
@@ -506,7 +505,7 @@ PROVIDERS = {
         "name": "Google Gemini",
         "class": GeminiProvider,
         "auth_methods": ["api_key", "oauth"],
-        "default_model": "gemini-1.5-flash",
+        "default_model": "gemini-2.0-flash",
         "website": "https://aistudio.google.com",
         "oauth": {
             "enabled": True,
@@ -566,25 +565,25 @@ class LLMProviderManager:
         if not self.db:
             return FallbackProvider()
         
-        # Query company's LLM config from database
         from psycopg2.extras import RealDictCursor
         try:
             with self.db() as conn:
-                with conn.cursor(cursor_factory=RealDictCursor) as cur:
-                    cur.execute(
-                        "SELECT metadata FROM companies WHERE id = %s",
-                        (company_id,)
-                    )
-                    row = cur.fetchone()
-                    if not row or not row.get("metadata"):
-                        return FallbackProvider()
-                    
-                    llm_config = row["metadata"].get("llm_provider", {})
-                    if not llm_config or (not llm_config.get("api_key") and llm_config.get("auth_method") != "oauth"):
-                        return FallbackProvider()
-                    
-                    provider_name = llm_config.get("provider", "google")
-                    return self.get_provider(provider_name, llm_config)
+                cur = conn.cursor(cursor_factory=RealDictCursor)
+                cur.execute(
+                    "SELECT metadata FROM companies WHERE id = %s",
+                    (company_id,)
+                )
+                row = cur.fetchone()
+                cur.close()
+                if not row or not row.get("metadata"):
+                    return FallbackProvider()
+                
+                llm_config = row["metadata"].get("llm_provider", {})
+                if not llm_config or (not llm_config.get("api_key") and llm_config.get("auth_method") != "oauth"):
+                    return FallbackProvider()
+                
+                provider_name = llm_config.get("provider", "google")
+                return self.get_provider(provider_name, llm_config)
         except Exception as e:
             logger.warning(f"Error reading company LLM provider: {e}. Falling back...")
             return FallbackProvider()
@@ -604,27 +603,27 @@ class LLMProviderManager:
         
         if self.db:
             with self.db() as conn:
-                with conn.cursor() as cur:
-                    cur.execute(
-                        """UPDATE companies 
-                           SET metadata = jsonb_set(
-                               COALESCE(metadata, '{}'::jsonb), 
-                               '{llm_provider}', 
-                               %s::jsonb
-                           )
-                           WHERE id = %s""",
-                        (json.dumps(config), company_id)
-                    )
-                    conn.commit()
+                cur = conn.cursor()
+                cur.execute(
+                    """UPDATE companies 
+                       SET metadata = jsonb_set(
+                           COALESCE(metadata, '{}'::jsonb), 
+                           '{llm_provider}', 
+                           %s::jsonb
+                       )
+                       WHERE id = %s""",
+                    (json.dumps(config), company_id)
+                )
+                conn.commit()
+                cur.close()
     
     @staticmethod
     def list_providers() -> list:
         """List all available providers."""
         result = []
         for pid, pinfo in PROVIDERS.items():
-            if pid == "gemini":  # avoid duplicate representation for 'gemini' and 'google'
+            if pid == "gemini":
                 continue
-            # Get models from a dummy instance
             try:
                 if pid == "anthropic":
                     models = AnthropicProvider(api_key="dummy").get_models()

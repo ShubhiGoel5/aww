@@ -68,6 +68,8 @@ async def configure_provider(
         
         if not test_result.get("success"):
             raise HTTPException(400, f"Connection test failed: {test_result.get('error', 'Unknown error')}")
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(400, f"Failed to initialize provider: {str(e)}")
     
