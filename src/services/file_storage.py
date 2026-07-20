@@ -10,7 +10,7 @@ from pathlib import Path
 SUPABASE_URL = os.getenv("SUPABASE_URL", "https://chiokotzjtjwfodryfdt.supabase.co")
 SUPABASE_SERVICE_KEY = os.getenv("SUPABASE_SERVICE_KEY")
 BUCKET = "documents"
-LOCAL_UPLOAD_DIR = Path("uploads/documents")
+LOCAL_UPLOAD_DIR = Path("/tmp/legal-ai-agent-uploads/documents")
 
 _MIME_MAP = {
     ".docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",

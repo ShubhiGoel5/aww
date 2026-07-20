@@ -26,20 +26,23 @@ from security_utils import (
 router = APIRouter(prefix="/v1/contracts", tags=["contracts"])
 
 # File upload config
-UPLOAD_DIR = Path("uploads/contracts")
+# Use /tmp which is always writable on cloud hosts like Render
+UPLOAD_DIR = Path("/tmp/legal-ai-agent-uploads/contracts")
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
 
 def extract_file_text(file_path: str, file_ext: str, content: bytes = None) -> Optional[str]:
     """Extract text from PDF, DOCX, or TXT files"""
+    import io
     try:
         if file_ext == ".txt":
             return content.decode('utf-8', errors='ignore') if content else ""
         
         elif file_ext == ".pdf":
-            # FIX 15: Use pypdf instead of PyPDF2
             from pypdf import PdfReader
-            reader = PdfReader(file_path)
+            # Read from file path or from bytes in memory
+            source = file_path if file_path else io.BytesIO(content)
+            reader = PdfReader(source)
             text_parts = []
             for page in reader.pages:
                 text = page.extract_text()
@@ -50,17 +53,16 @@ def extract_file_text(file_path: str, file_ext: str, content: bytes = None) -> O
         elif file_ext in (".docx", ".doc"):
             import unicodedata
             from docx import Document
-            doc = Document(file_path)
+            source = file_path if file_path else io.BytesIO(content)
+            doc = Document(source)
             text_parts = []
             for para in doc.paragraphs:
                 text = unicodedata.normalize('NFC', para.text.strip())
                 if text:
-                    # Preserve formatting hints
                     if para.style and para.style.name and 'heading' in para.style.name.lower():
                         text_parts.append('**' + text + '**')
                     else:
                         text_parts.append(text)
-            # Also extract from tables
             for table in doc.tables:
                 for row in table.rows:
                     row_text = " | ".join(unicodedata.normalize('NFC', cell.text.strip()) for cell in row.cells if cell.text.strip())
@@ -69,7 +71,6 @@ def extract_file_text(file_path: str, file_ext: str, content: bytes = None) -> O
             return "\n".join(text_parts) if text_parts else None
         
         elif file_ext in (".jpg", ".jpeg", ".png"):
-            # TODO: OCR with pytesseract if available
             return None
     except Exception as e:
         print(f"Text extraction error ({file_ext}): {e}")
@@ -313,19 +314,26 @@ async def create_contract(
                 detail=f"File type not allowed. Allowed: {', '.join(ALLOWED_EXTENSIONS)}"
             )
         
-        # Save file
+        # Save file to temp directory
+        content = await file.read()
         file_id = str(uuid.uuid4())
         file_name = f"{file_id}{file_ext}"
         file_path = str(UPLOAD_DIR / file_name)
         
-        with open(file_path, "wb") as f:
-            content = await file.read()
-            f.write(content)
+        try:
+            with open(file_path, "wb") as f:
+                f.write(content)
+        except Exception as e:
+            print(f"Warning: Could not save file to disk: {e}")
+            file_path = None  # Store in DB only
         
         file_type = file_ext
         
         # Extract text from uploaded file
-        extracted_text = extract_file_text(file_path, file_ext, content)
+        extracted_text = extract_file_text(file_path, file_ext, content) if file_path else None
+        # Fall back to raw bytes for text files
+        if not extracted_text and file_ext == ".txt":
+            extracted_text = content.decode('utf-8', errors='ignore')
     
     # Insert into database
     with get_db() as conn:
