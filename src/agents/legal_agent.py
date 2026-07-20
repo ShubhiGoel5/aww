@@ -457,10 +457,13 @@ When the user asks for a complex task, you can call multiple tools sequentially:
 # ============================================
 
 async def _call_llm_with_tools(messages: list, tools: list, system: str = AGENT_SYSTEM_PROMPT, max_tokens: int = 8192, model: str = None, company_id: str = None) -> dict:
-    """Call LLM API (Groq Provider) with tool definitions, return raw response dict"""
-    from src.services.llm_provider import GroqProvider
+    """Call LLM API with tool definitions, return raw response dict"""
+    if _llm_provider_manager and company_id:
+        provider = _llm_provider_manager.get_company_provider(company_id)
+    else:
+        from src.services.llm_provider import FallbackProvider
+        provider = FallbackProvider()
     
-    provider = GroqProvider(model=model) if model else GroqProvider()
     result = await provider.chat(messages=messages, system=system, max_tokens=max_tokens, tools=tools)
     return result
 
@@ -583,11 +586,14 @@ def extract_inline_actions(answer_text: str, tools_used: list, tool_results: lis
     return actions
 
 
-async def quick_answer(question: str, chat_history: list = None) -> dict:
+async def quick_answer(question: str, chat_history: list = None, company_id: str = None) -> dict:
     """Direct LLM call without tools — for simple questions"""
-    from src.services.llm_provider import GroqProvider
+    if _llm_provider_manager and company_id:
+        provider = _llm_provider_manager.get_company_provider(company_id)
+    else:
+        from src.services.llm_provider import FallbackProvider
+        provider = FallbackProvider()
     
-    provider = GroqProvider()
     messages = []
     if chat_history:
         for msg in chat_history:
@@ -612,24 +618,29 @@ async def quick_answer(question: str, chat_history: list = None) -> dict:
     }
 
 
-async def _call_llm_with_tools_stream(messages: list, tools: list, system: str = AGENT_SYSTEM_PROMPT, max_tokens: int = 8192):
-    """Call LLM API with tools + streaming. Uses GroqProvider (non-streaming wrapper)."""
-    from src.services.llm_provider import GroqProvider
-    provider = GroqProvider()
+async def _call_llm_with_tools_stream(messages: list, tools: list, system: str = AGENT_SYSTEM_PROMPT, max_tokens: int = 8192, company_id: str = None):
+    """Call LLM API with tools + streaming."""
+    if _llm_provider_manager and company_id:
+        provider = _llm_provider_manager.get_company_provider(company_id)
+    else:
+        from src.services.llm_provider import FallbackProvider
+        provider = FallbackProvider()
+        
     result = await provider.chat(messages=messages, system=system, max_tokens=max_tokens, tools=tools)
-    # Yield the full result as a single event (Groq doesn't support streaming with tools easily)
     yield result
 
 
 async def _stream_final_text(messages: list, system: str = AGENT_SYSTEM_PROMPT, company_id: str = None) -> AsyncGenerator[str, None]:
     """Stream LLM response without tools — for fast path"""
-    from src.services.llm_provider import GroqProvider
-    
     try:
-        provider = GroqProvider()
+        if _llm_provider_manager and company_id:
+            provider = _llm_provider_manager.get_company_provider(company_id)
+        else:
+            from src.services.llm_provider import FallbackProvider
+            provider = FallbackProvider()
+            
         result = await provider.chat(messages=messages, system=system, max_tokens=4096)
         
-        # Extract text from result and yield as SSE delta events
         text_parts = [b.get("text", "") for b in result.get("content", []) if b.get("type") == "text"]
         full_text = "".join(text_parts)
         
@@ -1863,9 +1874,7 @@ EDIT REQUIREMENTS:
 
 Please return the ENTIRE edited document (not just the edits). Keep the original formatting, only modify what is necessary."""
 
-            # Call LLM via shared provider manager
-            from ..services.llm_provider import GroqProvider
-            provider = GroqProvider()
+            provider = _llm_provider_manager.get_company_provider(company_id)
 
             result = await provider.chat(
                 messages=[{"role": "user", "content": edit_prompt}],

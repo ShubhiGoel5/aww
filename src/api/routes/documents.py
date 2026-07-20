@@ -599,7 +599,7 @@ DOCUMENT:
         # Call Claude for analysis
         try:
             from src.services.llm_provider import call_llm_simple
-            result = await call_llm_simple(system_prompt, user_message, max_tokens=4096)
+            result = await call_llm_simple(system_prompt, user_message, max_tokens=4096, company_id=str(current_user["company_id"]))
             
             # Parse JSON response
             try:
@@ -695,7 +695,7 @@ DOCUMENT 2 ({doc2['name']}):
         
         try:
             from src.services.llm_provider import call_llm_simple
-            result = await call_llm_simple(system_prompt, user_message, max_tokens=4096)
+            result = await call_llm_simple(system_prompt, user_message, max_tokens=4096, company_id=str(current_user["company_id"]))
             
             # Parse JSON response
             try:

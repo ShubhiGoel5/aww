@@ -77,7 +77,7 @@ def extract_file_text(file_path: str, file_ext: str, content: bytes = None) -> O
         return None
 
 
-async def ai_analyze_contract(text: str) -> dict:
+async def ai_analyze_contract(text: str, company_id: Optional[str] = None) -> dict:
     """Use LLM to extract contract metadata from text"""
     from src.services.llm_provider import call_llm_simple
     
@@ -94,7 +94,7 @@ async def ai_analyze_contract(text: str) -> dict:
 Return ONLY JSON, no text or markdown."""
 
     try:
-        result = await call_llm_simple(system_prompt, f"Analyze contract:\n\n{text[:15000]}", max_tokens=1024)
+        result = await call_llm_simple(system_prompt, f"Analyze contract:\n\n{text[:15000]}", max_tokens=1024, company_id=company_id)
         content = result["content"].strip()
         # Clean markdown code blocks if any
         if content.startswith("```"):
@@ -138,7 +138,7 @@ class ContractReview(BaseModel):
 # Helpers
 # ============================================
 
-async def call_llm_for_review(contract_text: str, contract_type: str = None) -> dict:
+async def call_llm_for_review(contract_text: str, contract_type: str = None, company_id: Optional[str] = None) -> dict:
     """Call LLM for contract review"""
     from src.services.llm_provider import call_llm_simple
     
@@ -193,7 +193,7 @@ IMPORTANT:
 
 Please review and return the JSON as requested."""
 
-    result = await call_llm_simple(system_prompt, user_message, max_tokens=8192)
+    result = await call_llm_simple(system_prompt, user_message, max_tokens=8192, company_id=company_id)
     
     content = result["content"]
     
@@ -267,7 +267,7 @@ async def analyze_uploaded_file(
         }
     
     # AI analyze
-    metadata = await ai_analyze_contract(extracted_text)
+    metadata = await ai_analyze_contract(extracted_text, company_id=str(current_user["company_id"]))
     
     return {
         "success": True,
@@ -608,7 +608,7 @@ async def review_contract(
             )
         
         # Call Claude for review
-        result = await call_llm_for_review(text, contract.get("contract_type"))
+        result = await call_llm_for_review(text, contract.get("contract_type"), company_id=str(current_user["company_id"]))
         
         # Save review result
         cur.execute("""
@@ -658,7 +658,7 @@ async def review_contract_text(
     if not review.contract_text:
         raise HTTPException(status_code=400, detail="contract_text is required")
     
-    result = await call_llm_for_review(review.contract_text)
+    result = await call_llm_for_review(review.contract_text, company_id=str(current_user["company_id"]))
     
     # Update usage
     with get_db() as conn:

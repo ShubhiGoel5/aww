@@ -302,7 +302,7 @@ Please create a complete document, following standard Indian legal formatting.""
 
     # Call LLM
     from src.services.llm_provider import call_llm_simple
-    result = await call_llm_simple(system_prompt, user_message, max_tokens=4096)
+    result = await call_llm_simple(system_prompt, user_message, max_tokens=4096, company_id=str(current_user["company_id"]))
     
     # Save to generated_documents
     with get_db() as conn:
